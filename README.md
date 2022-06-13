@@ -1,0 +1,1 @@
+This repository contains scripts for initial registry pre-processing (only registers which are used for endpoint generation), scripts to transform data into “detailed longitudinal” format and supporting code for running endpointer.py and transforming endpoint files into densified versions. 
