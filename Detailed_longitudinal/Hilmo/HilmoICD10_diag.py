@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Dignoses for data update period 2020-2021
+# ## Dignoses for data update period 2019-2021
 
 # In[ ]:
 
