@@ -10,9 +10,9 @@ Here detailed longitudinal files are formed from all registers which are include
 ## Hilmo 
 
 Hilmo registry is split into separate files because throughout the registry existance three ICD disease classification versions changed (8 to 10):
-* ICD8: From the start of the register up to the end of 1987
-* ICD9: From 1987-01-01 to the end of 1995
-* ICD10: from 01-01-1996 up to now
+* ICD8: From the start of the register up to the end of 1987;
+* ICD9: From 1987-01-01 to the end of 1995;
+* ICD10: From 1996-01-01 up to now.
 
 For the period of 1994-1995 there are separate Hilmo files with ICD9 codes, this is due to the change of coding in 1994 within the register (not due to change in ICD version): "The care notification register was introduced in 1994, in which case it replaced the previously used Deletion Notification Register".
 
