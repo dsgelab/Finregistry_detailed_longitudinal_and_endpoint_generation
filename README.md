@@ -5,7 +5,7 @@ Small pre-processing steps (e.g. date format harmonisation, duplicate removal is
 All pre-processing steps can be found on a google drive: dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes. 
 
 # Detailed longitudinal 
-Here detailed longitudinal files are formed from all registers which are included in endpoint generation
+Here detailed longitudinal files are formed from all registers which are included in endpoint generation.
 
 ## Hilmo 
 
