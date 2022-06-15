@@ -110,20 +110,76 @@ with pd.option_context('display.max_rows', 100, 'display.max_columns', 50):  # m
     print(df['ROKOTE_ANTOPVM'].apply(year).value_counts(dropna=False).sort_index(ascending=True))
 
 
-# ### For the rest of the files change separator from ';' to ',' like below
+# ### For the rest of the files change separator from ';' to ',' 
 
 # In[ ]:
 
 
 # changing separator from ';' to ','
-path = '/data/original_data/thl_avohilmo/thl2019_1776_avohilmo_toimenpide.csv.finreg_IDs'
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_ICD10_DIAG.csv.finreg_IDs'
 sep = ';' # '\t' cancer / ';' DVV, THL
 start_time = time.time()
 df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
 run_time = time.time()-start_time
 print(run_time)
 
-df.to_csv('/data/processed_data/thl_avohilmo/thl2019_1776_avohilmo_toimenpide.csv.finreg_IDsp',index=False)
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ICD10_DIAG.csv.finreg_IDsp',index=False)
+
+
+# In[ ]:
+
+
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_JATKOH.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_JATKOH.csv.finreg_IDsp',index=False)
+
+
+# In[ ]:
+
+
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_ICPC2_DIAG.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ICPC2_DIAG.csv.finreg_IDsp',index=False)
+
+
+# In[ ]:
+
+
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_KOTIHOITO.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_KOTIHOITO.csv.finreg_IDsp',index=False)
+
+
+# In[ ]:
+
+
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_ROKOSUOJA.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ROKOSUOJA.csv.finreg_IDsp',index=False)
 
 
 # In[ ]:
