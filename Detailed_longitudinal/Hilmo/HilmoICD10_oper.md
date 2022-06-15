@@ -182,7 +182,7 @@ oper = pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/
 
 
 ```python
-# remove eentires from before 2019
+# remove eentires from after 2018
 oper['year']=oper['EVENT_YRMNTH'].apply(lambda x: x[:4])
 oper['year']=oper['year'].astype(int)
 oper=oper[oper['year']<2019]
