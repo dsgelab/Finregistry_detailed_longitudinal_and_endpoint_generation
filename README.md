@@ -14,7 +14,7 @@ Hilmo registry is split into separate files because throughout the registry exis
 * ICD9: From 1987-01-01 to the end of 1995;
 * ICD10: From 1996-01-01 up to now.
 
-For the period of 1994-1995 there are separate Hilmo files with ICD9 codes, this is due to the change of coding within the register in 1994 (not due to the change in ICD version): "The care notification register was introduced in 1994, in which case it replaced the previously used Deletion Notification Register".
+In addition to that, for a period of 1994-1995 there are separate Hilmo files with ICD9 codes, this is due to the change of coding within the register in 1994 (not due to the change in ICD version): "The care notification register was introduced in 1994, in which case it replaced the previously used Deletion Notification Register".
 
 Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column)
 
