@@ -150,7 +150,7 @@ diag=pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/hi
 
 
 ```python
-# remove eentires from before 2019
+# remove eentires from after 2019
 diag['year']=diag['EVENT_YRMNTH'].apply(lambda x: x[:4])
 diag['year']=diag['year'].astype(int)
 diag=diag[diag['year']<2019]
