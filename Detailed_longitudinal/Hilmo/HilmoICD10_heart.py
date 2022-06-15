@@ -358,7 +358,7 @@ h_all.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_
 # In[ ]:
 
 
-# remove eentires from before 2019
+# remove eentires from after 2018
 h_all['year']=h_all['EVENT_YRMNTH'].apply(lambda x: x[:4])
 h_all['year']=h_all['year'].astype(int)
 h_all=h_all[h_all['year']<2019]
