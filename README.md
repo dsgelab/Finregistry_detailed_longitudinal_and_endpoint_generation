@@ -16,8 +16,8 @@ Hilmo registry is split into separate files because throughout the registry exis
 
 In addition to that, for a period of 1994-1995 there are separate Hilmo files with ICD9 codes, this is due to the change of coding within the register in 1994 (not due to the change in ICD version): "The care notification register was introduced in 1994, in which case it replaced the previously used Deletion Notification Register".
 
-Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column)
+Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column).
 
-In addition to diagnostic ICD codes, heart surgery codes (recorded from 1994) and other surgical codes are also included in detailed longitudinal. Information on how codes/sources are recorded within the detailed longitudinal can be seen in: dsgelab>Finregistry>Data_dictionaries>Data dictionary.xlsx>Detailed longitudinal variables
+In addition to diagnostic ICD codes, heart surgery codes (recorded from 1994) and other surgical codes are also included in detailed longitudinal. Information on how codes/sources are recorded within the detailed longitudinal can be seen in: dsgelab>Finregistry>Data_dictionaries>Data dictionary.xlsx>Detailed longitudinal variables.
 
 There are main registry files covering the period of up to 2019 received in 2021 and update files for a period from 2019-2021 received in 2022. From the main files the codes up to the end of 2018 were used and from an updated files the codes from 2019 onwards were used.
