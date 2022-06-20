@@ -3,6 +3,8 @@
 
 # ## Dignoses for data update period 2019-2021
 
+# ### Data cleaning for ICD10 codes
+
 # In[ ]:
 
 
@@ -17,6 +19,71 @@ start_time = time.time()
 diag = pd.read_csv(path,usecols=['HILMO_ID','N','KOODI'])
 run_time = time.time()-start_time
 print(run_time)
+
+
+# In[ ]:
+
+
+diag['len']=diag['KOODI'].apply(lambda x: len(x))
+
+
+# In[ ]:
+
+
+diag['len'].value_counts(dropna=False)
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[*&#+]')] # This issue is corrected forthsis period
+
+
+# In[ ]:
+
+
+diag['KOODI'] = diag['KOODI'].map(lambda x: x.lstrip('*&#+').rstrip('*&#+'))
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[*&#+]')]
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[.]')]
+
+
+# In[ ]:
+
+
+diag['KOODI'] = diag['KOODI'].map(lambda x: x.replace(".", ""))
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[.]')]
+
+
+# In[ ]:
+
+
+del diag['len']
+
+
+# In[ ]:
+
+
+# There are no double codes in a data update
+
+
+# ### main code
+
+# In[ ]:
 
 
 path = '/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_main2020_2021.csv'
@@ -83,6 +150,105 @@ diag.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_i
 
 
 # ## Dignoses for a period up to 2019
+
+# ### Data cleaning for ICD10 codes
+
+# In[ ]:
+
+
+import pandas as pd
+import gc
+import time
+import datetime as dt
+import numpy as np
+
+
+path = '/data/processed_data/thl_hilmo/thl2019_1776_hilmo_diagnoosit_kaikki.csv.finreg_IDsp'
+start_time = time.time()
+diag = pd.read_csv(path,usecols=['HILMO_ID','N','KOODI'])
+run_time = time.time()-start_time
+print(run_time)
+
+
+# In[ ]:
+
+
+diag['len']=diag['KOODI'].apply(lambda x: len(x))
+
+
+# In[ ]:
+
+
+diag['len'].value_counts(dropna=False)
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[*&#+]')] # This issue is corrected forthsis period
+
+
+# In[ ]:
+
+
+# Some code cleaning
+
+
+# In[ ]:
+
+
+diag['KOODI'] = diag['KOODI'].map(lambda x: x.lstrip('*&#+').rstrip('*&#+'))
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[*&#+]')]
+
+
+# In[ ]:
+
+
+diag['KOODI'] = diag['KOODI'].map(lambda x: x.replace("#A", "").replace("#H", "").replace("#N", "").replace("*A", "").replace("*E", "").replace("#G", "").replace("#C", ""))
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[*&#+]')]
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[.]')]
+
+
+# In[ ]:
+
+
+diag['KOODI'] = diag['KOODI'].map(lambda x: x.replace(".", ""))
+
+
+# In[ ]:
+
+
+diag[diag.KOODI.str.contains(r'[.]')]
+
+
+# In[ ]:
+
+
+del diag['len']
+
+
+# In[ ]:
+
+
+# There are no double codes separated with special caracters in Hilmo
+
+
+# ### main code
 
 # In[ ]:
 
@@ -170,7 +336,7 @@ diag=pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/hi
 # In[ ]:
 
 
-# remove eentires from after 2018
+# remove eentires from before 2019
 diag['year']=diag['EVENT_YRMNTH'].apply(lambda x: x[:4])
 diag['year']=diag['year'].astype(int)
 diag=diag[diag['year']<2019]
