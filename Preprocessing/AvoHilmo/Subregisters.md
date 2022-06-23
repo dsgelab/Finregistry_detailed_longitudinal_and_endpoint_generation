@@ -1,5 +1,5 @@
 
-## Data update files for a period 2019-2021
+## Data update files for a period 2020-2021
 
 
 ```python
@@ -129,6 +129,9 @@ print(run_time)
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_JATKOH.csv.finreg_IDsp',index=False)
 ```
 
+    71.27313947677612
+
+
 
 ```python
 # changing separator from ';' to ','
@@ -155,6 +158,9 @@ print(run_time)
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_KOTIHOITO.csv.finreg_IDsp',index=False)
 ```
 
+    49.76960301399231
+
+
 
 ```python
 # changing separator from ';' to ','
@@ -167,6 +173,41 @@ print(run_time)
 
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ROKOSUOJA.csv.finreg_IDsp',index=False)
 ```
+
+    5.275746583938599
+
+
+
+```python
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/thl2021_2196_avohilmo_suu_toimp.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/thl2021_2196_avohilmo_suu_toimp.csv.finreg_IDsp',index=False)
+```
+
+    15.250893354415894
+
+
+
+```python
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_TOIMP.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_TOIMP.csv.finreg_IDsp',index=False)
+```
+
+    82.13827466964722
+
 
 
 ```python

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Data update files for a period 2019-2021
+# ## Data update files for a period 2020-2021
 
 # In[ ]:
 
@@ -126,7 +126,7 @@ print(run_time)
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ICD10_DIAG.csv.finreg_IDsp',index=False)
 
 
-# In[ ]:
+# In[20]:
 
 
 # changing separator from ';' to ','
@@ -140,7 +140,7 @@ print(run_time)
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_JATKOH.csv.finreg_IDsp',index=False)
 
 
-# In[ ]:
+# In[19]:
 
 
 # changing separator from ';' to ','
@@ -154,7 +154,7 @@ print(run_time)
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ICPC2_DIAG.csv.finreg_IDsp',index=False)
 
 
-# In[ ]:
+# In[21]:
 
 
 # changing separator from ';' to ','
@@ -168,7 +168,7 @@ print(run_time)
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_KOTIHOITO.csv.finreg_IDsp',index=False)
 
 
-# In[ ]:
+# In[22]:
 
 
 # changing separator from ';' to ','
@@ -180,6 +180,34 @@ run_time = time.time()-start_time
 print(run_time)
 
 df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_ROKOSUOJA.csv.finreg_IDsp',index=False)
+
+
+# In[2]:
+
+
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/thl2021_2196_avohilmo_suu_toimp.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/thl2021_2196_avohilmo_suu_toimp.csv.finreg_IDsp',index=False)
+
+
+# In[3]:
+
+
+# changing separator from ';' to ','
+path = '/data/original_data/thl_avohilmo/THL2021_2196_AVOHILMO_TOIMP.csv.finreg_IDs'
+sep = ';' # '\t' cancer / ';' DVV, THL
+start_time = time.time()
+df = pd.read_csv(path,sep = sep, encoding='latin-1') # , encoding='latin-1' dtype={ "LAHETE_AJANKOHTA": "string"} delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
+run_time = time.time()-start_time
+print(run_time)
+
+df.to_csv('/data/processed_data/thl_avohilmo/THL2021_2196_AVOHILMO_TOIMP.csv.finreg_IDsp',index=False)
 
 
 # In[ ]:
