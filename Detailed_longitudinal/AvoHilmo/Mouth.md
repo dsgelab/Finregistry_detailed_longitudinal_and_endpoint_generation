@@ -1,7 +1,71 @@
 
-## We did not recieve files for Mouth procedures for 2020-2021 period
+## Mouth procedures for data update period 2020-2021
 
-## Moth procedures for a period up to 2020 (left 2020 as no new files)
+
+```python
+import pandas as pd
+import gc
+import time
+import datetime as dt
+import numpy as np
+
+
+path = '/data/processed_data/thl_avohilmo/thl2021_2196_avohilmo_suu_toimp.csv.finreg_IDsp'
+start_time = time.time()
+mouth = pd.read_csv(path)
+run_time = time.time()-start_time
+print(run_time)
+
+
+path = '/data/processed_data/detailed_longitudinal/supporting_files/additional_files/avo_main_20_21.csv'
+start_time = time.time()
+main20_21 = pd.read_csv(path)
+run_time = time.time()-start_time
+print(run_time)
+```
+
+
+```python
+mouth.drop(columns=['TOIMENPIDE_HAMMAS'], inplace=True)
+mouth = mouth.merge(main20_21, on='AVOHILMO_ID', how='left') 
+#checks
+print(mouth.shape)
+print((mouth['TNRO']==mouth['FINREGISTRYID']).value_counts())
+```
+
+
+```python
+mouth = mouth[(mouth['TNRO']==mouth['FINREGISTRYID'])] # removed 1 row because there was no corresponding avohilmo_ID in main file
+```
+
+
+```python
+del main20_21
+gc.collect()
+```
+
+
+```python
+mouth.drop(columns=['AVOHILMO_ID','TNRO'], inplace=True)
+mouth = mouth.rename(columns = {'JARJESTYS': 'CATEGORY','TOIMENPIDE': 'CODE1'})
+mouth['CATEGORY'] = mouth['CATEGORY'].apply(lambda x: 'MOP'+str(x))
+mouth['PVM'] = pd.to_datetime(mouth['PVM'])
+mouth['EVENT_YRMNTH'] = mouth['PVM'].dt.strftime('%Y-%m')
+mouth['CODE2'] = np.nan
+mouth['CODE3'] = np.nan
+mouth['CODE4'] = np.nan
+mouth['SOURCE'] = "PRIM_OUT"
+mouth['ICDVER'] = 10
+mouth = mouth[['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'CODE1', 'CODE2', 'CODE3', 'CODE4', 'ICDVER', 'CATEGORY', 'INDEX']]
+mouth.fillna("NA", inplace=True)
+```
+
+
+```python
+mouth.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/avo_mouth_20_21.csv',index=False)
+```
+
+## Mouth procedures for a period up to 2020
 
 
 ```python
@@ -201,4 +265,37 @@ mouth.fillna("NA", inplace=True)
 
 ```python
 mouth.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/avo_mouth_17_20.csv',index=False)
+```
+
+### Remove entries from the year 2020 (which is available and is used from data update)
+
+
+```python
+mouth=pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/avo_mouth_17_20.csv')
+```
+
+
+```python
+mouth['year']=mouth['EVENT_YRMNTH'].apply(lambda x: x[:4])
+mouth['year']=mouth['year'].astype(int)
+print(mouth.shape)
+print(mouth['year'].value_counts())
+```
+
+
+```python
+mouth=mouth[mouth['year']<2020]
+print(mouth['year'].value_counts())
+del mouth['year']
+print(mouth.shape)
+```
+
+
+```python
+mouth.fillna("NA", inplace=True)
+```
+
+
+```python
+mouth.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/avo_mouth_17_19.csv',index=False)
 ```
