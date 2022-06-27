@@ -12,7 +12,6 @@ import numpy as np
 
 
 ```python
-
 path = '/data/processed_data/thl_hilmo/thl2019_1776_hilmo.csv.finreg_IDsp'
 start_time = time.time()
 hilmo = pd.read_csv(path,usecols=['HILMO_ID','TNRO','TUPVA','LPVM','PALA'])
@@ -39,8 +38,13 @@ hilmo.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
 # Separate Hilmo inpatient and Hilmo outpatient
 hilmo['EVENT_YEAR'] = hilmo['TUPVA'].dt.strftime('%Y')
 hilmo['EVENT_YEAR'] = pd.to_numeric(hilmo['EVENT_YEAR'] )
+#hilmo['ERIK_AVO'] = hilmo.apply(lambda row: 1 if (row['EVENT_YEAR']>=1998) & (row['PALA']>9) else 0, axis=1) #, axis=1 # hilmo$ERIK_AVO <- as.numeric(hilmo$PALA!=''&as.numeric(hilmo$PALA)>9&hilmo$EVENT_YEAR>=1998) old version 
+```
+
+
+```python
 hilmo['ERIK_AVO']= np.nan
-hilmo['ERIK_AVO'] = hilmo.apply(lambda row: 1 if (row['EVENT_YEAR']>=1998) & (row['PALA']>9) else 0, axis=1) #, axis=1 # hilmo$ERIK_AVO <- as.numeric(hilmo$PALA!=''&as.numeric(hilmo$PALA)>9&hilmo$EVENT_YEAR>=1998)
+hilmo['ERIK_AVO'] = hilmo.apply(lambda row: 1 if (row['EVENT_YEAR']>=1998) & ( (row['PALA']>9) | (row['PALA']==2) ) else 0, axis=1)                               
 ```
 
 
@@ -122,13 +126,13 @@ hilmo_death.loc[hilmo_death['EVENT_AGE']<0,'EVENT_AGE'] = 0
 hilmo_death.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_main.csv',index=False)
 ```
 
-## Detailed longitudinal for data update period 2020-2021
+## Detailed longitudinal for data update period 2019-2021 (uisng correct SOURCE form PALA and also KIIREELLISYYS, YHTEYSTAPA variables )
 
 
 ```python
 path = '/data/processed_data/thl_hilmo/THL2021_2196_HILMO_2019_2021.csv.finreg_IDsp'
 start_time = time.time()
-hilmo = pd.read_csv(path,usecols=['HILMO_ID','TNRO','TUPVA','LPVM','PALA'])
+hilmo = pd.read_csv(path,usecols=['HILMO_ID','TNRO','TUPVA','LPVM','PALA','KIIREELLISYYS','YHTEYSTAPA'])
 run_time = time.time()-start_time
 print(run_time)
 ```
@@ -150,7 +154,24 @@ hilmo.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
 hilmo['EVENT_YEAR'] = hilmo['TUPVA'].dt.strftime('%Y')
 hilmo['EVENT_YEAR'] = pd.to_numeric(hilmo['EVENT_YEAR'] )
 hilmo['ERIK_AVO']= np.nan
-hilmo['ERIK_AVO'] = hilmo.apply(lambda row: 1 if (row['EVENT_YEAR']>=1998) & (row['PALA']>9) else 0, axis=1) #, axis=1 # hilmo$ERIK_AVO <- as.numeric(hilmo$PALA!=''&as.numeric(hilmo$PALA)>9&hilmo$EVENT_YEAR>=1998)
+hilmo['YHTEYSTAPA'].fillna("NA", inplace=True)
+```
+
+
+```python
+#Inpatient rules from Sami Koskelainen (THL): 
+# 1) All with YHTEYSTAPA R80 (Vuodeosasto) are considered inpatient (uudet$INPAT <- ifelse(uudet$YHTEYSTAPA=='R80',1,0))
+# 2) Those with a visit R10 (käynti vastaanotolla) AND PALA code 1,5,6,7 tai 8. This change was made, decided with Aki that 2 day surgery is outpat. (here used to be PALA <10)
+#    uudet$INPAT <- ifelse(uudet$YHTEYSTAPA=='R10' & as.numeric(uudet$PALA) %in%  c(1,3,4,5,6,7,8),1,uudet$INPAT) table(uudet$INPAT,useNA='always')
+# 3) Those with empty YHTEYSTAPA ('') and PALA code 1,5,6,7 tai 8. This change was made, decided with Aki that 2 day surgery is outpat. (here used to be PALA <10)
+#    uudet$INPAT <- ifelse(uudet$YHTEYSTAPA=='' & as.numeric(uudet$PALA) %in%  c(1,3,4,5,6,7,8),1,uudet$INPAT)table(uudet$INPAT,useNA='always')    
+```
+
+
+```python
+hilmo['ERIK_AVO'] = hilmo.apply(lambda row: 1 if (row['YHTEYSTAPA']=='R80') | 
+                                ( (row['YHTEYSTAPA']=='R10') & ( ( row['PALA']==1)|( row['PALA']==3)|( row['PALA']==4)|( row['PALA']==5)|( row['PALA']==6)|( row['PALA']==7)|( row['PALA']==8) )  )   |
+                                ( (row['YHTEYSTAPA']=='NA' ) & ( ( row['PALA']==1)|( row['PALA']==3)|( row['PALA']==4)|( row['PALA']==5)|( row['PALA']==6)|( row['PALA']==7)|( row['PALA']==8) )  )  else 0, axis=1)
 ```
 
 
@@ -203,7 +224,7 @@ gc.collect()
 
 ```python
 print("EVENT_AGE > DEATH_AGE:", hilmo_death[hilmo_death['EVENT_AGE_y']<hilmo_death['EVENT_AGE_x']].shape[0])
-hilmo_death['EVENT_AGE_QC'] = hilmo_death.apply(lambda row: row['EVENT_AGE_y'] if (row['EVENT_AGE_y']<row['EVENT_AGE_x']) else row['EVENT_AGE_x'], axis=1)
+hilmo_death['EVENT_AGE_QC'] = hilmo_death.apply(lambda row: row['EVENT_AGE_y'] if (row['EVENT_AGE_y']<row['EVENT_AGE_x']) else row['EVENT_AGE_x'], axis=1) # 3477
 ```
 
 

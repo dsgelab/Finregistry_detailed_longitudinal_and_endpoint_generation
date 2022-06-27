@@ -47,7 +47,12 @@ gc.collect()
 o12 = pd.DataFrame()
 o12 = heart[['FINREGISTRYID','ERIK_AVO','PVM','EVENT_YRMNTH','ICDVER','INDEX','CODE4','EVENT_AGE']]
 o12 = o12.rename(columns = {'ERIK_AVO': 'SOURCE'})
-o12['SOURCE'] = o12['SOURCE'].apply(lambda x: 'OPER_OUT' if x == 1 else 'OPER_IN')
+o12['SOURCE'] = o12['SOURCE'].apply(lambda x: 'OPER_OUT' if x == 0 else 'OPER_IN')
+```
+
+
+```python
+o12['SOURCE'].value_counts()
 ```
 
 
@@ -105,12 +110,6 @@ h_all[h_all['PVM'].isna()]
 # remove eentires from before 2019
 h_all['year']=h_all['EVENT_YRMNTH'].apply(lambda x: x[:4])
 h_all['year']=h_all['year'].astype(int)
-h_all=h_all[h_all['year']>=2019]
-del h_all['year']
-```
-
-
-```python
 h_all=h_all[h_all['year']>=2019]
 del h_all['year']
 ```
@@ -290,10 +289,6 @@ o25['CATEGORY'] = "HPN11"
 ```python
 h_all = pd.concat([o12, o13, o14, o15, o16, o17, o18, o19, o20, o21, o22, o23, o24, o25])
 print(h_all.shape[0] == o12.shape[0]*14)
-```
-
-
-```python
 h_all = h_all[h_all['CODE1'].notna()].copy()
 ```
 
@@ -304,17 +299,31 @@ h_all[h_all['PVM'].isna()]
 
 
 ```python
+h_all['CATEGORY'].value_counts()
+```
+
+
+```python
+# A correction for sone HPO (fully numeric codes) mixed in within NPN codes (which always start forh a letter A). CATEGORY column is corrected accordingly
+h_all['CATEGORY'] = h_all['CATEGORY'].astype(str)
+h_all['CODE1'] = h_all['CODE1'].astype(str)
+h_all['CATEGORY']=h_all.apply(lambda row: row.CATEGORY.replace("N", "O") if row.CODE1.isnumeric() else row.CATEGORY, axis=1)
+h_all['CATEGORY'].value_counts()
+```
+
+
+```python
 h_all.fillna("NA", inplace=True)
 ```
 
 
 ```python
-h_all.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_heart_ICD10.csv',index=False)
+h_all.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_heart_ICD10.csv',index=False)
 ```
 
 
 ```python
-# remove eentires from after 2018
+# remove eentires from before 2019
 h_all['year']=h_all['EVENT_YRMNTH'].apply(lambda x: x[:4])
 h_all['year']=h_all['year'].astype(int)
 h_all=h_all[h_all['year']<2019]

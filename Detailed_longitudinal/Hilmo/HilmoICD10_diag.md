@@ -31,7 +31,7 @@ diag['len'].value_counts(dropna=False)
 
 
 ```python
-diag[diag.KOODI.str.contains(r'[*&#+]')] # This issue is corrected forthsis period
+diag[diag.KOODI.str.contains(r'[*&#+]')] # 13 codes contain special characters
 ```
 
 
@@ -46,7 +46,7 @@ diag[diag.KOODI.str.contains(r'[*&#+]')]
 
 
 ```python
-diag[diag.KOODI.str.contains(r'[.]')]
+diag[diag.KOODI.str.contains(r'[.]')] # 383238  codes contian dots 
 ```
 
 
@@ -94,7 +94,7 @@ del hilmo
 gc.collect()
 diag.drop(columns=['HILMO_ID'], inplace=True)
 diag = diag.rename(columns = {'ERIK_AVO': 'SOURCE'})
-diag['SOURCE'] = diag['SOURCE'].apply(lambda x: 'OUTPAT' if x == 1 else 'INPAT')
+diag['SOURCE'] = diag['SOURCE'].apply(lambda x: 'OUTPAT' if x == 0 else 'INPAT')
 diag = diag.rename(columns = {'N': 'CATEGORY','KOODI': 'CODE1'})
 diag['CODE2'] = np.nan
 diag['CODE3'] = np.nan
@@ -129,6 +129,11 @@ del diag['year']
 diag.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_in_out_ICD10_2019_2021.csv',index=False)
 ```
 
+
+```python
+diag['SOURCE'].value_counts()
+```
+
 ## Dignoses for a period up to 2019
 
 ### Data cleaning for ICD10 codes
@@ -161,7 +166,7 @@ diag['len'].value_counts(dropna=False)
 
 
 ```python
-diag[diag.KOODI.str.contains(r'[*&#+]')] # This issue is corrected forthsis period
+diag[diag.KOODI.str.contains(r'[*&#+]')] # 78919 codes contain special characters
 ```
 
 
@@ -218,20 +223,6 @@ del diag['len']
 
 
 ```python
-import pandas as pd
-import gc
-import time
-import datetime as dt
-import numpy as np
-
-
-path = '/data/processed_data/thl_hilmo/thl2019_1776_hilmo_diagnoosit_kaikki.csv.finreg_IDsp'
-start_time = time.time()
-diag = pd.read_csv(path,usecols=['HILMO_ID','N','KOODI'])
-run_time = time.time()-start_time
-print(run_time)
-
-
 path = '/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_main.csv'
 start_time = time.time()
 hilmo = pd.read_csv(path)
@@ -262,6 +253,11 @@ diag = diag[['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'COD
 
 
 ```python
+diag[diag['PVM'].isna()].shape[0]
+```
+
+
+```python
 diag = diag[diag['PVM'].notna()] # drop NANs 4 rows
 ```
 
@@ -277,7 +273,7 @@ diag.fillna("NA", inplace=True)
 
 
 ```python
-diag.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_in_out_ICD10.csv',index=False)
+diag.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_in_out_ICD10.csv',index=False)
 ```
 
 
@@ -287,7 +283,7 @@ import pandas as pd
 
 
 ```python
-diag=pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_in_out_ICD10.csv')
+diag=pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_in_out_ICD10.csv')
 ```
 
 

@@ -48,14 +48,14 @@ oper.drop(columns=['HILMO_ID'], inplace=True)
 
 
 oper = oper.rename(columns = {'ERIK_AVO': 'SOURCE'})
-oper['SOURCE'] = oper['SOURCE'].apply(lambda x: 'OPER_OUT' if x == 1 else 'OPER_IN')
+oper['SOURCE'] = oper['SOURCE'].apply(lambda x: 'OPER_OUT' if x == 0 else 'OPER_IN')
 
 
 # In[ ]:
 
 
 oper = oper.rename(columns = {'N': 'CATEGORY','TOIMP': 'CODE1'})
-oper['CATEGORY'] = oper['CATEGORY'].apply(lambda x: 'NOM'+str(x))
+oper['CATEGORY'] = oper['CATEGORY'].apply(lambda x: 'NOM'+str(x+1))
 oper['CODE2'] = np.nan
 oper['CODE3'] = np.nan
 oper = oper[['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'CODE1', 'CODE2', 'CODE3', 'CODE4', 'ICDVER', 'CATEGORY', 'INDEX']]
@@ -66,8 +66,6 @@ oper = oper[['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'COD
 
 print(oper[oper['PVM'].isna()])
 print(oper[oper['CODE1'].isna()])
-oper= oper[oper['PVM'].notna()] # drop NANs 1 row
-oper= oper[oper['CODE1'].notna()] # drop NANs 20605 rows
 
 
 # In[ ]:
@@ -151,13 +149,19 @@ oper['SOURCE'] = oper['SOURCE'].apply(lambda x: 'OPER_OUT' if x == 1 else 'OPER_
 # In[ ]:
 
 
+oper['SOURCE'].value_counts()
+
+
+# In[ ]:
+
+
 oper = oper.rename(columns = {'N': 'CATEGORY','TOIMP': 'CODE1'})
 
 
 # In[ ]:
 
 
-oper['CATEGORY'] = oper['CATEGORY'].apply(lambda x: 'NOM'+str(x))
+oper['CATEGORY'] = oper['CATEGORY'].apply(lambda x: 'NOM'+str(x+1))
 
 
 # In[ ]:
@@ -196,7 +200,7 @@ oper.fillna("NA", inplace=True)
 # In[ ]:
 
 
-oper.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/hilmo_oper_ICD10.csv',index=False)
+oper.to_csv('/data/processed_data/detailed_longitudinal/supporting_files/additional_files/hilmo_oper_ICD10.csv',index=False)
 
 
 # In[ ]:
@@ -208,7 +212,7 @@ oper = pd.read_csv('/data/processed_data/detailed_longitudinal/supporting_files/
 # In[ ]:
 
 
-# remove eentires from after 2018
+# remove eentires from before 2019
 oper['year']=oper['EVENT_YRMNTH'].apply(lambda x: x[:4])
 oper['year']=oper['year'].astype(int)
 oper=oper[oper['year']<2019]

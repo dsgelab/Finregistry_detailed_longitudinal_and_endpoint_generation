@@ -12,7 +12,7 @@ import datetime as dt
 import numpy as np
 
 
-path = '/data/processed_data/thl_hilmo/hilmo/thl2019_1776_hilmo_9495.csv.finreg_IDsp'
+path = '/data/processed_data/thl_hilmo/thl2019_1776_hilmo_9495.csv.finreg_IDsp'
 start_time = time.time()
 hilmo1 = pd.read_csv(path) #, delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
 run_time = time.time()-start_time
@@ -20,19 +20,19 @@ print(run_time)
 
 #header = ['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'CODE1', 'CODE2', 'CODE3', 'CODE4', 'ICDVER', 'CATEGORY', 'INDEX',
 # 'offset', 'APPROX_EVENT_DAY']
-v1 = pd.DataFrame()
+v11 = pd.DataFrame()
 
 
 # In[ ]:
 
 
-v1['FINREGISTRYID'] = hilmo1['TNRO']
+v11['FINREGISTRYID'] = hilmo1['TNRO']
 
 
 # In[ ]:
 
 
-v1['SOURCE'] = "INPAT"
+v11['SOURCE'] = "INPAT"
 
 
 # In[ ]:
@@ -40,44 +40,66 @@ v1['SOURCE'] = "INPAT"
 
 hilmo1['TUPVA'] = pd.to_datetime(hilmo1['TUPVA']) # DATE OF EVENT
 dob = pd.read_csv('/data/processed_data/dvv/Finregistry_IDs_and_full_DOB.txt') #  'DOB(YYYY-MM-DD)'
-v1 = v1.merge(dob, on='FINREGISTRYID', how='left') # add DOB
-v1['DOB(YYYY-MM-DD)'] = pd.to_datetime(v1['DOB(YYYY-MM-DD)'])
-v1['EVENT_AGE'] = (hilmo1['TUPVA'] - v1['DOB(YYYY-MM-DD)']).dt.days/365.24 # Event age = event date - DOB
-v1.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
+v11 = v11.merge(dob, on='FINREGISTRYID', how='left') # add DOB
+v11['DOB(YYYY-MM-DD)'] = pd.to_datetime(v11['DOB(YYYY-MM-DD)'])
+v11['EVENT_AGE'] = (hilmo1['TUPVA'] - v11['DOB(YYYY-MM-DD)']).dt.days/365.24 # Event age = event date - DOB
+v11.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
 
 
 # In[ ]:
 
 
-v1['PVM'] = hilmo1['TUPVA']
+v11['PVM'] = hilmo1['TUPVA']
 
 
 # In[ ]:
 
 
-v1['EVENT_YRMNTH'] = hilmo1['TUPVA'].dt.strftime('%Y-%m')
+v11['EVENT_YRMNTH'] = hilmo1['TUPVA'].dt.strftime('%Y-%m')
 
 
 # In[ ]:
 
 
-v1['CODE1'] = hilmo1['PDG']
-v1['CODE2'] = hilmo1['SDG1']
-v1['CODE3'] = np.nan
+v11['CODE1'] = hilmo1['PDG']
+v11['CODE2'] = np.nan
+v11['CODE3'] = np.nan
 hilmo1['LPVM'] = pd.to_datetime(hilmo1['LPVM']) # DATE OF EVENT
-v1['CODE4'] = (hilmo1['LPVM'] - hilmo1['TUPVA']).dt.days
+v11['CODE4'] = (hilmo1['LPVM'] - hilmo1['TUPVA']).dt.days
 
 
 # In[ ]:
 
 
-v1['ICDVER'] = 9
+v11['ICDVER'] = 9
 
 
 # In[ ]:
 
 
-v1['CATEGORY'] = 0
+v11['CATEGORY'] = 0
+
+
+# In[ ]:
+
+
+v12=v11.copy()
+v12['CODE1'] = hilmo1['SDG1']
+v12['CATEGORY'] = 1
+
+
+# In[ ]:
+
+
+v13=v11.copy()
+v13['CODE1'] = hilmo1['SDG2']
+v13['CATEGORY'] = 2
+
+
+# In[ ]:
+
+
+v1 = pd.concat([v11, v12, v13])
 
 
 # In[ ]:
@@ -99,7 +121,7 @@ v1['INDEX'] = v1['INDEX'].astype(str) + '_IN9495'
 ######################
 # 87-93
 ######################
-path = '/data/processed_data/thl_hilmo/hilmo/thl2019_1776_poisto_8793.csv.finreg_IDsp'
+path = '/data/processed_data/thl_hilmo/thl2019_1776_poisto_8793.csv.finreg_IDsp'
 start_time = time.time()
 hilmo2 = pd.read_csv(path) #, delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
 run_time = time.time()-start_time
@@ -107,14 +129,14 @@ print(run_time)
 
 #header = ['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'CODE1', 'CODE2', 'CODE3', 'CODE4', 'ICDVER', 'CATEGORY', 'INDEX',
 # 'offset', 'APPROX_EVENT_DAY']
-v2 = pd.DataFrame()
+v21 = pd.DataFrame()
 
 
 # In[ ]:
 
 
-v2['FINREGISTRYID'] = hilmo2['TNRO']
-v2['SOURCE'] = "INPAT"
+v21['FINREGISTRYID'] = hilmo2['TNRO']
+v21['SOURCE'] = "INPAT"
 
 
 # In[ ]:
@@ -122,34 +144,65 @@ v2['SOURCE'] = "INPAT"
 
 hilmo2['TUPVA'] = pd.to_datetime(hilmo2['TUPVA']) # DATE OF EVENT
 dob = pd.read_csv('/data/processed_data/dvv/Finregistry_IDs_and_full_DOB.txt') #  'DOB(YYYY-MM-DD)'
-v2 = v2.merge(dob, on='FINREGISTRYID', how='left') # add DOB
-v2['DOB(YYYY-MM-DD)'] = pd.to_datetime(v2['DOB(YYYY-MM-DD)'])
-v2['EVENT_AGE'] = (hilmo2['TUPVA'] - v2['DOB(YYYY-MM-DD)']).dt.days/365.24 # Event age = event date - DOB
-v2.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
+v21 = v21.merge(dob, on='FINREGISTRYID', how='left') # add DOB
+v21['DOB(YYYY-MM-DD)'] = pd.to_datetime(v21['DOB(YYYY-MM-DD)'])
+v21['EVENT_AGE'] = (hilmo2['TUPVA'] - v21['DOB(YYYY-MM-DD)']).dt.days/365.24 # Event age = event date - DOB
+v21.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
 
 
 # In[ ]:
 
 
-v2['PVM'] = hilmo2['TUPVA']
-v2['EVENT_YRMNTH'] = hilmo2['TUPVA'].dt.strftime('%Y-%m')
+v21['PVM'] = hilmo2['TUPVA']
+v21['EVENT_YRMNTH'] = hilmo2['TUPVA'].dt.strftime('%Y-%m')
 
 
 # In[ ]:
 
 
-v2['CODE1'] = hilmo2['PDG']
-v2['CODE2'] = hilmo2['SDG1']
-v2['CODE3'] = np.nan
+v21['CODE1'] = hilmo2['PDG']
+v21['CODE2'] = np.nan
+v21['CODE3'] = np.nan
 hilmo2['LPVM'] = pd.to_datetime(hilmo2['LPVM']) # DATE OF EVENT
-v2['CODE4'] = (hilmo2['LPVM'] - hilmo2['TUPVA']).dt.days
+v21['CODE4'] = (hilmo2['LPVM'] - hilmo2['TUPVA']).dt.days
 
 
 # In[ ]:
 
 
-v2['ICDVER'] = 9
-v2['CATEGORY'] = 2
+v21['ICDVER'] = 9
+v21['CATEGORY'] = 0
+
+
+# In[ ]:
+
+
+###########################
+v22=v21.copy()
+v22['CODE1'] = hilmo2['SDG1']
+v22['CATEGORY'] = 1
+
+
+# In[ ]:
+
+
+v23=v21.copy()
+v23['CODE1'] = hilmo2['SDG2']
+v23['CATEGORY'] = 2
+
+
+# In[ ]:
+
+
+v24=v21.copy()
+v24['CODE1'] = hilmo2['SDG3']
+v24['CATEGORY'] = 3
+
+
+# In[ ]:
+
+
+v2 = pd.concat([v21, v22, v23, v24])
 
 
 # In[ ]:
@@ -171,7 +224,7 @@ v2['INDEX'] = v2['INDEX'].astype(str) + '_IN8793'
 ######################
 # 69-85
 ######################
-path = '/data/processed_data/thl_hilmo/hilmo/thl2019_1776_poisto_6986.csv.finreg_IDsp'
+path = '/data/processed_data/thl_hilmo/thl2019_1776_poisto_6986.csv.finreg_IDsp'
 start_time = time.time()
 hilmo3 = pd.read_csv(path) #, delim_whitespace=True) # error_bad_lines=False , sep = '/t', engine='python'  , header=None 
 run_time = time.time()-start_time
@@ -179,14 +232,14 @@ print(run_time)
 
 #header = ['FINREGISTRYID', 'SOURCE', 'EVENT_AGE', 'PVM', 'EVENT_YRMNTH', 'CODE1', 'CODE2', 'CODE3', 'CODE4', 'ICDVER', 'CATEGORY', 'INDEX',
 # 'offset', 'APPROX_EVENT_DAY']
-v3 = pd.DataFrame()
+v31 = pd.DataFrame()
 
 
 # In[ ]:
 
 
-v3['FINREGISTRYID'] = hilmo3['TNRO']
-v3['SOURCE'] = "INPAT"
+v31['FINREGISTRYID'] = hilmo3['TNRO']
+v31['SOURCE'] = "INPAT"
 
 
 # In[ ]:
@@ -194,34 +247,65 @@ v3['SOURCE'] = "INPAT"
 
 hilmo3['TULOPV'] = pd.to_datetime(hilmo3['TULOPV']) # DATE OF EVENT
 dob = pd.read_csv('/data/processed_data/dvv/Finregistry_IDs_and_full_DOB.txt') #  'DOB(YYYY-MM-DD)'
-v3 = v3.merge(dob, on='FINREGISTRYID', how='left') # add DOB
-v3['DOB(YYYY-MM-DD)'] = pd.to_datetime(v3['DOB(YYYY-MM-DD)'])
-v3['EVENT_AGE'] = (hilmo3['TULOPV'] - v3['DOB(YYYY-MM-DD)']).dt.days/365.24 # Event age = event date - DOB
-v3.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
+v31 = v31.merge(dob, on='FINREGISTRYID', how='left') # add DOB
+v31['DOB(YYYY-MM-DD)'] = pd.to_datetime(v31['DOB(YYYY-MM-DD)'])
+v31['EVENT_AGE'] = (hilmo3['TULOPV'] - v31['DOB(YYYY-MM-DD)']).dt.days/365.24 # Event age = event date - DOB
+v31.drop(columns='DOB(YYYY-MM-DD)', inplace=True)
 
 
 # In[ ]:
 
 
-v3['PVM'] = hilmo3['TULOPV']
-v3['EVENT_YRMNTH'] = hilmo3['TULOPV'].dt.strftime('%Y-%m')
+v31['PVM'] = hilmo3['TULOPV']
+v31['EVENT_YRMNTH'] = hilmo3['TULOPV'].dt.strftime('%Y-%m')
 
 
 # In[ ]:
 
 
-v3['CODE1'] = hilmo3['DG1']
-v3['CODE2'] = hilmo3['DG2']
-v3['CODE3'] = np.nan
+v31['CODE1'] = hilmo3['DG1']
+v31['CODE2'] = np.nan
+v31['CODE3'] = np.nan
 hilmo3['LAHTOPV'] = pd.to_datetime(hilmo3['LAHTOPV']) # discharge day
-v3['CODE4'] = (hilmo3['LAHTOPV'] - hilmo3['TULOPV']).dt.days
+v31['CODE4'] = (hilmo3['LAHTOPV'] - hilmo3['TULOPV']).dt.days
 
 
 # In[ ]:
 
 
-v3['ICDVER'] = 8
-v3['CATEGORY'] = 3
+v31['ICDVER'] = 8
+v31['CATEGORY'] = 0
+
+
+# In[ ]:
+
+
+###########################
+v32=v31.copy()
+v32['CODE1'] = hilmo3['DG2']
+v32['CATEGORY'] = 1
+
+
+# In[ ]:
+
+
+v33=v31.copy()
+v33['CODE1'] = hilmo3['DG3']
+v33['CATEGORY'] = 2
+
+
+# In[ ]:
+
+
+v34=v31.copy()
+v34['CODE1'] = hilmo3['DG4']
+v34['CATEGORY'] = 3
+
+
+# In[ ]:
+
+
+v3 = pd.concat([v31, v32, v33, v34])
 
 
 # In[ ]:
