@@ -90,7 +90,7 @@ def isNaN(string):
 def icd(x):
     if isNaN(x):
         x = x
-    elif int(x) < 1986:
+    elif int(x) < 1987:
         x = 8
     elif int(x) < 1996:
         x = 9
