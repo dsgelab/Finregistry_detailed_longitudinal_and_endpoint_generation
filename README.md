@@ -7,6 +7,14 @@ All pre-processing steps can be found on a google drive: dsgelab>Finregistry>Dat
 # Detailed longitudinal 
 Here detailed longitudinal files are formed from all registers which are included in endpoint generation.
 
+First Causes of death (COD) should be processed as death date from COD is used to correct events recorded after death date in other registers. The order of processing other registers is not important. 
+
+For how and why certain detailed longitudinal file variables are formatted or what information is included see: google drive: dsgelab>Finregistry>Data_dictionaries>Data Dictionary> Detailed longitudinal variables.
+
+##  Causes of death (COD)
+
+
+
 ## Hilmo 
 
 Hilmo registry is split into separate files because throughout the registry existance three ICD disease classification versions changed (8 to 10):
