@@ -18,7 +18,7 @@ For how and why certain detailed longitudinal file variables are formatted or wh
 
 Each register is transformed to detailed longitudinal format containing variables: FINREGISTRYID, SOURCE, EVENT_AGE, PVM, EVENT_YRMNTH, CODE1, CODE2, CODE3, CODE4, ICDVER, CATEGORY, INDEX. Most steps are self-explanatory or are clear from Data Dictionary> Detailed longitudinal variables sheet, therefore below only register specific processing steps are given.
 
-All missing values in detialed longitudinal are replaces with a string "NA", this is required by endpointer.py script for endpoint generation. 
+All missing values in detailed longitudinal are replaces with a string "NA", this is required by endpointer.py script for endpoint generation. 
 
 ##  Causes of death (COD)
 
