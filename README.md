@@ -49,6 +49,6 @@ Within HilmoICD10_diag file some ICD10 cod cleaning is done. Although nearly all
 
 HilmoICD10_heart contains heart surgery codes (recorded from 1994). For a period up to 2019 a small correction is made to a 'CATEGORY' variable which records a source of a code  HPO1:3 - Procedure for demanding heart patient, old coding and HPN1:N - Procedure for demanding heart patient, new coding. Some HPO (old) fully numeric codes were mixed in with HPN (new) codes always starting with a letter “A”. HPN is changed to HPO for fully numeric codes.
 
-HilmoICD10_oper codes surgical procedure codes
+HilmoICD10_oper contains surgical procedure codes
 
 ## Cancer
