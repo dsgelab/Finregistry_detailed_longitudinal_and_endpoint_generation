@@ -4,6 +4,10 @@ This repository contains scripts for initial registry pre-processing (only regis
 Small pre-processing steps (e.g. date format harmonisation, duplicate removal is performed here). Neither number of columns, nor column names are changed from original.
 All pre-processing steps can be found on a google drive: dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes. 
 
+A note on causes of death pre-processing:
+
+We have received two files "thl2021_2196_ksyy_tutkimus" and " thl2021_2196_ksyy_vuosi ". First larger file (tutkimus) contains information for all IDs from a second file (vuosi) and also contains death date but no medical codes for additional 15467 IDs.  For matching IDs between files there are some small differences in variables (e.g. for 15 IDs different death date is recorded, for 0.1% IDs cause of death codes differ). As we don’t know which information is correct and differences are only for a small portion of IDs, using only tutkimus seems appropriate.
+
 # Detailed longitudinal 
 Here detailed longitudinal files are formed from all registers which are included in endpoint generation.
 
