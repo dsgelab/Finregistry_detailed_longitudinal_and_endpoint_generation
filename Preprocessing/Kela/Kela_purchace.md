@@ -47,7 +47,7 @@ for n in ['2020','2021']: #['2020','2021']:
     df2.to_csv(w_path,index=False)
 ```
 
-# OLD files up to 2019 (inclusinve)
+# OLD files up to 2019 (inclusive)
 
 
 ```python
