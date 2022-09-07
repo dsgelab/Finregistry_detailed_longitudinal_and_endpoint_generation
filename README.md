@@ -74,4 +74,15 @@ Moth.py contians dental procedure codes
 
 Cancer preprocessing is strigtforwardand self-explanotary (looking at the code and data dictionary (detailed longitudinal variables sheet))
 
+# Kela purchases
+
+Some light data cleaning is done during creation of detailed longitudinal file sform purchas einformation which is recorded in dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes (Detailed longitudinal QC v2 sheet). 
+
+These cleaning steps there: 
+removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
+removed duplicates 
+Death date from COD was used to correct event dates recorded after death date (those dates were changed to death date)
+A check was prformed i sthere were any event dates recorded efore birth date
+
+# Kela reimbursement
 
