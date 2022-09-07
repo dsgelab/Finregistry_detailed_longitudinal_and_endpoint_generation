@@ -8,6 +8,10 @@ A note on causes of death pre-processing:
 
 We have received two files "thl2021_2196_ksyy_tutkimus" and " thl2021_2196_ksyy_vuosi ". First larger file (tutkimus) contains information for all IDs from a second file (vuosi) and also contains death date but no medical codes for additional 15467 IDs.  For matching IDs between files there are some small differences in variables (e.g. for 15 IDs different death date is recorded, for 0.1% IDs cause of death codes differ). As we don’t know which information is correct and differences are only for a small portion of IDs, using only tutkimus seems appropriate.
 
+A note on updated Kela reimbursements file: 
+
+A data update file despite containing reimbursement information for two additional years (2020-2021) has considerably fewer entries compared to an old file. This in part is due to removal of rows with misisng information (rows with missing full dates were removed).
+
 # Detailed longitudinal 
 
 Here detailed longitudinal files are formed from all registers which are included in endpoint generation.
