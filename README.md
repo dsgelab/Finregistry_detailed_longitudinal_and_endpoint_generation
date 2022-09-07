@@ -10,7 +10,7 @@ We have received two files "thl2021_2196_ksyy_tutkimus" and " thl2021_2196_ksyy_
 
 A note on the updated Kela reimbursements file: 
 
-A data update file despite containing reimbursement information for two additional years (2020-2021) has considerably fewer entries compared to an old file. This in part is due to the removal of rows with missing information (rows with missing full dates were removed).
+A data update file despite containing reimbursement information for two additional years (2020-2021) had considerably fewer entries compared to an old file. This in part was due to the removal of rows with missing information (rows with missing full dates were removed in data update file).
 
 for Kela purchases there was a separate file for each month of the year (12 files per year) for the years 2020 and 2021. During processing 12 files per year were aggregated into a single file per year. 
 
