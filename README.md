@@ -78,7 +78,7 @@ Cancer preprocessing is strigtforward and self-explanatory (looking at the code 
 
 ## Kela purchases
 
-Some light data cleaning is done during the creation of detailed longitudinal files form purchase information which is recorded in dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes (Detailed longitudinal QC v2 sheet). 
+Some light data cleaning was done during the creation of detailed longitudinal files form purchase information which was recorded in dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes (Detailed longitudinal QC v2 sheet). 
 
 These cleaning steps were: 
 removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
