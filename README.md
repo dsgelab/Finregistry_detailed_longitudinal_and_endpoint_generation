@@ -45,10 +45,29 @@ The order of processing Hilmo files before ICD10 (HilmoICD89 and Hilmo_Oper89) I
 
 For ICD10 period processing should start with HilmoICD10_main as within it, a supporting file is created which contains basic visit information which is then joined with other files containing medical codes (on a unique visit identifier code “HILMO_ID”) to produce detailed longitudinal format files. In a main file inpatient/outpatient split is also made according to 'PALA' up to 2019 and 'YHTEYSTAPA'+’PALA’ codes for 2019-2021. 
 
-Within HilmoICD10_diag file some ICD10 cod cleaning is done. Although nearly all ICD10 codes are recorded without a dot after initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '*&#+' which were also removed. 
+Within HilmoICD10_diag file some ICD10 code cleaning is done. Although nearly all ICD10 codes are recorded without a dot after initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '*&#+' which were also removed. 
 
 HilmoICD10_heart contains heart surgery codes (recorded from 1994). For a period up to 2019 a small correction is made to a 'CATEGORY' variable which records a source of a code  HPO1:3 - Procedure for demanding heart patient, old coding and HPN1:N - Procedure for demanding heart patient, new coding. Some HPO (old) fully numeric codes were mixed in with HPN (new) codes always starting with a letter “A”. HPN is changed to HPO for fully numeric codes.
 
 HilmoICD10_oper contains surgical procedure codes
 
+## AvoHilmo
+
+Similarly as with Hilmo preprocessing should satrt with Main.py as within it, a supporting file is created which contains basic visit information which is then joined with other files containing medical codes (on a unique visit identifier code “AVOHILMO”)
+
+The files for periods 2011-2016, 2017-2020 and 2020-2021 were received and processed separatley (due to the large size and limited computational recourses). data fo rthe year 2020 was contained within two files (2017-2020 and 2020-2021) therefore it was only retained from a 2020-2021 dat aupdate period.
+
+Within ICD diag.py file some ICD10 code cleaning is done. Although nearly all ICD10 codes are recorded without a dot after initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '*&#+' which were also removed. 
+
+ICPC2.py file contains ICPC2 codes
+
+Oper.py file contians operation codes
+
+Moth.py contians dental procedure codes
+
+
 ## Cancer
+
+Cancer preprocessing is strigtforwardand self-explanotary (looking at the code and data dictionary (detailed longitudinal variables sheet))
+
+
