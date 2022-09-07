@@ -90,8 +90,16 @@ Kela reimbursement preprocessing is strigtforward and self-explanatory (looking 
 
 # Aggregating/sorting Detailed longitudinal
 
-To aggregate all detailed longitudinal format files into a single file use 
+To aggregate all detailed longitudinal format files into a single file use bash command: 
 
 ```console
 awk 'FNR>1 || NR==1' *.csv > all.csv
+```
+
+To sort by FINREGISTRYID column and then by EVENT_AGE column use: 
+
+```console
+awk -F,  ' { t = $2; $2 = $3; $3 = t; OFS= ","; print; } '  all.csv > all2.csv
+sort -T /data/processed_data/detailed_longitudinal/supporting_files/ -t ',' -k1,1n  -S 50% --parallel=30 all2.csv > all3.csv
+awk -F,  ' { t = $3; $3 = $2; $2 = t; OFS= ","; print; } '  all3.csv > detailed_longitudinal.csv
 ```
