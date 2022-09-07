@@ -87,3 +87,11 @@ A check was prformed whether there were any event dates recorded before the birt
 ## Kela reimbursement
 
 Kela reimbursement preprocessing is strigtforward and self-explanatory (looking at the code and data dictionary (detailed longitudinal variables sheet)).
+
+# Aggregating/sorting Detailed longitudinal
+
+To aggregate all detailed longitudinal format files into a single file use 
+
+```console
+awk 'FNR>1 || NR==1' *.csv > all.csv
+```
