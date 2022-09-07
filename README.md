@@ -12,7 +12,7 @@ A note on the updated Kela reimbursements file:
 
 A data update file despite containing reimbursement information for two additional years (2020-2021) has considerably fewer entries compared to an old file. This in part is due to the removal of rows with missing information (rows with missing full dates were removed).
 
-# Detailed longitudinal 
+# Detailed longitudinal pre-processing
 
 Here detailed longitudinal files are formed from all registers which are included in endpoint generation.
 
