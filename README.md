@@ -12,6 +12,8 @@ A note on the updated Kela reimbursements file:
 
 A data update file despite containing reimbursement information for two additional years (2020-2021) has considerably fewer entries compared to an old file. This in part is due to the removal of rows with missing information (rows with missing full dates were removed).
 
+Kela purchases files for years 2020 and 2021 were separate for each month of the year (12 files per year). During processing 12 files per year were aggregated into a single file per year. 
+
 # Detailed longitudinal pre-processing
 
 Here detailed longitudinal files are formed from all registers which are included in endpoint generation.
@@ -78,7 +80,7 @@ Cancer preprocessing is strigtforward and self-explanatory (looking at the code 
 
 Some light data cleaning is done during the creation of detailed longitudinal files form purchase information which is recorded in dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes (Detailed longitudinal QC v2 sheet). 
 
-These cleaning steps there: 
+These cleaning steps were: 
 removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
 removed duplicates 
 Death date from COD was used to correct event dates recorded after death date (those dates were changed to death date)
