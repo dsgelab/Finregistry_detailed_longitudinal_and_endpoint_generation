@@ -81,10 +81,10 @@ Cancer preprocessing is strigtforward and self-explanatory (looking at the code 
 Some light data cleaning was done during the creation of detailed longitudinal files form purchase information which was recorded in dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes (Detailed longitudinal QC v2 sheet). 
 
 These cleaning steps were: 
-removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
-removed duplicates 
-Death date from COD was used to correct event dates recorded after death date (those dates were changed to death date)
-A check was prformed whether there were any event dates recorded before the birth date
+* removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
+* removed duplicates 
+* death date from COD was used to correct event dates recorded after death date (those dates were changed to death date)
+* a check was prformed whether there were any event dates recorded before the birth date
 
 ## Kela reimbursement
 
