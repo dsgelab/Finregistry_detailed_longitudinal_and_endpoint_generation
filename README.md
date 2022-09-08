@@ -90,7 +90,7 @@ These cleaning steps were:
 
 Kela reimbursement preprocessing is strigtforward and self-explanatory (looking at the code and data dictionary (detailed longitudinal variables sheet)).
 
-# Aggregating/sorting Detailed longitudinal
+# Aggregating/sorting/splitting Detailed longitudinal
 
 To aggregate all detailed longitudinal format files into a single file use bash command: 
 
