@@ -105,3 +105,5 @@ awk -F,  ' { t = $2; $2 = $3; $3 = t; OFS= ","; print; } '  all.csv > all2.csv
 sort -T /data/processed_data/detailed_longitudinal/supporting_files/ -t ',' -k1,1n  -S 70G --parallel=30 all2.csv > all3.csv
 awk -F,  ' { t = $3; $3 = $2; $2 = t; OFS= ","; print; } '  all3.csv > detailed_longitudinal.csv
 ```
+
+Then run Utils/split_longitudinal.sh to split detialed longitudinal file containing data for 7166416 IDs (sorted by ID) into 24 files containing 300k IDs.
