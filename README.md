@@ -102,6 +102,6 @@ To sort by FINREGISTRYID column and then by EVENT_AGE column use:
 
 ```console
 awk -F,  ' { t = $2; $2 = $3; $3 = t; OFS= ","; print; } '  all.csv > all2.csv
-sort -T /data/processed_data/detailed_longitudinal/supporting_files/ -t ',' -k1,1n  -S 15% --parallel=30 all2.csv > all3.csv
+sort -T /data/processed_data/detailed_longitudinal/supporting_files/ -t ',' -k1,1n  -S 70G --parallel=30 all2.csv > all3.csv
 awk -F,  ' { t = $3; $3 = $2; $2 = t; OFS= ","; print; } '  all3.csv > detailed_longitudinal.csv
 ```
