@@ -113,6 +113,6 @@ Then run Utils/split_longitudinal.sh to split detialed longitudinal file contain
 
 In this section supporting files are createed and scripts described for running endpointer program [https://github.com/FINNGEN/Endpointter](https://github.com/FINNGEN/Endpointter). Read instructions on Endpointter repository for required input descritions.
 
-First, create baseline input file, which contains sex information using Endpointer/baseline.py
+First, create baseline input file, which contains sex information using Endpointer/baseline.py  
 Then, create Custom_ID_listinput file using Endpointer/Custom_ID_list.py
 
