@@ -115,7 +115,9 @@ In this section supporting files are createed and scripts described for running 
 
 First, create baseline input file, which contains sex information using Endpointer/baseline.py    
 Then, create Custom_ID_listinput file using Endpointer/Custom_ID_list.py  
-Use /FINNGEN/Endpointter/test_input/minimi_dummy.txt as anothr input file (change FINNGENID to FINREGISTRYID within that file)   
+Use /FINNGEN/Endpointter/test_input/minimi_dummy.txt as anothr input file (change "FINNGENID" to "FINREGISTRYID" within that file)   
 Use /FINNGENEndpointter/test_input/endpoint_short_list.txt as another input file (make shure that "ALL" is uncommented within that file)  
-Use two MS Excel (xlsx) files with endpoint defintions and control definitions as input files they get piublished in FINNGEN repository e.g. /FINNGEN/DF10-endpoint-and-control-definitions/  (recomend not to use public version as column names in the public file are different)   
-Within the main script file /FINNGENEndpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"  
+Use two MS Excel (xlsx) files with endpoint defintions and control definitions as input files they get piublished in FINNGEN repository e.g. /FINNGEN/DF10-endpoint-and-control-definitions/  (recomend not to use public version as column names in the public controls file are different)   
+Within the main script file /FINNGENEndpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"
+
+Run Endpointer/Parallel_finregistry.sh to generate endpoints (make sure that all paths are correct). The script splits ID list to batches of 10,000 IDs and runs 30 times in parallel (for 300k ID's at a time). This is repeated 24 times in a loop untill endpoints are gnerated for all IDs. A single process uses up to approx 6.5G of memory (for 30 processes running in parallel approx 200G of memory needed in total ).
