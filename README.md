@@ -119,4 +119,12 @@ In this section supporting files are createed and scripts described for running 
 * Use /FINNGENEndpointter/test_input/endpoint_short_list.txt as another input file (make shure that "ALL" is uncommented within that file)  
 * Use two MS Excel (xlsx) files with endpoint defintions and control definitions as input files they get piublished in FINNGEN repository e.g. /FINNGEN/DF10-endpoint-and-control-definitions/  (recomend not to use public version as column names in the public controls file are different)   
 * Within the main script file /FINNGENEndpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"
-* Run Endpointer/Parallel_finregistry.sh to generate endpoints (make sure that all paths are correct). The script splits ID list to batches of 10,000 IDs and runs 30 times in parallel (for 300k ID's at a time). This is repeated 24 times in a loop untill endpoints are gnerated for all IDs. A single process uses up to approx 8.57G of memory (for 30 processes running in parallel approx 260G of memory needed in total ).
+also comment out rows 6993-6995:
+
+```python
+            else:
+                if subject_id in self.baseline_data_fu_end_age_map:
+                    age = self.baseline_data_fu_end_age_map[subject_id]
+```
+
+* Run Endpointer/Parallel_finregistry.sh to generate endpoints (make sure that all paths are correct). The script splits ID list to batches of 10,000 IDs and runs 30 times in parallel (for 300k ID's at a time). This is repeated 24 times in a loop untill endpoints are gnerated for all IDs. A single process uses up to approx 9.7G of memory (for 30 processes running in parallel approx 2G of memory needed in total ).
