@@ -107,3 +107,8 @@ awk -F,  ' { t = $3; $3 = $2; $2 = t; OFS= ","; print; } '  all3.csv > detailed_
 ```
 
 Then run Utils/split_longitudinal.sh to split detialed longitudinal file containing data for 7166416 IDs (sorted by ID) into 24 files containing 300k IDs.
+
+
+# Endpoint generation
+
+Here supporting files and scripts for running endpointer [https://github.com/FINNGEN/Endpointter](https://github.com/FINNGEN/Endpointter) are described
