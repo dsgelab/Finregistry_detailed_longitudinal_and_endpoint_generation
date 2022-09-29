@@ -128,3 +128,5 @@ also comment out rows 6993-6995:
 ```
 
 * Run Endpointer/Parallel_finregistry.sh to generate endpoints (make sure that all paths are correct). The script splits ID list to batches of 10,000 IDs and runs 30 times in parallel (for 300k ID's at a time). This is repeated 24 times in a loop untill endpoints are gnerated for all IDs. A single process uses up to approx 10.0G of memory (for 30 processes running in parallel approx up to 300G of memory needed in total ). Total running time of a single loop is approx 56 minutes or approx 24 hours to generate all endpoints. 
+
+* Run Endpointer/combine_endpoints.sh to combine endpoint longitudinal and wide first event  files from separate 716 splits 
