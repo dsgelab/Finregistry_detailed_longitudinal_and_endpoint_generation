@@ -47,7 +47,7 @@ for n in ['2020','2021']: #['2020','2021']:
     df2.to_csv(w_path,index=False)
 ```
 
-# OLD files up to 2019 (inclusive)
+# OLD files up to 2019 (inclusinve)
 
 
 ```python
@@ -63,7 +63,7 @@ results = np.zeros([1,2])
 for n in range(1995,2020):
     path = '/data/original_data/kela_purchase/175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDs'
     start_time = time.time()
-    df = pd.read_csv(path,sep = ';', encoding='latin-1')
+    df = pd.read_csv(path,sep = ';', encoding='latin-1', dtype={"RKPV": "string","VNRO":"string","SHP":"string","ASKU":"string","RGTNO":"string","SAIR":"string"})
     run_time = time.time()-start_time;print(run_time)
 
 
@@ -71,6 +71,8 @@ for n in range(1995,2020):
     df.drop_duplicates(inplace=True)
     duplicates= str(a-df.shape[0])
     print(n,duplicates)
+    
+    df['RKPV'] = pd.to_datetime(df['RKPV'], errors='coerce',format='%y%m%d')
     
     results = np.concatenate([results,np.concatenate([[[n]],[[duplicates]]], axis = 1)])
     w_path = '/data/processed_data/kela_purchase/175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDsp'
