@@ -134,3 +134,8 @@ also comment out rows 6993-6995:
 ```console
 python3 /data/processed_data/endpointer/supporting_files/2020/densify_first_events2022.py -i /data/processed_data/endpointer/supporting_files/2020/wide_first_events_DF10_2022_09_29.txt.ALL.gz -o /data/processed_data/endpointer/wide_first_events_densified_DF10_2022_09_29.txt
 ```
+* Run remove_OMITs_longitudinal2022.py to remove non-core endpoints from a longitudinal file. e.g.:
+```console
+python3 /data/processed_data/endpointer/supporting_files/2020/remove_OMITs_longitudinal2022.py --input /data/processed_data/endpointer/longitudinal_endpoints_DF10_2022_09_29.txt.ALL.gz --output /data/processed_data/endpointer/longitudinal_endpoints_no_omits_DF10_2022_09_29.txt.ALL.gz
+```
+
