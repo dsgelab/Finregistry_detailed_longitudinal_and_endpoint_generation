@@ -118,7 +118,7 @@ In this section supporting files are createed and scripts described for running 
 * Use /FINNGEN/Endpointter/test_input/minimi_dummy.txt as another input file (change "FINNGENID" to "FINREGISTRYID" within that file)   
 * Use /FINNGEN/Endpointter/test_input/endpoint_short_list.txt as another input file (make shure that "ALL" is uncommented within that file)  
 * Use two MS Excel (xlsx) files with endpoint defintions and control definitions as input files they get piublished in FINNGEN repository e.g. /FINNGEN/DF10-endpoint-and-control-definitions/  (recomend not to use public version as column names in the public controls file are different)   
-* Within the main script file /FINNGENEndpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"
+* Within the main script file /FINNGEN/Endpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"
 also comment out rows 6993-6995:
 
 ```python
