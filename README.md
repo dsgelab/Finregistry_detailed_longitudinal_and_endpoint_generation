@@ -114,9 +114,9 @@ Then run Utils/split_longitudinal.sh to split detialed longitudinal file contain
 In this section supporting files are createed and scripts described for running endpointer program [https://github.com/FINNGEN/Endpointter](https://github.com/FINNGEN/Endpointter). Read instructions on Endpointter repository for required input file descriptions.
 
 * Create baseline input file, which contains sex information using Endpointer/baseline.py    
-* Create Custom_ID_listinput file using Endpointer/Custom_ID_list.py  
+* Create Custom_ID_list input file using Endpointer/Custom_ID_list.py  
 * Use /FINNGEN/Endpointter/test_input/minimi_dummy.txt as another input file (change "FINNGENID" to "FINREGISTRYID" within that file)   
-* Use /FINNGENEndpointter/test_input/endpoint_short_list.txt as another input file (make shure that "ALL" is uncommented within that file)  
+* Use /FINNGEN/Endpointter/test_input/endpoint_short_list.txt as another input file (make shure that "ALL" is uncommented within that file)  
 * Use two MS Excel (xlsx) files with endpoint defintions and control definitions as input files they get piublished in FINNGEN repository e.g. /FINNGEN/DF10-endpoint-and-control-definitions/  (recomend not to use public version as column names in the public controls file are different)   
 * Within the main script file /FINNGENEndpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"
 also comment out rows 6993-6995:
