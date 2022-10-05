@@ -45,7 +45,7 @@ EXCL_CONTROL = "NA"
 
 # Headers of the output file
 OUT_HEADER = ",".join([
-    "FINNGENID",
+    "FINREGISTRYID",
     "ENDPOINT",
     # Input notation:  control=0, case=1, excluded control=NA
     # Output notation: control=1, case=1, excluded control=2
