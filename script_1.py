@@ -1,8 +1,13 @@
+
 # PREPROCESSING FOR DETAILED LONGITUDINAL
+
+# this code is used to prepare some datasets for then construct the detailed longitudinal file_path
+# therefore some of those registries are going to appear in multiple scripts 
 
 # LIBRARIES
 
 import os
+import re
 import string
 from datetime import datetime
 import pandas as pd
@@ -18,8 +23,16 @@ def htun2date(ht):
 #---------------------
 # REGISTRY-SPECIFIC FUNCTIONS
 
-def Hilmo_69_86_preparation(file_path):
-	data = fread(file_path)
+def Hilmo_69_86_preparation(file_path:str, file_sep:str):
+
+	#fetch data
+	data = pd.read_csv(
+		file_path,
+		sep = file_sep, 
+		encoding='latin-1'
+		#dtype={"TUPVA": "string", "JOPVM": "string",}
+		)
+
 	data['ICDVER'] = 8
 	data.rename( 
 		columns = {
@@ -35,8 +48,16 @@ def Hilmo_69_86_preparation(file_path):
 	data['VUOSI'] = data['TULOPV'].strftime('%Y-%m-%d').year
 	return data
 
-def Hilmo_87_93_preparation(file_path):
-	data = fread(file_path)
+def Hilmo_87_93_preparation(file_path:str, file_sep:str):
+
+	#fetch data
+	data = pd.read_csv(
+		file_path,
+		sep = file_sep, 
+		encoding='latin-1'
+		#dtype={"TUPVA": "string", "JOPVM": "string",}
+		)
+
 	data['ICDVER'] = 9
 	data.rename( 
 		columns = {
@@ -52,8 +73,16 @@ def Hilmo_87_93_preparation(file_path):
 	return data
 
 
-def Hilmo_94_95_preparation(file_path):
-	data = fread(file_path)
+def Hilmo_94_95_preparation(file_path:str, file_sep:str):
+
+	#fetch data
+	data = pd.read_csv(
+		file_path,
+		sep = file_sep, 
+		encoding='latin-1'
+		#dtype={"TUPVA": "string", "JOPVM": "string",}
+		)
+
 	data['ICDVER'] = 9
 	data.rename( 
 		columns = {
@@ -127,7 +156,10 @@ def CancerRegistryPreprocessing(dataset_list:list):
 def KelaPurchasePreprocessing(purchase_files:list, ):
 
 	# select file related to year 2010
-	FILE_INDEX_NUMBER = 17
+	if re.search('2010',purchase_files[17]) :
+		FILE_INDEX_NUMBER = 17
+	else:
+  		print("An error has occured, file 17 is no more referring to the year 2010 .. time to update the code!")
 
 	# 1994-2010
 	Kela_pt1 = pd.concat(purchase_files[:FILE_INDEX_NUMBER])
@@ -160,12 +192,6 @@ def KelaPurchasePreprocessing(purchase_files:list, ):
 	NewData['ICDVER'] = 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
 	return ...
 	
-
-def KelaReimbursmentPreprocessing(purchase_files:list, ):
-	data = ...
-
-
-	return ...
 	
 
 #--------------------
