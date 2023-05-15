@@ -123,7 +123,7 @@ def DeathRegistryPreprocessing(dataset_list:list):
 	AggregatedData['KUOLPVM'] 		= ...
 	AggregatedData['SYNTPVM'] 		= htun2date(AggregatedData['HETU'])
 	formatted_date = datetime.strptime(AggregatedData['KUOLPVM'], '%Y-%m-%d')
-	AggregatedData['EVENT_AGE'] 	= round( int(formatted_date) ,2)
+	AggregatedData['EVENT_AGE'] 	= int(formatted_date).round(2)
 	AggregatedData.rename(columns = {kvuosi:EVENT_YEAR},inplace=True)
 
 	# ICD
@@ -140,7 +140,7 @@ def CancerRegistryPreprocessing(dataset_list:list):
 	# date/age
 	AggregatedData['SYNTPVM'] 		= htun2date(AggregatedData['HETU'])
 	formatted_date = datetime.strptime(AggregatedData['dg_date'], '%d.%m.%Y')
-	AggregatedData['EVENT_AGE'] 	= round( int(formatted_date) ,2)
+	AggregatedData['EVENT_AGE'] 	= int(formatted_date).round(2))
 	AggregatedData['EVENT_YEAR'] 	= formatted_date.year
 
 	# ICD
@@ -182,7 +182,7 @@ def KelaPurchasePreprocessing(purchase_files:list, ):
 	# date/age
 	AggregatedData['SYNTPVM'] 		= htun2date(AggregatedData['HETU'])
 	AggregatedData['LAAKEOSTPVM'] 	= datetime.strptime( AggregatedData['OTPVM'].astype(char), '%d.%m.%Y')
-	AggregatedData['EVENT_AGE'] 	= round( int(AggregatedData['LAAKEOSTPVM']) ,2)
+	AggregatedData['EVENT_AGE'] 	= int(AggregatedData['LAAKEOSTPVM']).round(2)
 	AggregatedData['EVENT_YEAR'] 	= AggregatedData['LAAKEOSTPVM'].year
 
 	# remove events with missing date
