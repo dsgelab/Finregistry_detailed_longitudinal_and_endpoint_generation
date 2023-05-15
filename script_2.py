@@ -19,8 +19,46 @@ def htun2date(ht):
 	pass()
 
 
+def SpecialCharacterSplit(data):
+
+	#------------------
+	# RULE: if CODE1 has a '*' then ?!
+
+	#------------------
+	# RULE: if CODE1 has a '+' then first part goes to CODE2 and second to CODE1
+
+	data['IS_PLUS'] = data.CODE1.str.match('+')
+	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_PLUS'] == 'True']
+	part1, part2 	= data_tosplit['CODE1'].str.split('\\+')
+
+	data.loc[data.IS_PLUS == 'True']['CODE2'] = part1
+	data.loc[data.IS_PLUS == 'True']['CODE1'] = part2
+
+	#------------------
+	# RULE: if CODE1 has a '#' then first part goes to CODE1 and second to CODE3
+
+	data['IS_HAST']	= data.CODE1.str.match('+')
+	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_HAST'] == 'True']
+	part1, part2 	= data_tosplit['CODE1'].str.split('\\+')
+
+	data.loc[data['IS_HAST'] == 'True']['CODE1'] = part1
+	data.loc[data['IS_HAST'] == 'True']['CODE3'] = part2
+
+	#------------------
+	# RULE: if CODE1 has a '&' then first part goes to CODE1 and second to CODE2
+
+	data['IS_AND'] 	= data.CODE1.str.match('+')
+	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_AND'] == 'True']
+	part1, part2 	= data_tosplit['CODE1'].str.split('\\+')
+
+	data.loc[data['IS_AND'] == 'True']['CODE1'] = part1
+	data.loc[data['IS_AND'] == 'True' ]['CODE2'] = part2
+
+	return data	
+
+
 #-------------------
-# UTILITY VECTORS
+# UTILITY EXTRA
 
 KelaPurcahse_col2keep 		= ['FINREGISTRYID','EVENT_AGE','LAAKEOSTPVM','ATC_CODE','SAIR','VNRO','PLKM','ICDVER','KORV','KAKORV','LAJI']
 KelaReimbursement_col2keep	= ['FINREGISTRYID','EVENT_AGE','LAAKEKORVPVM','KELA_DISEASE','ICD','ICD_VER']
@@ -30,6 +68,7 @@ Hilmo_69_95_col2keep 		= ['FINREGISTRYID','EVENT_AGE','PDGO','PDGE', 'SDG10','SD
 Hilmo_POST95_col2keep		= ['TID','TNRO','PALTU','PALA','EA','TUPVA','LPVM','YHTEYSTAPA','KIIREELLISYYS']
 HilmoOperations_col2keep	= []
 AvoHilmo_col2keep			= ['TID','TNRO','KAYNTI_ALKOI','KAYNTI_LOPPUI','KAYNTI_YHTEYSTAPA','KAYNTI_PALVELUMUOTO','KAYNTI_AMMATTI']
+AvoHilmo_pt2_col2keep		= ['FINREGISTRYID','SOURCE','ICDVER','CATEGORY','INDEX','EVENT_AGE','CODE1','CODE2','CODE3','CODE4','CODE5','CODE6','CODE7']
 
 #--------------------
 
@@ -49,7 +88,8 @@ def KelaPurchasePreprocessing(file_path:str,file_sep:str):
 		'PLKM':'CODE4',
 		'KORV':'CODE5',
 		'KAKORV':'CODE6',
-		'LAJI':'CODE7'
+		'LAJI':'CODE7',
+		'LAAKEOSTPVM':'PVM'
 		},
 		inplace=True)
 
@@ -65,7 +105,7 @@ def KelaPurchasePreprocessing(file_path:str,file_sep:str):
 	NewData['SOURCE'] 			= 'PURCH'
 	NewData['CATEGORY'] 		= np.NaN
 	NewData['ICDVER']			= np.NaN
-	NewData['EVENT_YRMNTH']		= OriginalData['LAAKEOSTPVM'][:7]
+	NewData['EVENT_YRMNTH']		= NewData['PVM'][:7]
 
 	# QC part
 
@@ -85,7 +125,8 @@ def KelaReimbursementPreprocessing(file_path:str,file_sep:str):
 	SubsetData.rename( 
 		columns = {
 		'KELA_DISEASE':'CODE1',
-		'ICD':'CODE2'
+		'ICD':'CODE2',
+		'LAAKEOSTPVM':'PVM'
 		},
 		inplace=True)
 
@@ -102,12 +143,12 @@ def KelaReimbursementPreprocessing(file_path:str,file_sep:str):
 	NewData['CATEGORY'] 		= np.NaN
 	NewData['CODE3']			= np.NaN
 	NewData['CODE4']			= np.NaN
-	NewData['EVENT_YRMNTH']		= OriginalData['LAAKEOSTPVM'][:7]
+	NewData['EVENT_YRMNTH']		= NewData['PVM'][:7]
 
 
 	# QC part
 	# remove ICD code dots
-	NewData['CODE2'] = newdata['CODE2'].replace({".", ""})
+	NewData['CODE2'] = NewData['CODE2'].replace({".", ""})
 
 	return NewData
 
@@ -125,14 +166,15 @@ def CancerRegistryPreprocessing(file_path:str,file_sep:str):
 	SubsetData['ICD_VER'] 		= 'O3'
 	SubsetData['CATEGORY'] 		= np.NaN
 	SubsetData['CODE4']			= np.NaN
-	SubsetData['EVENT_YRMNTH']	= OriginalData['dg_date_'].to_string()[:7]
+	SubsetData['EVENT_YRMNTH']	= SubsetData['dg_date'].to_string()[:7]
 
 	# rename columns
 	SubsetData.rename( 
 		columns = {
 		'topo':'CODE1',
 		'morpho':'CODE2',
-		'beh':'CODE3'
+		'beh':'CODE3',
+		'dg_date':'PVM'
 		},
 		inplace=True)
 
@@ -158,7 +200,7 @@ def CauseOfDeathPreprocessing(file_path:str,file_sep:str):
 	SubsetData['CODE2']			= np.NaN
 	SubsetData['CODE3']			= np.NaN
 	SubsetData['CODE4']			= np.NaN
-	SubsetData['EVENT_YRMNTH']	= OriginalData['dg_date_'].to_string()[:7]
+	SubsetData['EVENT_YRMNTH']	= SubsetData['dg_date'].to_string()[:7]
 
 	# add category depending on what ? 
 	SubsetData['CATEGORY'] 		=  ...
@@ -168,7 +210,8 @@ def CauseOfDeathPreprocessing(file_path:str,file_sep:str):
 		columns = {
 		'topo':'CODE1',
 		'morpho':'CODE2',
-		'beh':'CODE3'
+		'beh':'CODE3',
+		'KUOLPVM':'PVM'
 		},
 		inplace=True)
 
@@ -197,7 +240,10 @@ def HilmoInpat_69_95_Preprocessing(file_path:str,file_sep:str):
 	SubsetData['SOURCE'] 		= 'INPAT'
 	SubsetData['CODE3']			= np.NaN
 	SubsetData['CODE4']			= SubsetData.LAHTOPVM - SubsetData.TULOPVM
-	SubsetData['EVENT_YRMNTH']	= OriginalData['TULOPVM'].to_string()[:7]
+	SubsetData['EVENT_YRMNTH']	= SubsetData['TULOPVM'].to_string()[:7]
+
+	#rename columns
+	SubsetData.rename( columns = {'TULOPVM':'PVM'}, inplace=True )
 
 	# add category depending on what ? 
 	SubsetData['CATEGORY'] 		=  ...
@@ -215,6 +261,9 @@ def HilmoInpat_POST95_Preprocessing(file_path:str,file_sep:str):
 
 	# select desired columns 
 	SubsetData = OriginalData[ Hilmo_POST95_col2keep ]
+
+	#rename columns
+	SubsetData.rename( columns = {'TULOPVM':'PVM'}, inplace=True )
 	
 	# QC part
 	# remove wrong codes
@@ -241,7 +290,10 @@ def HilmoOperationsPreprocessing(file_path:str,file_sep:str):
 	SubsetData['MTMP1K1']		= NP.NaN
 	SubsetData['MTMP2K1']		= NP.NaN
 	SubsetData['SOURCE'] 		= 'OPER_IN'
-	SubsetData['EVENT_YRMNTH']	= OriginalData['TULOPVM'].to_string()[:7]
+	SubsetData['EVENT_YRMNTH']	= SubsetData['TULOPVM'].to_string()[:7]
+
+	#rename columns
+	SubsetData.rename( columns = {'TULOPVM':'PVM'}, inplace=True )
 
 	# add category depending on what ? 
 	SubsetData['CATEGORY'] 		=  ...
@@ -345,14 +397,20 @@ def HilmoPreprocessing():
 	# final touches
 	FinalData['ICDVER'] = 10
 	FinalData['INDEX']  = Hilmo.TID + '_ICD10'
-	FinalData.rename(columns = {'TNRO_orig':'TNRO'}, inplace=True)
+	FinalData.rename(columns = {'TNRO_orig':'TNRO','TULOPVM':'PVM'}, inplace=True)
 	FinalHilmo = FinalData.loc[ !( FinalData.CODE1.isna() & FinalData.CODE2.isna() )] 
 
 	return FinalHilmo	
 
+
+
+
 def HilmoPreprocessing_pt2():
 	
 	return ... 
+
+
+
 
 def AvoHilmoPreprocessing():
 
@@ -418,5 +476,92 @@ def AvoHilmoPreprocessing():
 
 	return FinalData
 
-def AvoHilmoPreprocessing_pt2():	
-	
+
+
+def AvoHilmoPreprocessing_pt2(AvoHilmo_pt1_output):
+	AvoHilmo = AvoHilmo_pt1_output
+
+	# rename columns
+	AvoHilmo.rename( 
+		columns = {
+		'TID':'INDEX',
+		'KAYNTI_YHTEYSTAPA':'CODE5',
+		'KAYNTI_PALVELUMUOTO':'CODE6',
+		'KAYNTI_AMMATTI'='CODE7'
+		},
+		inplace=True)
+
+	# add columns
+	AvoHilmo['PVM']			= FinalData.KAYNTI_ALKOI.to_datetime('%d.%m.%Y')
+	AvoHilmo['EVENT_YEAR'] 	= FinalData.KAYNTI_ALKOI.str.slice(6,10)
+	AvoHilmo['SYNTPVM']		= htun2date(FinalData.HETU)
+	AvoHilmo['EVENT_AGE']	= ((FinalData.KAYNTI_ALKOI.to_datetime('%d.%m.%Y') - FinalData.KAYNTI_ALKOI.to_datetime('%Y-%m-%d'))/365.24).round(2)
+	AvoHilmo['ICDVER'] 		= 10
+	AvoHilmo['SOURCE']		= 'PRIM_OUT'
+	AvoHilmo['EVENT_YRMNTH']= FinalData.KAYNTI_ALKOI.str.slice(2,6)
+	AvoHilmo['CODE2']		= np.NaN
+	AvoHilmo['CODE3']		= np.NaN
+	AvoHilmo['CODE4']		= np.NaN
+	AvoHilmo['CODE8']		= np.NaN
+	AvoHilmo['CODE9']		= np.NaN
+
+
+	# subset columns
+	AvoHilmo_subset = AvoHilmo[ AvoHilmo_pt2_col2keep ]
+
+	# FILTERING
+
+	AvoHilmo_subset.loc[AvoHilmo_subset==''] = np.NaN
+	# remove missing event age
+	AvoHilmo_agecheck = AvoHilmo_subset.loc[ !AvoHilmo_subset.EVENT_AGE.isna() ]
+	# remove missing codes
+	AvoHilmo_codecheck = AvoHilmo_agecheck.loc[ !( AvoHilmo_agecheck.CODE1.isna() & AvoHilmo_agecheck.CODE2.isna() )] 
+	# remove rows if patient ID is in denied list
+	ID_DENIED = ... #to download file
+	AvoHilmo_idcheck = AvoHilmo_codecheck.loc[ AvoHilmo_codecheck.FINREGISTRYID not in ID_DENIED]
+
+	#remove duplicates?
+	...
+
+	return AvoHilmo_idcheck
+
+
+def CreateDetailedLongitudinal(hilmo_pre95,hilmo_pre95_operations,hilmo_post95_inpat,hilmo_post95_outpat,avohilmo,kela_purchases,kela_reimbursement,cancer,causeofdeath):
+
+	# DATA SPLITS
+	AvoHilmo_splitted 		= SpecialCharacterSplit(avohilmo)
+	Hilmo_pre95_splitted 	= SpecialCharacterSplit(hilmo_pre95)
+	Hilmo_post95_splitted 	= SpecialCharacterSplit(hilmo_post95)
+
+	# FIX NOMESCO/INDEXES
+
+	# JOIN DATA
+
+	# select the following columns for everyone
+	# but why here ?! and why again ?!
+	# "FINNGENID","SOURCE", "EVENT_AGE", "PVM", "EVENT_YRMNTH", 
+	# "CODE1", "CODE2", "CODE3", "CODE4", "CODE5", "CODE6", "CODE7", "CODE8", "CODE9", 
+	# "ICDVER", "CATEGORY", "INDEX"
+
+
+	# all missing values are setted to NA, no ""
+
+	# CERATE FINAL DATASET
+	JointData = pd.concat(
+		AvoHilmo_splitted, 
+		Hilmo_pre95_splitted,
+		Hilmo_post95_splitted,
+		avohilmo,
+		kela_purchases,
+		kela_reimbursement,
+		cancer,
+		causeofdeath
+		)
+
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# age randomization
+
+	return ...
