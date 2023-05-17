@@ -1,20 +1,13 @@
 
-# PREPROCESSING FOR DETAILED LONGITUDINAL
-
-# second part of processing, check script_1.py for first part
-
-# ------------------
 # LIBRARIES
 
+import re
 import pandas as pd
 import numpy as np
 
+
 #--------------------
 # UTILITY FUNCTIONS
-
-def htun2date(ht):
-	pass()
-
 
 def SpecialCharacterSplit(data):
 
@@ -57,222 +50,161 @@ def SpecialCharacterSplit(data):
 #-------------------
 # UTILITY EXTRA
 
-KelaPurcahse_col2keep 		= ['FINREGISTRYID','EVENT_AGE','LAAKEOSTPVM','ATC_CODE','SAIR','VNRO','PLKM','ICDVER','KORV','KAKORV','LAJI']
-KelaReimbursement_col2keep	= ['FINREGISTRYID','EVENT_AGE','LAAKEKORVPVM','KELA_DISEASE','ICD','ICD_VER']
-CancerRegistry_col2keep		= ['FINREGISTRYID','EVENT_AGE','topo','morpho','beh','ICDVER','dg_date_']
-CauseOfDeath_col2keep		= ['FINREGISTRYID','EVENT_AGE','ICDVER','KUOLPVM','tpks','vks','m1','m2','m3','m4']
-Hilmo_69_95_col2keep 		= ['FINREGISTRYID','EVENT_AGE','PDGO','PDGE', 'SDG10','SDG1E','SDG2O','SDG2E','SDG3O','SDG3E', 'ATC_CODE1','ATC_CODE2','ATC_CODE3','ICD_VER','TULOPVM','LAHTOPVM','EDIA','PALA','PALTU','EA']
-Hilmo_POST95_col2keep		= ['TID','TNRO','PALTU','PALA','EA','TUPVA','LPVM','YHTEYSTAPA','KIIREELLISYYS']
-HilmoOperations_col2keep	= []
-AvoHilmo_col2keep			= ['TID','TNRO','KAYNTI_ALKOI','KAYNTI_LOPPUI','KAYNTI_YHTEYSTAPA','KAYNTI_PALVELUMUOTO','KAYNTI_AMMATTI']
-AvoHilmo_pt2_col2keep		= ['FINREGISTRYID','SOURCE','ICDVER','CATEGORY','INDEX','EVENT_AGE','CODE1','CODE2','CODE3','CODE4','CODE5','CODE6','CODE7']
+DAYS_TO_YEARS = 365.24
 
-#--------------------
+COLUMNS_2_KEEP = [
+	"FINREGISTRYID",
+	"SOURCE",
+	"ICDVER",
+	"CATEGORY",
+	"INDEX",
+	"EVENT_AGE", 
+	"EVENT_YRMNTH", 
+	"PVM", 
+	"CODE1", 
+	"CODE2", 
+	"CODE3", 
+	"CODE4", 
+	"CODE5",
+	"CODE6", 
+	"CODE7",
+	"CODE8", 
+	"CODE9"]
 
 
-def KelaPurchasePreprocessing(file_path:str,file_sep:str):
 
-	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
 
-	# select desired columns 
-	SubsetData = OriginalData[ KelaPurcahse_col2keep ]
+#---------------------
+# REGISTRY-SPECIFIC FUNCTIONS
+
+def Hilmo_69_86_preparation(file_path:str, file_sep:str):
+
+	# fetch data
+	data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	# define new columns
+	data['ICDVER'] 		= 8
+	data['TULOPVM'] 	= pd.to_datetime( data['TULOPV'].str.slice(stop=10), format='%d.%m.%Y' )
+	data['LAHTOPVM']	= pd.to_datetime( data['LAHTOPV'].str.slice(stop=10), format='%d.%m.%Y' )
 	# rename columns
-	SubsetData.rename( 
+	data.rename( 
 		columns = {
-		'ATC_CODE':'CODE1',
-		'SAIR':'CODE2',
-		'VNRO':'CODE3',
-		'PLKM':'CODE4',
-		'KORV':'CODE5',
-		'KAKORV':'CODE6',
-		'LAJI':'CODE7',
-		'LAAKEOSTPVM':'PVM'
+		'DG1':'PDGO',
+		'DG2':'SDG10',
+		'DG3':'SDG20',
+		'DG4':'SDG30'
 		},
 		inplace=True)
 
-	# missing values
-	SubsetData.loc[SubsetData==''] = np.NaN
-	NewData = SubsetData.loc[ !( SubsetData.CODE1.isna() & SubsetData.CODE2.isna() )] 
-
-	# remove duplicates ?
-	...
-
-	# add columns
-	NewData['INDEX'] 			= np.arange( 1, NewData.shape[0]+1 )
-	NewData['SOURCE'] 			= 'PURCH'
-	NewData['CATEGORY'] 		= np.NaN
-	NewData['ICDVER']			= np.NaN
-	NewData['EVENT_YRMNTH']		= NewData['PVM'][:7]
-
-	# QC part
-
-	# fix CODE3 (VNR code) manually
-	...
-
-	return NewData
+	return data
 
 
-def KelaReimbursementPreprocessing(file_path:str,file_sep:str):
 
-	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+def Hilmo_87_93_preparation(file_path:str, file_sep:str):
 
-	# select desired columns 
-	SubsetData = OriginalData[ KelaReimbursement_col2keep ]
+	# fetch data
+	data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	# define new columns
+	data['ICDVER'] 		= 9
+	data['TULOPVM'] 	= pd.to_datetime( data['TUPVA'].str.slice(stop=10), format='%d.%m.%Y' )
+	data['LAHTOPVM'] 	= pd.to_datetime( data['LPVM'].str.slice(stop=10), format='%d.%m.%Y' )
 	# rename columns
-	SubsetData.rename( 
+	data.rename( 
 		columns = {
-		'KELA_DISEASE':'CODE1',
-		'ICD':'CODE2',
-		'LAAKEOSTPVM':'PVM'
+		'PDG' :'PDGO',
+		'SDG1':'SDG10',
+		'SDG2':'SDG20',
+		'SDG3':'SDG30'
 		},
 		inplace=True)
 
-	# missing values
-	SubsetData.loc[SubsetData==''] = np.NaN
-	NewData = SubsetData.loc[ !( SubsetData.CODE1.isna() & SubsetData.CODE2.isna() )]
-
-	# remove duplicates ?
-	...
-
-	# add columns
-	NewData['INDEX'] 			= np.arange( 1, NewData.shape[0]+1 )
-	NewData['SOURCE'] 			= 'REIMB'
-	NewData['CATEGORY'] 		= np.NaN
-	NewData['CODE3']			= np.NaN
-	NewData['CODE4']			= np.NaN
-	NewData['EVENT_YRMNTH']		= NewData['PVM'][:7]
+	return data
 
 
-	# QC part
-	# remove ICD code dots
-	NewData['CODE2'] = NewData['CODE2'].replace({".", ""})
 
-	return NewData
+def Hilmo_94_95_preparation(file_path:str, file_sep:str):
 
-
-def CancerRegistryPreprocessing(file_path:str,file_sep:str):
-
-	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
-
-	# select desired columns 
-	SubsetData = OriginalData[ CancerRegistry_col2keep]
-
-	# add columns
-	SubsetData['INDEX'] 		= np.arange( 1, SubsetData.shape[0]+1 )
-	SubsetData['SOURCE'] 		= 'CANC'
-	SubsetData['ICD_VER'] 		= 'O3'
-	SubsetData['CATEGORY'] 		= np.NaN
-	SubsetData['CODE4']			= np.NaN
-	SubsetData['EVENT_YRMNTH']	= SubsetData['dg_date'].to_string()[:7]
-
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# define new columns
+	data['ICDVER'] 		= 9
+	data['TULOPVM'] 	= pd.to_datetime( data['TUPVA'].str.slice(stop=10), format='%d.%m.%Y' )
+	data['LAHTOPVM'] 	= pd.to_datetime( data['LPVM'].str.slice(stop=10), format='%d.%m.%Y' )
 	# rename columns
-	SubsetData.rename( 
+	data.rename( 
 		columns = {
-		'topo':'CODE1',
-		'morpho':'CODE2',
-		'beh':'CODE3',
-		'dg_date':'PVM'
+		'PDG' :'PDGO',
+		'SDG1':'PDG1O',
+		'SDG2':'SDG20',
+		'TMPTYP1':'TPTYP1',
+		'TMPTYP2':'TPTYP2',
+		'TMPTYP3':'TPTYP3'
 		},
 		inplace=True)
 
-	# missing values
-	SubsetData.loc[SubsetData==''] = np.NaN
-	NewData = SubsetData.loc[ !( SubsetData.CODE1.isna() & SubsetData.CODE2.isna() )] 
-
-	# remove duplicates ?
-	...
-
-	return NewData
-
-def CauseOfDeathPreprocessing(file_path:str,file_sep:str):
-
-	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
-
-	# select desired columns 
-	SubsetData = OriginalData[ CauseOfDeath_col2keep ]
-
-	# add columns
-	SubsetData['INDEX'] 		= np.arange( 1, SubsetData.shape[0]+1 )
-	SubsetData['SOURCE'] 		= 'DEATH'
-	SubsetData['CODE2']			= np.NaN
-	SubsetData['CODE3']			= np.NaN
-	SubsetData['CODE4']			= np.NaN
-	SubsetData['EVENT_YRMNTH']	= SubsetData['dg_date'].to_string()[:7]
-
-	# add category depending on what ? 
-	SubsetData['CATEGORY'] 		=  ...
-
-	# rename columns
-	SubsetData.rename( 
-		columns = {
-		'topo':'CODE1',
-		'morpho':'CODE2',
-		'beh':'CODE3',
-		'KUOLPVM':'PVM'
-		},
-		inplace=True)
-
-	# missing values
-	SubsetData.loc[SubsetData==''] = np.NaN
-	NewData = SubsetData.loc[ !( SubsetData.CODE1.isna() & SubsetData.CODE2.isna() )] 
-
-	# remove duplicates ?
-	...
-
-	return NewData
+	return data
 
 
 
+def Hilmo_PRE95_preparation(hilmo_pre95, DOB_map):
 
-def HilmoInpat_PRE95_Preprocessing(file_path:str,file_sep:str):
+	# add date of birth
+	NewData = hilmo_pre95.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
 
-	# NB: data used was created here: script_1.py and is using ICD 8 + 9 codes
-	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
-
-	# select desired columns 
-	SubsetData = OriginalData[ Hilmo_69_95_col2keep ]
-
-	# add columns
-	SubsetData['INDEX'] 		= np.arange( 1, SubsetData.shape[0]+1 )
-	SubsetData['SOURCE'] 		= 'INPAT'
-	SubsetData['CODE3']			= np.NaN
-	SubsetData['CODE4']			= SubsetData.LAHTOPVM - SubsetData.TULOPVM
-	SubsetData['EVENT_YRMNTH']	= SubsetData['TULOPVM'].to_string()[:7]
+	# define new columns
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YRMNTH']	= NewData['TULOPVM'].to_string()[:7]
+	NewData['INDEX'] 		= np.arange( 1, NewData.shape[0]+1 )
+	NewData['SOURCE'] 		= 'INPAT'
+	NewData['CODE3']		= np.NaN
+	NewData['CODE4']		= NewData.LAHTOPVM - NewData.TULOPVM
+	NewData['CATEGORY']		= ...
 
 	#rename columns
-	SubsetData.rename( columns = {'TULOPVM':'PVM'}, inplace=True )
+	NewData.rename( 
+		columns = {
+		'TULOPVM':'PVM'
+		}, 
+		inplace=True )
 
-	# add category depending on what ? 
-	SubsetData['CATEGORY'] 		=  ...
-	
-	# QC part
+	# select desired columns 
+	SubsetData = NewData[ COLUMNS_2_KEEP ]
+
+	# remove missing values
+	SubsetData.loc[SubsetData==''] = np.NaN
+	AgeCheck 	= SubsetData.loc[ !SubsetData.EVENT_AGE.isna() ]
+	CodeCheck 	= AgeCheck.loc[ !( AgeCheck.CODE1.isna() & AgeCheck.CODE2.isna() )] 
 	# check negative hospital days ? -> put NA 
-	NewData = ...
+	...
 
-	return NewData
+	# remove duplicates ?
+	...
 
-def HilmoInpat_POST95_Preprocessing(file_path:str,file_sep:str):
+	return CodeCheck
+
+
+
+def Hilmo_POST95_Preparation(file_path:str,file_sep:str):
 
 	# NB: this part of Hilmo is using ICD10 codes
 	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
 
-	# select desired columns 
-	SubsetData = OriginalData[ Hilmo_POST95_col2keep ]
-
 	#rename columns
 	SubsetData.rename( columns = {'TULOPVM':'PVM'}, inplace=True )
-	
-	# QC part
+
+	# select desired columns 
+	SubsetData = OriginalData[ COLUMNS_2_KEEP ]
+
 	# remove wrong codes
 	wrong_codes = ['H','M','N','Z6','ZH','ZZ']
-	NewData = SubsetData.loc[SubsetData.PALA in wrong_codes]
+	FinalData = SubsetData.loc[SubsetData.PALA in wrong_codes]
 
-	return NewData
+	return FinalData
 
 
 	
 
-def HilmoOperationsPreprocessing(file_path:str,file_sep:str):
+def HilmoOperations_Preprocessing(file_path:str,file_sep:str):
 
 	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
 
@@ -399,9 +331,6 @@ def HilmoPreprocessing():
 
 	return FinalHilmo	
 
-
-
-
 def AvoHilmoPreprocessing():
 
 	# download different datasets:
@@ -516,6 +445,183 @@ def AvoHilmoPreprocessing_pt2(AvoHilmo_pt1_output):
 
 	return AvoHilmo_idcheck
 
+def DeathRegistry_preparation(file_path:str, file_sep:str, DOB_map):
+	
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	NewData = data.merge(DOB_map, on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['dg_date']		= pd.to_datetime( data['dg_date'], format='%Y-%m-%d' )
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YEAR'] 	= NewData.dg_date.year	
+	NewData['EVENT_YRMNTH']	= NewData['dg_date'].to_string()[:7]
+	NewData['INDEX'] 		= np.arange( 1, NewData.shape[0]+1 )
+	NewData['SOURCE'] 		= 'DEATH'
+	NewData['CODE2']		= np.NaN
+	NewData['CODE3']		= np.NaN
+	NewData['CODE4']		= np.NaN
+	NewData['CATEGORY'] 	=  ...
+	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+
+	# rename columns
+	SubsetData.rename( 
+		columns = {
+		...
+		},
+		inplace=True)
+
+	# remove missing values
+	SubsetData.loc[SubsetData==''] = np.NaN
+	AgeCheck 	= SubsetData.loc[ !SubsetData.EVENT_AGE.isna() ]
+	CodeCheck 	= AgeCheck.loc[ !( AgeCheck.CODE1.isna() & AgeCheck.CODE2.isna() )] 
+
+	# remove duplicates ?
+	...
+
+	return CodeCheck
+
+
+
+def CancerRegistry_preparation(file_path:str, file_sep:str, DOB_map):
+	
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	NewData = data.merge(DOB_map, on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['dg_date']			= pd.to_datetime( data['dg_date'], format='%Y-%m-%d' )
+	NewData['EVENT_AGE'] 		= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YEAR'] 		= NewData.dg_date.year	
+	NewData['EVENT_YRMNTH']		= NewData.dg_date[:7]
+	NewData['ICDVER'] 			= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+	NewData['MY_CANC_COD_TOPO'] = np.NaN
+	NewData['MY_CANC_COD_AGE'] 	= np.NaN
+	NewData['MY_CANC_COD_YEAR'] = np.NaN
+	NewData['INDEX'] 			= np.arange( 1, NewData.shape[0]+1 )
+	NewData['SOURCE'] 			= 'CANC'
+	NewData['CATEGORY'] 		= np.NaN  # maybe is 'O3' but in the code is saying to put this in ICDVER .. 
+	NewData['CODE4']			= np.NaN
+
+	# rename columns
+	SubsetData.rename( 
+		columns = {
+		'topo':'CODE1',
+		'morpho':'CODE2',
+		'beh':'CODE3',
+		'dg_date':'PVM'
+		},
+		inplace=True)
+
+	# remove missing values
+	SubsetData.loc[SubsetData==''] = np.NaN
+	AgeCheck 	= SubsetData.loc[ !SubsetData.EVENT_AGE.isna() ]
+	CodeCheck 	= AgeCheck.loc[ !( AgeCheck.CODE1.isna() & AgeCheck.CODE2.isna() )] 
+
+	# remove duplicates ?
+	...
+
+	return CodeCheck
+
+
+
+def KelaReimbursement_preparation(file_path:str, file_sep:str, DOB_map):
+
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	NewData = data.merge(DOB_map, on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['LAAKEKORVPVM']	= pd.to_datetime( data['ALPV'], format='%Y-%m-%d' )
+	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEKORVPVM - FinalData.SYNTPVM).days/DAYS_TO_YEARS, 2)
+	NewData['EVENT_YEAR'] 	= NewData.LAAKEKORVPVM.year
+	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+	NewData['INDEX'] 		= np.arange( 1, NewData.shape[0]+1 )
+	NewData['SOURCE'] 		= 'REIMB'
+	NewData['CATEGORY'] 	= np.NaN
+	NewData['CODE3']		= np.NaN
+	NewData['CODE4']		= np.NaN
+	NewData['EVENT_YRMNTH']	= NewData.LAAKEKORVPVM[:7]
+	#rename columns
+	NewData.rename(
+		columns = {
+		'HETU':'FINREGISTRYID',
+		'SK1':'CODE1',
+		'DIAG':'CODE2',
+		'LAAKEOSTPVM':'PVM'
+		}, 
+		inplace = True )
+
+	# select desired columns 
+	SubsetData = OriginalData[ COLUMNS_2_KEEP ]
+
+	# remove missing values
+	SubsetData.loc[SubsetData==''] = np.NaN
+	AgeCheck 	= SubsetData.loc[ !SubsetData.EVENT_AGE.isna() ]
+	CodeCheck 	= AgeCheck.loc[ !( AgeCheck.CODE1.isna() & AgeCheck.CODE2.isna() )] 
+
+	# remove duplicates ?
+	...
+
+	# remove ICD code dots
+	CodeCheck['CODE2'] = CodeCheck['CODE2'].replace({".", ""})
+	return CodeCheck
+
+
+
+def KelaPurchase_preparation(file_path:str, file_sep:str,DOB_map):
+
+	# create aggregated dataset
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	NewData = data.merge(DOB_map,left_on = 'HETU',right_on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['LAAKEOSTPVM'] 	= pd.to_datetime( data['OSTOPV'], format='%Y-%m-%d' ) 
+	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEOSTPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)
+	NewData['EVENT_YEAR'] 	= NewData.LAAKEOSTPVM.year
+	NewData['EVENT_YRMNTH']	= NewData.LAAKEOSTPVM[:7]
+	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+	NewData['INDEX'] 		= np.arange( 1, NewData.shape[0]+1 )
+	NewData['SOURCE'] 		= 'PURCH'
+	NewData['CATEGORY'] 	= np.NaN
+
+	#rename columns
+	NewData.rename(
+		columns = {
+		'HETU':'FINREGISTRYID',
+		'ATC':'CODE1',
+		'SAIR':'CODE2',
+		'VNRO':'CODE3',
+		'PLKM':'CODE4',
+		'KORV':'CODE5',
+		'KAKORV':'CODE6',
+		'LAJI':'CODE7',
+		'LAAKEOSTPVM':'PVM'
+		},
+		inplace = True )
+
+
+	# select desired columns 
+	SubsetData = NewData[ COLUMNS_2_KEEP ]
+
+	# remove missing values
+	SubsetData.loc[SubsetData==''] = np.NaN
+	AgeCheck 	= SubsetData.loc[ !SubsetData.EVENT_AGE.isna() ]
+	CodeCheck 	= AgeCheck.loc[ !( AgeCheck.CODE1.isna() & AgeCheck.CODE2.isna() )] 
+
+	# remove duplicates ?
+	...
+
+	return CodeCheck
+	
 
 def CreateDetailedLongitudinal(hilmo_pre95,hilmo_pre95_operations,hilmo_post95_inpat,hilmo_post95_outpat,avohilmo,kela_purchases,kela_reimbursement,cancer,causeofdeath):
 
