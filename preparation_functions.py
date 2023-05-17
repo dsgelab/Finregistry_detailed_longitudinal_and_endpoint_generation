@@ -5,6 +5,10 @@ import re
 import pandas as pd
 import numpy as np
 
+# CONSTANTS
+
+DAYS_TO_YEARS = 365.24
+
 #---------------------
 # REGISTRY-SPECIFIC FUNCTIONS
 
@@ -54,7 +58,7 @@ def Hilmo_87_93_preparation(file_path:str, file_sep:str):
 
 def Hilmo_94_95_preparation(file_path:str, file_sep:str):
 
-	#fetch data
+	# fetch data
 	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
 	# define new columns
 	data['ICDVER'] 		= 9
@@ -82,105 +86,102 @@ def Hilmo_pre95_preparation(hilmo_pre95):
 	DOB_map = pd.read_csv('/data/original_data/dvv/Finregistry_IDs_and_full_DOB.txt',sep = ';', encoding='latin-1')
 	NewData = hilmo_pre95.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
 	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
-	# create new columns
-	NewData['EVENT_AGE'] = round( (NewData.TULOPVM - FinalData.SYNTPVM).days/365.24, 2)	
+
+	# define new columns
+	NewData['EVENT_AGE'] = round( (NewData.TULOPVM - FinalData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
+
 	#remove missing avalues
 	hilmo_pre95_agecheck = NewData.loc[ !NewData.EVENT_AGE.isna() ]
-
 	return hilmo_pre95_agecheck
 
 
 
 
-def DeathRegistryPreparation(dataset_list:list):
+def DeathRegistry_preparation(file_path:str, file_sep:str):
 	
-	# combine Hilmo datasets
-	AggregatedData = pd.concat(dataset_list)
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	DOB_map = pd.read_csv('/data/original_data/dvv/Finregistry_IDs_and_full_DOB.txt',sep = ';', encoding='latin-1')
+	NewData = data.merge(DOB_map, on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
 
-	# date/age
-	AggregatedData['KUOLPVM'] 		= ...
-	AggregatedData['SYNTPVM'] 		= htun2date(AggregatedData['HETU'])
-	formatted_date = datetime.strptime(AggregatedData['KUOLPVM'], '%Y-%m-%d')
-	AggregatedData['EVENT_AGE'] 	= int(formatted_date).round(2)
-	AggregatedData.rename(columns = {kvuosi:EVENT_YEAR},inplace=True)
-
-	# ICD
-	AggregatedData['ICDVER'] = 8 + (AggregatedData.EVENT_YEAR>1986).astype(int) + (AggregatedData.EVENT_YEAR>1995).astype(int) 
-	return AggregatedData
-
-
-def CancerRegistryPreparation(dataset_list:list):
-	data = ...
-	#join link file
-	link_file = ...
-	AggregatedData = pd.merge(data,link_file,on='gen_henk_id')
-
-	# date/age
-	AggregatedData['SYNTPVM'] 		= htun2date(AggregatedData['HETU'])
-	formatted_date = datetime.strptime(AggregatedData['dg_date'], '%d.%m.%Y')
-	AggregatedData['EVENT_AGE'] 	= int(formatted_date).round(2))
-	AggregatedData['EVENT_YEAR'] 	= formatted_date.year
-
-	# ICD
-	AggregatedData['ICDVER'] = 8 + (AggregatedData.EVENT_YEAR>1986).astype(int) + (AggregatedData.EVENT_YEAR>1995).astype(int) 
-	
-	# other
-	AggregatedData['MY_CANC_COD_TOPO'] 	= np.NaN
-	AggregatedData['MY_CANC_COD_AGE'] 	= np.NaN
-	AggregatedData['MY_CANC_COD_YEAR'] 	= np.NaN
-	return ... 
-
-
-def KelaPurchasePreparation(purchase_files:list, ):
-
-	# select file related to year 2010
-	if re.search('2010',purchase_files[17]) :
-		FILE_INDEX_NUMBER = 17
-	else:
-  		print("An error has occured, file 17 is no more referring to the year 2010 .. time to update the code!")
-
-	# 1994-2010
-	Kela_pt1 = pd.concat(purchase_files[:FILE_INDEX_NUMBER])
-	Kela_pt1.columns = Kela_pt1.columns.upper
-
-	# 2011-2021
-	Kela_pt2 = pd.concat(purchase_files[FILE_INDEX_NUMBER:])
-	Kela_pt2.columns = Kela_pt2.columns.upper
-
-	# concatenate
-	AggregatedData = pd.concat(Kela_pt1,Kela_pt2)
-
-	# select columns?
-
-	# add figid
-
-	# missing values
-	AggregatedData.fillna('')
-
-	# date/age
-	AggregatedData['SYNTPVM'] 		= htun2date(AggregatedData['HETU'])
-	AggregatedData['LAAKEOSTPVM'] 	= datetime.strptime( AggregatedData['OTPVM'].astype(char), '%d.%m.%Y')
-	AggregatedData['EVENT_AGE'] 	= int(AggregatedData['LAAKEOSTPVM']).round(2)
-	AggregatedData['EVENT_YEAR'] 	= AggregatedData['LAAKEOSTPVM'].year
-
-	# remove events with missing date
-	NewData = AggregatedData.loc[ np.isnan(AggregatedData.EVENT_AGE) ]  
-
-	# ICD 
+	# define new columns
+	# TODO
+	...
 	NewData['ICDVER'] = 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+
 	return ...
+
+
+def CancerRegistry_preparation(file_path:str, file_sep:str):
 	
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	DOB_map = pd.read_csv('/data/original_data/dvv/Finregistry_IDs_and_full_DOB.txt',sep = ';', encoding='latin-1')
+	NewData = data.merge(DOB_map, on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['dg_date']			= pd.to_datetime( data['dg_date'], format='%Y-%m-%d' )
+	NewData['EVENT_AGE'] 		= round( (NewData.TULOPVM - FinalData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YEAR'] 		= NewData.dg_date.year	
+	NewData['ICDVER'] 			= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+	NewData['MY_CANC_COD_TOPO'] = np.NaN
+	NewData['MY_CANC_COD_AGE'] 	= np.NaN
+	NewData['MY_CANC_COD_YEAR'] = np.NaN
+
+	#remove missing values
+	cancer_agecheck = NewData.loc[ !NewData.EVENT_AGE.isna() ]
+	return cancer_agecheck
+
+
+
+def KelaReimbursement_preparation(file_path:str, file_sep:str):
+
+	# fetch data
+	data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
+	# add date of birth
+	DOB_map = pd.read_csv('/data/original_data/dvv/Finregistry_IDs_and_full_DOB.txt',sep = ';', encoding='latin-1')
+	NewData = data.merge(DOB_map, on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['LAAKEKORVPVM']	= pd.to_datetime( data['ALPV'], format='%Y-%m-%d' )
+	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEKORVPVM - FinalData.SYNTPVM).days/DAYS_TO_YEARS, 2)
+	NewData['EVENT_YEAR'] 	= NewData.LAAKEKORVPVM.year
+	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+	#rename columns
+	NewData.rename({'DIAG':'ICD', 'SK1':'KELA_DISEASE'}, inplace = True )
+
+	#remove missing values
+	reimb_agecheck = NewData.loc[ !NewData.EVENT_AGE.isna() ]
+	return reimb_agecheck
+
+
+
+def KelaPurchase_preparation(KelaPurchase_files:list):
+
+	# create aggregated dataset
+	data = pd.concat(KelaPurchase_files)
+	# add date of birth
+	DOB_map = pd.read_csv('/data/original_data/dvv/Finregistry_IDs_and_full_DOB.txt',sep = ';', encoding='latin-1')
+	NewData = data.merge(DOB_map,left_on = 'HETU',right_on = 'FINREGISTRYID')
+	NewData.rename( 'DOB(DD-MM-YYYY-format)':'SYNTPVM', inplace = True )
+
+	# define new columns
+	NewData['LAAKEOSTPVM'] 	= datetime.strptime( AggregatedData['OTPVM'].astype(char), '%d.%m.%Y')
+	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEOSTPVM - FinalData.SYNTPVM).days/DAYS_TO_YEARS, 2)
+	NewData['EVENT_YEAR'] 	= NewData.LAAKEOSTPVM.year
+	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
+	#rename columns
+	NewData.rename( 'ATC':'ATC_CODE', inplace = True )
+
+	
+	#remove missing values
+	purch_agecheck = NewData.loc[ !NewData.EVENT_AGE.isna() ]
+	return purch_agecheck
 	
 
-#--------------------
-# MAIN  
 
-if __name__ == '__main__':
-
-	Hilmo_1 = Hilmo_69_86_preparation()
-	Hilmo_2 = Hilmo_87_93_preparation()
-	Hilmo_3 = Hilmo_94_95_preparation()
-	processed_HILMO = HilmoPreprocessing()
-	processed_death_registry = DeathRegistryPreprocessing()
-	processed_cancer_registry = CancerRegistryPreprocessing()
-	processed_kela_purchases = KelaPurchasePreprocessing()
