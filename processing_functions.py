@@ -6,9 +6,6 @@
 # ------------------
 # LIBRARIES
 
-import os
-import string
-from datetime import datetime
 import pandas as pd
 import numpy as np
 
@@ -28,31 +25,31 @@ def SpecialCharacterSplit(data):
 	# RULE: if CODE1 has a '+' then first part goes to CODE2 and second to CODE1
 
 	data['IS_PLUS'] = data.CODE1.str.match('+')
-	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_PLUS'] == 'True']
+	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_PLUS'] == True]
 	part1, part2 	= data_tosplit['CODE1'].str.split('\\+')
 
-	data.loc[data.IS_PLUS == 'True']['CODE2'] = part1
-	data.loc[data.IS_PLUS == 'True']['CODE1'] = part2
+	data.loc[data.IS_PLUS == True]['CODE2'] = part1
+	data.loc[data.IS_PLUS == True]['CODE1'] = part2
 
 	#------------------
 	# RULE: if CODE1 has a '#' then first part goes to CODE1 and second to CODE3
 
 	data['IS_HAST']	= data.CODE1.str.match('+')
-	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_HAST'] == 'True']
+	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_HAST'] == True]
 	part1, part2 	= data_tosplit['CODE1'].str.split('\\+')
 
-	data.loc[data['IS_HAST'] == 'True']['CODE1'] = part1
-	data.loc[data['IS_HAST'] == 'True']['CODE3'] = part2
+	data.loc[data['IS_HAST'] == True]['CODE1'] = part1
+	data.loc[data['IS_HAST'] == True]['CODE3'] = part2
 
 	#------------------
 	# RULE: if CODE1 has a '&' then first part goes to CODE1 and second to CODE2
 
 	data['IS_AND'] 	= data.CODE1.str.match('+')
-	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_AND'] == 'True']
+	data_tosplit 	= data_tosplit.loc[data_tosplit['IS_AND'] == True]
 	part1, part2 	= data_tosplit['CODE1'].str.split('\\+')
 
-	data.loc[data['IS_AND'] == 'True']['CODE1'] = part1
-	data.loc[data['IS_AND'] == 'True' ]['CODE2'] = part2
+	data.loc[data['IS_AND'] == True]['CODE1'] = part1
+	data.loc[data['IS_AND'] == True ]['CODE2'] = part2
 
 	return data	
 
@@ -227,7 +224,7 @@ def CauseOfDeathPreprocessing(file_path:str,file_sep:str):
 
 
 
-def HilmoInpat_69_95_Preprocessing(file_path:str,file_sep:str):
+def HilmoInpat_PRE95_Preprocessing(file_path:str,file_sep:str):
 
 	# NB: data used was created here: script_1.py and is using ICD 8 + 9 codes
 	OriginalData = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
