@@ -1,6 +1,126 @@
-This repository contains scripts for initial registry pre-processing (only registers which are used for endpoint generation), scripts to transform data into a “detailed longitudinal” format and supporting code for running endpointer.py and transforming endpoint files into densified versions.
 
-# Pre-processing
+This repository contains the script for creating the detailed longitudinal file used in Finregistry, the script have been transposed starting from the original FinnGen one (see here: ) with some minor changes, for more info see **CHANGES** section of this file.
+
+# CODE
+
+*main.py* is used to create the deatiled longitudial file
+*func.py* contains all the function used to prepare the dataset that are then going to be merged in the detailed longitudinal file, for more info see **PREPARATION RULES** section of this file
+
+
+# PROCESSING SUMMARY
+
+
+
+**69-86 hilmo**: 
+- depending on the year need to define the ICD code version
+- format the dates referring to the patient entrance and exit from hospital/visit
+- rename some columns
+
+
+**87-93 hilmo**: 
+- depending on the year need to define the ICD code version
+- format the dates referring to the patient entrance and exit from hospital/visit
+- rename some columns
+
+**94-95 hilmo**: 
+- depending on the year need to define the ICD code version
+- format the dates referring to the patient entrance and exit from hospital/visit
+- rename some columns
+
+**PRE 95 hilmo**: 
+- join 69-86, 87-93 and 94-95 hilmo datasets
+- format date columns
+- add index column
+
+- evaluate EVENT_AGE + EVENT_YEAR + EVENT_YEARMNTH  
+NB: EVENT_AGE will be round up to 2 decimal points
+- ICDVER    = extracted based on EVENT_YEAR
+- SOURCE    = INPAT
+- CATEGORY  = ..
+- define CODEs
+NB: CODE3 available only for ICD10, threfore after 95
+
+- remove rows with missing EVENT_AGE 
+- remove duplicates
+
+**hilmo diagnosis**
+
+**hilmo operations**
+
+**hilmo heart**
+
+**Death Registry**
+- add birth date to dataset
+- define columns for detailed longitudinal
+- EVENT_AGE will be round up to 2 decimal points
+- remove rows with missing EVENT_AGE 
+- source = DEATH
+
+**Cancer Registry**
+- add birth date to dataset
+- define columns for detailed longitudinal
+- ICDVER is extracted starting from EVENT_YEAR
+- EVENT_AGE will be round up to 2 decimal points
+- remove rows with missing EVENT_AGE 
+- source = CANC
+
+
+**Kela Reimbursement**
+- add birth date to dataset
+- format date columns
+- add index column
+
+- evaluate EVENT_AGE + EVENT_YEAR + EVENT_YEARMNTH  
+NB: EVENT_AGE will be round up to 2 decimal points
+- ICDVER    = extracted based on EVENT_YEAR
+- SOURCE    = REIMB
+- CATEGORY  = NA
+- define CODEs
+
+- remove rows with missing EVENT_AGE 
+- remove rows with missing CODE1 and CODE2
+- remove duplicates
+
+
+
+**Kela Purchases**
+- add birth date to dataset
+- format date columns
+- add index column
+
+- evaluate EVENT_AGE + EVENT_YEAR + EVENT_YEARMNTH  
+NB: EVENT_AGE will be round up to 2 decimal points
+- ICDVER    = extracted based on EVENT_YEAR
+- SOURCE    = PURCH
+- CATEGORY  = NA
+- define CODEs
+
+- complete CODE3 if shorter than 6 digits
+- remove rows with missing EVENT_AGE 
+- remove rows with missing CODE1 and CODE2
+
+
+
+# CHANGES
+
+- no adding of PIC to the datasets      --> already available in Finregistry 
+- no joining of Finngen IDs             --> already available in Finregistry 
+- no removing of ID denials             --> don't have those in Finregistry
+
+- birth date is not created using the htun2date() function but is imported 
+- in Kela datasets the column names are alreay in uoppercase
+
+in Kela Reimburement:
+- SK1  -> KELA_DISEASE -> CODE1 rename in original code
+- DIAG -> ICD          -> CODE2 rename in original code
+
+in Kela Purchase:
+- ATC -> ATC_CODE -> CODE1 rename in original code
+
+
+
+
+# EXTRA INFORMATION (Andrius part)
 Small pre-processing steps (e.g. date format harmonisation, duplicate removal is performed here). Neither number of columns, nor column names are changed from the original.
 All pre-processing steps can be found on google drive: dsgelab>Finregistry>Data_dictionaries>QC preprocessing changes. 
 
@@ -51,7 +171,7 @@ The order of processing Hilmo files before ICD10 (HilmoICD89 and Hilmo_Oper89) I
 
 For ICD10 period processing should start with HilmoICD10_main as within it, a supporting file is created which contains basic visit information which is then joined with other files containing medical codes (on a unique visit identifier code “HILMO_ID”) to produce detailed longitudinal format files. In a main file inpatient/outpatient split is also made according to 'PALA' up to 2019 and 'YHTEYSTAPA'+’PALA’ codes for 2019-2021. 
 
-Within HilmoICD10_diag file some ICD10 code cleaning was done. Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '*&#+' which were also removed. 
+Within HilmoICD10_diag file some ICD10 code cleaning was done. Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '\*&#+' which were also removed. 
 
 HilmoICD10_heart contains heart surgery codes (recorded from 1994). For a period up to 2019 a small correction is made to a 'CATEGORY' variable which records a source of a code  HPO1:3 - Procedure for demanding heart patient, old coding and HPN1:N - Procedure for demanding heart patient, new coding. Some HPO (old) fully numeric codes were mixed in with HPN (new) codes always starting with the letter “A”. HPN is changed to HPO for fully numeric codes.
 
@@ -63,7 +183,7 @@ Similarly as with Hilmo preprocessing should start with Main.py as within it, a 
 
 The files for periods 2011-2016, 2017-2020 and 2020-2021 were received and processed separately (due to the large size and limited computational recourses). data for the year 2020 was contained within two files (2017-2020 and 2020-2021) therefore it was only retained from 2020-2021 data update period.
 
-Within ICD diag.py file some ICD10 code cleaning was done. Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '*&#+' which were also removed. 
+Within ICD diag.py file some ICD10 code cleaning was done. Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained special characters '\*&#+' which were also removed. 
 
 ICPC2.py file contains ICPC2 codes
 
@@ -89,53 +209,3 @@ These cleaning steps were:
 ## Kela reimbursement
 
 Kela reimbursement preprocessing is strigtforward and self-explanatory (looking at the code and data dictionary (detailed longitudinal variables sheet)).
-
-# Aggregating/sorting/splitting Detailed longitudinal
-
-To aggregate all detailed longitudinal format files into a single file use bash command: 
-
-```console
-awk 'FNR>1 || NR==1' *.csv > all.csv
-```
-
-To sort by FINREGISTRYID column and then by EVENT_AGE column use: 
-
-```console
-awk -F,  ' { t = $2; $2 = $3; $3 = t; OFS= ","; print; } '  all.csv > all2.csv
-sort -T /data/processed_data/detailed_longitudinal/supporting_files/ -t ',' -k1,1n  -S 70G --parallel=30 all2.csv > all3.csv
-awk -F,  ' { t = $3; $3 = $2; $2 = t; OFS= ","; print; } '  all3.csv > detailed_longitudinal.csv
-```
-
-Then run Utils/split_longitudinal.sh to split detialed longitudinal file containing data for 7166416 IDs (sorted by ID) into 24 files containing 300k IDs.
-
-
-# Endpoint generation
-
-In this section supporting files are createed and scripts described for running endpointer program [https://github.com/FINNGEN/Endpointter](https://github.com/FINNGEN/Endpointter). Read instructions on Endpointter repository for required input file descriptions.
-
-* Create baseline input file, which contains sex information using Endpointer/baseline.py    
-* Create Custom_ID_list input file using Endpointer/Custom_ID_list.py  
-* Use /FINNGEN/Endpointter/test_input/minimi_dummy.txt as another input file (change "FINNGENID" to "FINREGISTRYID" within that file)   
-* Use /FINNGEN/Endpointter/test_input/endpoint_short_list.txt as another input file (make shure that "ALL" is uncommented within that file)  
-* Use two MS Excel (xlsx) files with endpoint defintions and control definitions as input files they get piublished in FINNGEN repository e.g. /FINNGEN/DF10-endpoint-and-control-definitions/  (recomend not to use public version as column names in the public controls file are different)   
-* Within the main script file /FINNGEN/Endpointter/finngen_endpointter.py replace all occurances of "FINGENNID" with "FINREGISTRYID"
-also comment out rows 6993-6995:
-
-```python
-            else:
-                if subject_id in self.baseline_data_fu_end_age_map:
-                    age = self.baseline_data_fu_end_age_map[subject_id]
-```
-
-* Run Endpointer/Parallel_finregistry.sh to generate endpoints (make sure that all paths are correct). The script splits ID list to batches of 10,000 IDs and runs 30 times in parallel (for 300k ID's at a time). This is repeated 24 times in a loop untill endpoints are gnerated for all IDs. A single process uses up to approx 10.0G of memory (for 30 processes running in parallel approx up to 300G of memory needed in total ). Total running time of a single loop is approx 56 minutes or approx 24 hours to generate all endpoints. 
-
-* Run Endpointer/combine_endpoints.sh to combine endpoint longitudinal and wide first events files from separate 716 splits 
-* Run Endpointer/densify_first_events2022.py to create densified version of wide first events file, e.g.: 
-```console
-python3 /data/processed_data/endpointer/supporting_files/2020/densify_first_events2022.py -i /data/processed_data/endpointer/supporting_files/2020/wide_first_events_DF10_2022_09_29.txt.ALL.gz -o /data/processed_data/endpointer/wide_first_events_densified_DF10_2022_09_29.txt
-```
-* Run remove_OMITs_longitudinal2022.py to remove non-core endpoints from a longitudinal file. e.g.:
-```console
-python3 /data/processed_data/endpointer/supporting_files/2020/remove_OMITs_longitudinal2022.py --input /data/processed_data/endpointer/longitudinal_endpoints_DF10_2022_09_29.txt.ALL.gz --output /data/processed_data/endpointer/longitudinal_endpoints_no_omits_DF10_2022_09_29.txt.ALL.gz
-```
-
