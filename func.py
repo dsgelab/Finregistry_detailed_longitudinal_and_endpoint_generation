@@ -660,5 +660,15 @@ def CreateDetailedLongitudinal(hilmo_pre95,hilmo_pre95_operations,hilmo_post95_i
 	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
 
 	# age randomization
+	# NOT IN FINREGISTRY - ONLY IN FINNGEN
 
-	return ...
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 
+
+	return FinalData
+

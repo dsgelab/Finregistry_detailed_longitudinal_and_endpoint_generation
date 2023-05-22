@@ -15,7 +15,7 @@ if __name__ == '__main__':
 	hilmo_pre95 = pd.concat([hilmo_6986_prepared,hilmo_8793_prepared,hilmo_9495_prepared])
 	hilmo_pre95_prepared 	= Hilmo_PRE95_preparation(hilmo_pre95=hilmo_pre95,DOB_map=DOB_map)
 
-	death_prepared 			= DeathRegistry_preparation()
+	death_prepared 			= DeathRegistry_preparation('/data/original_data/sf_death / thl2019_1776_ksyy_tutkimus.csv.finreg_IDs',file_sep=';',DOB_map=DOB_map)
 	cancer_prepared 		= CancerRegistry_preparation('/data/original_data/thl_cancer/fcr_data.csv.finreg_IDs',file_sep=';',DOB_map=DOB_map)
 
 	filelist = #to import from sys print 
@@ -23,11 +23,6 @@ if __name__ == '__main__':
 		kela_prepared = KelaPurchase_preparation(f,sep = ';',DOB_map=DOB_map)
 		# write-out the file
 	reimbursement_prepared 	= KelaReimbursement_preparation('/data/original_data/kela_reimbursement/175_522_2020_LAAKEKORVAUSOIKEUDET.csv.finreg_IDs',file_sep=';')
-
-
-	#---------------------------
-	# PROCESSING
-
 
 
 	#---------------------------
