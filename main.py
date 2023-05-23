@@ -62,11 +62,11 @@ if __name__ == '__main__':
 	death_prepared 			= DeathRegistry_preparation(death,file_sep=';',DOB_map=DOB_map)
 	cancer_prepared 		= CancerRegistry_preparation(cancer,file_sep=';',DOB_map=DOB_map)
 
-	filelist = #to import from sys print 
+	filelist = ['175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDs' for n in range(1995,2020)]
 	for purchase_file in filelist:
 		purchase_prepared = KelaPurchase_preparation(purchase_file,sep = ';',DOB_map=DOB_map)
 		# write-out the file/concat
-		
+
 	reimbursement_prepared 	= KelaReimbursement_preparation(kela_reimburement,file_sep=';')
 
 
