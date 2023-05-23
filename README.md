@@ -9,39 +9,54 @@ This repository contains the script for creating the detailed longitudinal file 
 
 # PROCESSING SUMMARY
 
-
+NB: EVENT_AGE is going to be round up to 2 decimal positions
 
 **69-86 hilmo**: 
-- depending on the year need to define the ICD code version
-- format the dates referring to the patient entrance and exit from hospital/visit
-- rename some columns
+- import data and DOB
+- format date columns 
+
+- evaluate EVENT_AGE
+- evaluate EVENT_YEARMTH
+
+- insert INDEX
+- SOURCE = 'INPAT'
+- ICDVER = 8
+
+- create CODE 1 + CATEGORY by going from wide to long script on the desired columns
+DESIRED COLUMNS: 'DG1','DG2','DG3','DG4'
+- CODE 2-9 are missing 
 
 
 **87-93 hilmo**: 
-- depending on the year need to define the ICD code version
-- format the dates referring to the patient entrance and exit from hospital/visit
-- rename some columns
+- import data and DOB
+- format date columns 
+
+- evaluate EVENT_AGE
+- evaluate EVENT_YEARMTH
+
+- insert INDEX
+- SOURCE = 'INPAT'
+- ICDVER = 9
+
+- create CODE 1 + CATEGORY by going from wide to long script on the desired columns
+DESIRED COLUMNS: 'PDG','SDG1','SDG2','SDG3'
+- CODE 2-9 are missing 
 
 **94-95 hilmo**: 
-- depending on the year need to define the ICD code version
-- format the dates referring to the patient entrance and exit from hospital/visit
-- rename some columns
+- import data and DOB
+- format date columns 
 
-**PRE 95 hilmo**: 
-- join 69-86, 87-93 and 94-95 hilmo datasets
-- format date columns
-- add index column
+- evaluate EVENT_AGE
+- evaluate EVENT_YEARMTH
 
-- evaluate EVENT_AGE + EVENT_YEAR + EVENT_YEARMNTH  
-NB: EVENT_AGE will be round up to 2 decimal points
-- ICDVER    = extracted based on EVENT_YEAR
-- SOURCE    = INPAT
-- CATEGORY  = ..
-- define CODEs
-NB: CODE3 available only for ICD10, threfore after 95
+- insert INDEX
+- SOURCE = 'INPAT'
+- ICDVER = 9
 
-- remove rows with missing EVENT_AGE 
-- remove duplicates
+- create CODE 1 + CATEGORY going from wide to long script on the desired columns
+DESIRED COLUMNS: 
+- CODE 2-9 are missing 
+
 
 **hilmo diagnosis**
 
@@ -50,32 +65,49 @@ NB: CODE3 available only for ICD10, threfore after 95
 **hilmo heart**
 
 **Death Registry**
-- add birth date to dataset
-- define columns for detailed longitudinal
-- EVENT_AGE will be round up to 2 decimal points
+- import data and DOB
+- format date columns 
+
+- evaluate EVENT_AGE
+- evaluate EVENT_YEAR
+- evaluate EVENT_YEARMTH
+
+- insert INDEX
+- SOURCE = 'DEATH'
+- ICDVER = calculated based on EVENT_YEAR
+
 - remove rows with missing EVENT_AGE 
-- source = DEATH
+- remove rows with missing CODE1 and CODE2
+
 
 **Cancer Registry**
-- add birth date to dataset
-- define columns for detailed longitudinal
-- ICDVER is extracted starting from EVENT_YEAR
-- EVENT_AGE will be round up to 2 decimal points
+- import data and DOB
+- format date columns 
+
+- evaluate EVENT_AGE
+- evaluate EVENT_YEAR
+- evaluate EVENT_YEARMTH
+
+- insert INDEX
+- SOURCE = 'CANC'
+- ICDVER = calculated based on EVENT_YEAR
+
 - remove rows with missing EVENT_AGE 
-- source = CANC
+- remove rows with missing CODE1 and CODE2
 
 
 **Kela Reimbursement**
-- add birth date to dataset
-- format date columns
-- add index column
 
-- evaluate EVENT_AGE + EVENT_YEAR + EVENT_YEARMNTH  
-NB: EVENT_AGE will be round up to 2 decimal points
-- ICDVER    = extracted based on EVENT_YEAR
-- SOURCE    = REIMB
-- CATEGORY  = NA
-- define CODEs
+- import data and DOB
+- format date columns 
+
+- evaluate EVENT_AGE
+- evaluate EVENT_YEAR
+- evaluate EVENT_YEARMTH
+
+- insert INDEX
+- SOURCE = 'REIMB'
+- ICDVER = calculated based on EVENT_YEAR
 
 - remove rows with missing EVENT_AGE 
 - remove rows with missing CODE1 and CODE2
@@ -84,20 +116,20 @@ NB: EVENT_AGE will be round up to 2 decimal points
 
 
 **Kela Purchases**
-- add birth date to dataset
-- format date columns
-- add index column
+- import data and DOB
+- format date columns 
 
-- evaluate EVENT_AGE + EVENT_YEAR + EVENT_YEARMNTH  
-NB: EVENT_AGE will be round up to 2 decimal points
-- ICDVER    = extracted based on EVENT_YEAR
-- SOURCE    = PURCH
-- CATEGORY  = NA
-- define CODEs
+- evaluate EVENT_AGE
+- evaluate EVENT_YEAR
+- evaluate EVENT_YEARMTH
 
-- complete CODE3 if shorter than 6 digits
+- insert INDEX
+- SOURCE = 'PURCH'
+- ICDVER = calculated based on EVENT_YEAR
+
 - remove rows with missing EVENT_AGE 
 - remove rows with missing CODE1 and CODE2
+- remove duplicates
 
 
 
@@ -109,14 +141,6 @@ NB: EVENT_AGE will be round up to 2 decimal points
 
 - birth date is not created using the htun2date() function but is imported 
 - in Kela datasets the column names are alreay in uoppercase
-
-in Kela Reimburement:
-- SK1  -> KELA_DISEASE -> CODE1 rename in original code
-- DIAG -> ICD          -> CODE2 rename in original code
-
-in Kela Purchase:
-- ATC -> ATC_CODE -> CODE1 rename in original code
-
 
 
 
