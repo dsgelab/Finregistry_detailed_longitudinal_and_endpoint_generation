@@ -22,9 +22,14 @@ NB: EVENT_AGE is going to be round up to 2 decimal positions
 - SOURCE = 'INPAT'
 - ICDVER = 8
 
-- create CODE 1 + CATEGORY by going from wide to long script on the desired columns
+- create CODE 1 + CATEGORY by going from wide to long on the desired columns
 DESIRED COLUMNS: 'DG1','DG2','DG3','DG4'
 - CODE 2-9 are missing 
+
+- CODE4 is missing if negative hospital days
+- remove rows with missing EVENT_AGE 
+- remove rows with missing CODE1 and CODE2
+- remove duplicates
 
 
 **87-93 hilmo**: 
@@ -38,9 +43,14 @@ DESIRED COLUMNS: 'DG1','DG2','DG3','DG4'
 - SOURCE = 'INPAT'
 - ICDVER = 9
 
-- create CODE 1 + CATEGORY by going from wide to long script on the desired columns
+- create CODE 1 + CATEGORY by going from wide to long on the desired columns
 DESIRED COLUMNS: 'PDG','SDG1','SDG2','SDG3'
 - CODE 2-9 are missing 
+
+- CODE4 is missing if negative hospital days
+- remove rows with missing EVENT_AGE 
+- remove rows with missing CODE1 and CODE2
+- remove duplicates
 
 **94-95 hilmo**: 
 - import data and DOB
@@ -53,10 +63,14 @@ DESIRED COLUMNS: 'PDG','SDG1','SDG2','SDG3'
 - SOURCE = 'INPAT'
 - ICDVER = 9
 
-- create CODE 1 + CATEGORY going from wide to long script on the desired columns
+- create CODE 1 + CATEGORY going from wide to long on the desired columns
 DESIRED COLUMNS: 
 - CODE 2-9 are missing 
 
+- CODE4 is missing if negative hospital days
+- remove rows with missing EVENT_AGE 
+- remove rows with missing CODE1 and CODE2
+- remove duplicates
 
 **hilmo diagnosis**
 
@@ -91,9 +105,11 @@ DESIRED COLUMNS:
 - insert INDEX
 - SOURCE = 'CANC'
 - ICDVER = calculated based on EVENT_YEAR
+- create CODE 1 + CATEGORY going from wide to long on the desired columns
+DESIRED COLUMNS: 'TPKS','VKS','M1','M2','M3','M4'
 
 - remove rows with missing EVENT_AGE 
-- remove rows with missing CODE1 and CODE2
+- remove duplicates
 
 
 **Kela Reimbursement**
@@ -109,6 +125,7 @@ DESIRED COLUMNS:
 - SOURCE = 'REIMB'
 - ICDVER = calculated based on EVENT_YEAR
 
+- remove ICD code dots if present
 - remove rows with missing EVENT_AGE 
 - remove rows with missing CODE1 and CODE2
 - remove duplicates
@@ -127,6 +144,7 @@ DESIRED COLUMNS:
 - SOURCE = 'PURCH'
 - ICDVER = calculated based on EVENT_YEAR
 
+- complete VNR code if shorter than 6 digits
 - remove rows with missing EVENT_AGE 
 - remove rows with missing CODE1 and CODE2
 - remove duplicates
@@ -141,6 +159,9 @@ DESIRED COLUMNS:
 
 - birth date is not created using the htun2date() function but is imported 
 - in Kela datasets the column names are alreay in uoppercase
+
+- in cancer registry not defining the following variables:
+'MY_CANC_COD_TOPO','MY_CANC_COD_AGE','MY_CANC_COD_YEAR'
 
 
 
