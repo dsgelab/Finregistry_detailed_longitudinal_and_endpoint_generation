@@ -48,8 +48,8 @@ def SpecialCharacterSplit(Data):
 	Data_tosplit 	= Data_tosplit.loc[Data_tosplit['IS_PLUS'] == True]
 	part1, part2 	= Data_tosplit['CODE1'].str.split('\\+')
 
-	Data.loc[Data.IS_PLUS == True]['CODE2'] = part1
-	Data.loc[Data.IS_PLUS == True]['CODE1'] = part2
+	Data.loc[Data.IS_PLUS == True,'CODE2'] = part1
+	Data.loc[Data.IS_PLUS == True,'CODE1'] = part2
 
 	#------------------
 	# RULE: if CODE1 has a '#' then first part goes to CODE1 and second to CODE3
@@ -58,8 +58,8 @@ def SpecialCharacterSplit(Data):
 	Data_tosplit 	= Data_tosplit.loc[Data_tosplit['IS_HAST'] == True]
 	part1, part2 	= Data_tosplit['CODE1'].str.split('\\+')
 
-	Data.loc[Data['IS_HAST'] == True]['CODE1'] = part1
-	Data.loc[Data['IS_HAST'] == True]['CODE3'] = part2
+	Data.loc[Data['IS_HAST'] == True,'CODE1'] = part1
+	Data.loc[Data['IS_HAST'] == True,'CODE3'] = part2
 
 	#------------------
 	# RULE: if CODE1 has a '&' then first part goes to CODE1 and second to CODE2
@@ -68,8 +68,8 @@ def SpecialCharacterSplit(Data):
 	Data_tosplit 	= Data_tosplit.loc[Data_tosplit['IS_AND'] == True]
 	part1, part2 	= Data_tosplit['CODE1'].str.split('\\+')
 
-	Data.loc[Data['IS_AND'] == True]['CODE1'] = part1
-	Data.loc[Data['IS_AND'] == True ]['CODE2'] = part2
+	Data.loc[Data['IS_AND'] == True,'CODE1'] = part1
+	Data.loc[Data['IS_AND'] == True,'CODE2'] = part2
 
 	return Data	
 
@@ -103,29 +103,29 @@ def Hilmo_69_86_preparation(file_path:str, file_sep=';',DOB_map):
 	NewData = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
 	NewData.rename( 'date_of_birth':'SYNTPVM', inplace = True )
 
-	# format date columns (patient in and out dates)
-	NewData['TULOPVM'] 		= pd.to_datetime( NewData['TULOPV'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
-	NewData['LAHTOPVM']		= pd.to_datetime( NewData['LAHTOPV'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 	# format date columns (birth and death date)
-	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str, format='%Y-%m-%d',errors='coerce' )
-	NewData['DEATH_DATE'] 	= pd.to_datetime( NewData.death_date.str, format='%Y-%m-%d', errors='coerce')
+	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM,    format='%Y-%m-%d',errors='coerce' )
+	NewData['DEATH_DATE'] 	= pd.to_datetime( NewData.death_date, format='%Y-%m-%d',errors='coerce' )
+	# format date columns (patient in and out dates)
+	NewData['TULOPVM'] 		= pd.to_datetime( NewData.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	NewData['LAHTOPVM']		= pd.to_datetime( NewData.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
 	# check that event is after death
 	NewData.loc[NewData.TULOPVM > NewData.DEATH_DATE,'TULOPVM'] = NewData.DEATH_DATE
 
 	# define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
-	NewData['EVENT_YRMNTH']	= NewData['TULOPVM'].to_string()[:7]
-	NewData['INDEX'] 		= np.arange(NewData.shape[0] ) + 1
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YRMNTH']	= NewData.TULOPVM.dt.strftime('%Y-%m')
+	NewData['INDEX'] 		= np.arange(NewData.shape[0]) + 1
 	NewData['SOURCE'] 		= 'INPAT'
+	NewData['ICDVER'] 		= 8
 	NewData['CODE2']		= np.NaN
 	NewData['CODE3']		= np.NaN
-	NewData['CODE4']		= NewData.LAHTOPVM - NewData.TULOPVM
-	NewData['ICDVER'] 		= 8
+	NewData['CODE4']		= (NewData.LAHTOPVM - NewData.TULOPVM).dt.days
 
 	# the following code will reshape the Dataframe from wide to long
-	# if there was a value under one of the category columns this will be transferred under the column CODE1
-	# NB: the category column values are going to be remapped after as desired  
+	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+	# the CATEGORY names are going to be remapped to the desired names
 
 	# perform the reshape
 	CATEGORY_DICTIONARY	= {
@@ -134,9 +134,8 @@ def Hilmo_69_86_preparation(file_path:str, file_sep=';',DOB_map):
 		'DG3':'2',
 		'DG4':'3'}
 	VAR_FOR_RESHAPE = CATEGORY_DICTIONARY.keys()
-	TO_RESHAPE 		= VAR_FOR_RESHAPE.insert('TNRO')
 
-	ReshapedData = pd.melt(NewData[ TO_RESHAPE ],
+	ReshapedData = pd.melt(NewData[:, VAR_FOR_RESHAPE.insert('TNRO') ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -186,6 +185,8 @@ def Hilmo_69_86_preparation(file_path:str, file_sep=';',DOB_map):
 	# remove duplicates ?
 	...
 
+	# special character split
+
 	return CodeCheck
 
 
@@ -200,27 +201,27 @@ def Hilmo_87_93_preparation(file_path:str, file_sep=';',DOB_map):
 	NewData.rename( 'date_of_birth':'SYNTPVM', inplace = True )
 
 	# format date columns (birth and death date)
-	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str, format='%Y-%m-%d', errors='coerce' )
+	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str,    format='%Y-%m-%d', errors='coerce' )
 	NewData['DEATH_DATE'] 	= pd.to_datetime( NewData.death_date.str, format='%Y-%m-%d', errors='coerce')
 	# format date columns (patient in and out dates)
-	NewData['TULOPVM'] 		= pd.to_datetime( NewData['TUPVA'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
-	NewData['LAHTOPVM'] 	= pd.to_datetime( NewData['LPVM'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	NewData['TULOPVM'] 		= pd.to_datetime( NewData.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	NewData['LAHTOPVM']		= pd.to_datetime( NewData.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
 	# check that event is after death
 	NewData.loc[NewData.TULOPVM > NewData.DEATH_DATE,'TULOPVM'] = NewData.DEATH_DATE
 
 	# define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
-	NewData['EVENT_YRMNTH']	= NewData['TULOPVM'].to_string()[:7]
-	NewData['INDEX'] 		= np.arange(NewData.shape[0] ) + 1
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YRMNTH']	= NewData.TULOPVM.dt.strftime('%Y-%m')
+	NewData['INDEX'] 		= np.arange(NewData.shape[0]) + 1
 	NewData['SOURCE'] 		= 'INPAT'
-	NewData['CODE3']		= np.NaN
-	NewData['CODE4']		= NewData.LAHTOPVM - NewData.TULOPVM
 	NewData['ICDVER'] 		= 9
+	NewData['CODE3']		= np.NaN
+	NewData['CODE4']		= (NewData.LAHTOPVM - NewData.TULOPVM).dt.days
 
 	# the following code will reshape the Dataframe from wide to long
-	# if there was a value under one of the category columns this will be transferred under the column CODE1
-	# NB: the category columns are going to be renamed beforehand as desired   
+	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+	# the CATEGORY names are going to be remapped to the desired names  
 
 	# rename categories 
 	column_names 	= NewData.columns
@@ -240,9 +241,8 @@ def Hilmo_87_93_preparation(file_path:str, file_sep=';',DOB_map):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = NewData.columns[ NewData.columns in [set(new_names)^set(column_names)] ]
-	TO_RESHAPE = VAR_FOR_RESHAPE.insert('TID')
 
-	ReshapedData = pd.melt(NewData[ TO_RESHAPE ],
+	ReshapedData = pd.melt(NewData[:, VAR_FOR_RESHAPE.insert('TNRO') ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -306,27 +306,27 @@ def Hilmo_94_95_preparation(file_path:str, file_sep=';',DOB_map):
 	NewData.rename( 'date_of_birth':'SYNTPVM', inplace = True )
 
 	# format date columns (birth and death date)
-	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str, format='%Y-%m-%d', errors='coerce' )
-	NewData['DEATH_DATE'] 	= pd.to_datetime( NewData.death_date.str, format='%Y-%m-%d', errors='coerce')
+	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str,    format='%Y-%m-%d', errors='coerce' )
+	NewData['DEATH_DATE'] 	= pd.to_datetime( NewData.death_date.str, format='%Y-%m-%d', errors='coerce' )
 	# format date columns (patient in and out dates)
-	NewData['TULOPVM'] 		= pd.to_datetime( NewData['TUPVA'].str.slice(stop=10), format='%d.%m.%Y', errors='coerce' )
-	NewData['LAHTOPVM'] 	= pd.to_datetime( NewData['LPVM'].str.slice(stop=10), format='%d.%m.%Y', errors='coerce' )
+	NewData['TULOPVM'] 		= pd.to_datetime( NewData.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	NewData['LAHTOPVM']		= pd.to_datetime( NewData.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 	
 	# check that event is after death
 	NewData.loc[NewData.TULOPVM > NewData.DEATH_DATE,'TULOPVM'] = NewData.DEATH_DATE
 
 	# define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
-	NewData['EVENT_YRMNTH']	= NewData['TULOPVM'].to_string()[:7]
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YRMNTH']	= NewData.TULOPVM.dt.strftime('%Y-%m')
 	NewData['INDEX'] 		= np.arange(NewData.shape[0] ) + 1
 	NewData['SOURCE'] 		= 'INPAT'
 	NewData['CODE3']		= np.NaN
-	NewData['CODE4']		= NewData.LAHTOPVM - NewData.TULOPVM
+	NewData['CODE4']		= (NewData.LAHTOPVM - NewData.TULOPVM).dt.days
 	NewData['ICDVER'] 		= 9
 
 	# the following code will reshape the Dataframe from wide to long
-	# if there was a value under one of the category columns this will be transferred under the column CODE1
-	# NB: the category columns are going to be renamed beforehand as desired   
+	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+	# the CATEGORY names are going to be remapped to the desired names  
 
 	# rename categories
 	column_names 	= NewData.columns
@@ -344,9 +344,8 @@ def Hilmo_94_95_preparation(file_path:str, file_sep=';',DOB_map):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = NewData.columns[ NewData.columns in [set(new_names)^set(column_names)] ]
-	TO_RESHAPE = VAR_FOR_RESHAPE.insert('TNRO')
 
-	ReshapedData = pd.melt(NewData[ TO_RESHAPE ],
+	ReshapedData = pd.melt(NewData[:, VAR_FOR_RESHAPE.insert('TNRO') ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -415,24 +414,24 @@ def Hilmo_POST95_Preparation(file_path:str,file_sep=';'):
 	NewData.rename( 'date_of_birth':'SYNTPVM', inplace = True )
 
 	# format date columns (birth and death date)
-	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str, format='%Y-%m-%d', errors='coerce' )
+	NewData['SYNTPVM'] 		= pd.to_datetime( NewData.SYNTPVM.str,    format='%Y-%m-%d', errors='coerce' )
 	NewData['DEATH_DATE'] 	= pd.to_datetime( NewData.death_date.str, format='%Y-%m-%d', errors='coerce' )
 	# format date columns (patient in and out dates)
-	NewData['TULOPVM'] 		= pd.to_datetime( NewData['TUPVA'].str.slice(stop=10), format='%d.%m.%Y', errors='coerce' )
-	NewData['LAHTOPVM'] 	= pd.to_datetime( NewData['LPVM'].str.slice(stop=10), format='%d.%m.%Y', errors='coerce' )
+	NewData['TULOPVM'] 		= pd.to_datetime( NewData.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	NewData['LAHTOPVM']		= pd.to_datetime( NewData.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
 	# define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
-	NewData['EVENT_YRMNTH']	= NewData['TULOPVM'].to_string()[:7]
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YRMNTH']	= NewData.TULOPVM.dt.strftime('%Y-%m')
 	NewData['INDEX'] 		= np.arange(NewData.shape[0] ) + 1
 	NewData['SOURCE'] 		= 'INPAT'
 	NewData['CODE3']		= np.NaN
-	NewData['CODE4']		= NewData.LAHTOPVM - NewData.TULOPVM
+	NewData['CODE4']		= (NewData.LAHTOPVM - NewData.TULOPVM).dt.days
 	NewData['ICDVER'] 		= 10
 
 	# the following code will reshape the Dataframe from wide to long
-	# if there was a value under one of the category columns this will be transferred under the column CODE1
-	# NB: the category columns are going to be renamed beforehand as desired   
+	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+	# the CATEGORY names are going to be remapped to the desired names 
 
 	# rename categories
 	column_names 	= NewData.columns
@@ -450,9 +449,8 @@ def Hilmo_POST95_Preparation(file_path:str,file_sep=';'):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = NewData.columns[ NewData.columns in [set(new_names)^set(column_names)] ]
-	TO_RESHAPE = VAR_FOR_RESHAPE.insert('TNRO')
 
-	ReshapedData = pd.melt(NewData[ TO_RESHAPE ],
+	ReshapedData = pd.melt(NewData[:, VAR_FOR_RESHAPE.insert('TNRO') ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -573,8 +571,8 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';'):
 	Data.rename( columns = {'TOIMENPIDE':'CODE1','TULOPVM':'PVM'},inplace=True )
 
 	# the following code will reshape the Dataframe from wide to long
-	# if there was a value under one of the category columns this will be transferred under the column CODE1
-	# NB: the category columns are going to be renamed beforehand as desired   
+	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+	# the CATEGORY names are going to be remapped to the desired names
 
 	# rename categories
 	column_names 	= MergedData.columns
@@ -584,9 +582,8 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';'):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = MergedData.columns[ MergedData.columns in [set(new_names)^set(column_names)] ]
-	TO_RESHAPE = VAR_FOR_RESHAPE.insert('TID')
 
-	ReshapedData = pd.melt(MergedData[ TO_RESHAPE ],
+	ReshapedData = pd.melt(NewData[:, VAR_FOR_RESHAPE.insert('TNRO') ],
 		id_vars 	= 'TID',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -711,9 +708,9 @@ def AvoHilmo_preparation(file_path:str,file_sep=';',DOB_map):
 	NewData.loc[NewData.KAYNTI_ALKOI > NewData.DEATH_DATE,'KAYNTI_ALKOI'] = NewData.DEATH_DATE
 
 	# define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.KAYNTI_ALKOI - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
-	NewData['EVENT_YRMNTH']	= NewData['KAYNTI_ALKOI'].str.slice(6,10)
-	NewData['EVENT_YEAR']	= NewData.KAYNTI_ALKOI.year
+	NewData['EVENT_AGE'] 	= round( (NewData.KAYNTI_ALKOI - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YRMNTH']	= NewData.KAYNTI_ALKOI.dt.strftime('%Y-%m')
+	NewData['EVENT_YEAR']	= NewData.KAYNTI_ALKOI.dt.year
 	NewData['ICDVER']		= 10
 	NewData['SOURCE']		= 'PRIM_OUT'
 	NewData['INDEX']		= NewData.AVOHILMO_ID
@@ -759,9 +756,9 @@ def DeathRegistry_preparation(file_path:str, file_sep=';', DOB_map):
 	NewData['dg_date']		= pd.to_datetime( NewData['dg_date'], format='%Y-%m-%d' )
 
 	# # define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
-	NewData['EVENT_YEAR'] 	= NewData.dg_date.year	
-	NewData['EVENT_YRMNTH']	= NewData['dg_date'].to_string()[:7]
+	NewData['EVENT_AGE'] 	= round( (NewData.TULOPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_YEAR'] 	= NewData.dg_date.dt.year	
+	NewData['EVENT_YRMNTH']	= NewData.dg_date.dt.strftime('%Y-%m')
 	NewData['INDEX'] 		= np.arange(NewData.shape[0] ) + 1
 	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
 	NewData['SOURCE'] 		= 'DEATH'
@@ -834,9 +831,9 @@ def CancerRegistry_preparation(file_path:str, file_sep=';', DOB_map):
 	NewData['dg_date']			= pd.to_datetime( NewData['dg_date'], format='%Y-%m-%d' )
 
 	# # define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 		= round( (NewData.dg_date - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)	
+	NewData['EVENT_AGE'] 		= round( (NewData.dg_date - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
 	NewData['EVENT_YEAR'] 		= NewData.dg_date.year	
-	NewData['EVENT_YRMNTH']		= NewData.dg_date[:7]
+	NewData['EVENT_YRMNTH']		= NewData.dg_date.dt.strftime('%Y-%m')
 	NewData['ICDVER'] 			= 'O3'
 	NewData['INDEX'] 			= np.arange(NewData.shape[0] ) + 1
 	NewData['SOURCE'] 			= 'CANC'
@@ -883,9 +880,9 @@ def KelaReimbursement_preparation(file_path:str, file_sep=';', DOB_map):
 	NewData['LAAKEKORVPVM']	= pd.to_datetime( NewData['ALPV'], format='%Y-%m-%d' )
 
 	# define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEKORVPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)
+	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEKORVPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)
 	NewData['EVENT_YEAR'] 	= NewData.LAAKEKORVPVM.year
-	NewData['EVENT_YRMNTH']	= NewData.LAAKEKORVPVM[:7]
+	NewData['EVENT_YRMNTH']	= NewData.LAAKEKORVPVM.dt.strftime('%Y-%m')
 	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
 	NewData['INDEX'] 		= np.arange(NewData.shape[0]) + 1
 	NewData['SOURCE'] 		= 'REIMB'
@@ -935,11 +932,11 @@ def KelaPurchase_preparation(file_path:str, file_sep=';',DOB_map):
 	NewData['LAAKEOSTPVM'] 	= pd.to_datetime( NewData['OSTOPV'], format='%Y-%m-%d' ) 	
 
 	# # define columns for detailed longitudinal
-	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEOSTPVM - NewData.SYNTPVM).days/DAYS_TO_YEARS, 2)
+	NewData['EVENT_AGE'] 	= round( (NewData.LAAKEOSTPVM - NewData.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)
 	NewData['EVENT_YEAR'] 	= NewData.LAAKEOSTPVM.year
-	NewData['EVENT_YRMNTH']	= NewData.LAAKEOSTPVM[:7]
+	NewData['EVENT_YRMNTH']	= NewData.LAAKEOSTPVM.dt.strftime('%Y-%m')
 	NewData['ICDVER'] 		= 8 + (NewData.EVENT_YEAR>1986).astype(int) + (NewData.EVENT_YEAR>1995).astype(int) 
-	NewData['INDEX'] 		= np.arange(NewData.shape[0] ) + 1
+	NewData['INDEX'] 		= np.arange(NewData.shape[0]) + 1
 	NewData['SOURCE'] 		= 'PURCH'
 	NewData['CATEGORY'] 	= np.NaN
 

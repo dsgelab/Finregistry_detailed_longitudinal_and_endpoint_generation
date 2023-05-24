@@ -18,8 +18,8 @@ BIRTH_DEATH_MAP  = min_pheno[:,['FINREGISTRYID','date_of_birth','death_date']]
 
 THL_HILMO_PATH = '/data/original_data/thl_hilmo/'
 
-poisto_1969_1986 			= THL_HILMO_PATH+'thl2019_1776_poisto_6986.csv.finreg_IDs'
-poisto_1987_1993 			= THL_HILMO_PATH+'thl2019_1776_poisto_8793.csv.finreg_IDs'
+hilmo_1969_1986 			= THL_HILMO_PATH+'thl2019_1776_poisto_6986.csv.finreg_IDs'
+hilmo_1987_1993 			= THL_HILMO_PATH+'thl2019_1776_poisto_8793.csv.finreg_IDs'
 hilmo_1994_1995  			= THL_HILMO_PATH+'thl2019_1776_hilmo_9495.csv.finreg_IDs' 
 hilmo_1995_2018  			= THL_HILMO_PATH+'thl2019_1776_hilmo.csv.finreg_IDs' 
 hilmo_2019_2021  			= THL_HILMO_PATH+'THL2021_2196_HILMO_2019_2021.csv.finreg_IDs' 
@@ -75,8 +75,8 @@ if __name__ == '__main__':
 	# PREPARATION
 
 	# HILMO
-	hilmo_6986_prepared 		= Hilmo_69_86_preparation(poisto_1969_1986,DOB_map=BIRTH_DEATH_MAP)
-	hilmo_8793_prepared 		= Hilmo_87_93_preparation(poisto_1987_1993,DOB_map=BIRTH_DEATH_MAP)
+	hilmo_6986_prepared 		= Hilmo_69_86_preparation(hilmo_1969_1986,DOB_map=BIRTH_DEATH_MAP)
+	hilmo_8793_prepared 		= Hilmo_87_93_preparation(hilmo_1987_1993,DOB_map=BIRTH_DEATH_MAP)
 	hilmo_9495_prepared 		= Hilmo_94_95_preparation(hilmo_1994_1995,DOB_map=BIRTH_DEATH_MAP)	
 	hilmo_9518_prepared 		= Hilmo_POST95_preparation(hilmo_1995_2018)
 	hilmo_1921_prepared 		= Hilmo_POST95_preparation(hilmo_2019_2021)

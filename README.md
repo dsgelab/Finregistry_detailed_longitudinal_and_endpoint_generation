@@ -22,24 +22,23 @@ This repository contains the script for creating the detailed longitudinal file 
 # PROCESSING SUMMARY
 
 Each register is transformed into a detailed longitudinal file structure containing the following variables: <br>FINREGISTRYID, PVM, EVENT_AGE, EVENT_YRMNTH, CODE1, CODE2, CODE3, CODE4, ICDVER, CATEGORY, INDEX, SOURCE. 
-\
 All missing values in detailed longitudinal are replaced with a string "NA" 
-\
+
 NB: EVENT_AGE is going to be round up to 2 decimal positions
 
 ## Hilmo 
 
-Hilmo registry is split into separate files because throughout the registry existence three ICD disease classification versions changed (8 to 10):
+Throughout the registry existence three ICD disease classification versions changed (8 to 10):
 * ICD8: From the start of the register up to the end of 1986;
 * ICD9: From 1987-01-01 to the end of 1995;
 * ICD10: From 1996-01-01 up to now.
 
 In addition to that, for the period 1994-1995 there is a separate Hilmo file with ICD9 codes, this is due to the change of coding within the register in 1994 (not due to the change in ICD version): "The care notification register was introduced in 1994, in which case it replaced the previously used Deletion Notification Register".
 
-Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column of detailed longitudinal). 
-inpatient/outpatient split is made according to 'PALA' up to 2019 and 'YHTEYSTAPA'+’PALA’ codes for 2019-2021. 
+Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column of detailed longitudinal). The inpatient/outpatient split is made according to 'PALA' up to 2019 and 'YHTEYSTAPA'+’PALA’ codes for 2019-2021. 
+NB: see function *Hilmo_defineOutpat()* in **func.py** 
 
-In addition to diagnostic ICD codes, heart surgery codes (recorded from 1994) and other surgical codes are also included in the detailed longitudinal. 
+In addition to the 'general' hilmo file we have information about diagnostic ICD codes (hilmo diagnosis), heart surgery codes (hilmo heart, recorded from 1994) and other surgical codes (hilmo operations). 
 
 Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained a special characters {+,\*,#,@} which were also removed. 
 
