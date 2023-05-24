@@ -11,8 +11,13 @@ This repository contains the script for creating the detailed longitudinal file 
 
 NB: EVENT_AGE is going to be round up to 2 decimal positions
 
+RULE FOR HILMO INPAT:
+- after 2018 & YHTEYSTAPA=='R80' 
+- after 2018 & YHTEYSTAPA=='R10' & PALA in {1,3,4,5,6,7,8,31}
+- after 2018 & YHTEYSTAPA=='' & PALA in {1,3,4,5,6,7,8,31}
+
 **69-86 hilmo**: 
-- import data and DOB
+- import data and extra dates
 - format date columns 
 
 - evaluate EVENT_AGE
@@ -33,7 +38,7 @@ DESIRED COLUMNS: 'DG1','DG2','DG3','DG4'
 
 
 **87-93 hilmo**: 
-- import data and DOB
+- import data and extra dates
 - format date columns 
 
 - evaluate EVENT_AGE
@@ -53,7 +58,7 @@ DESIRED COLUMNS: 'PDG','SDG1','SDG2','SDG3'
 - remove duplicates
 
 **94-95 hilmo**: 
-- import data and DOB
+- import data and extra dates
 - format date columns 
 
 - evaluate EVENT_AGE
@@ -77,6 +82,37 @@ DESIRED COLUMNS:
 **hilmo operations**
 
 **hilmo heart**
+
+**avo hilmo icd10**
+- import data
+- define CODE1 and CATEGORY
+
+**avo hilmo icpc2**
+- import data
+- define CODE1 and CATEGORY
+
+**avo hilmo oral**
+- import data
+- define CODE1 and CATEGORY
+
+**avo hilmo operations**
+- import data
+- define CODE1 and CATEGORY
+
+**avo hilmo**
+- import data and extra dates
+- format date columns 
+
+- evaluate EVENT_AGE
+- evaluate EVENT_YEARMTH
+
+- insert INDEX
+- ICDVER = 10
+- SOURCE = 'PRIM_OUT'
+
+
+- remove rows with missing EVENT_AGE 
+
 
 **Death Registry**
 - import data and DOB
