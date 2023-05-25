@@ -21,6 +21,9 @@ from func import *
 from config import *
 
 
+##########################################################
+# CREATE DETAILED LONGITUDINAL 
+
 if __name__ == '__main__':
 
 	# HILMO
@@ -78,11 +81,6 @@ if __name__ == '__main__':
 	for avohilmo in avohilmo_to_process:
 		for df in avohilmo_to_merge:
 			AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
-
-	# merge with previous part
-
-
-	AvoHilmo = foo()
 
 	# OTHER REGISTRIES
 	print('start processing death registry')

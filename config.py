@@ -53,5 +53,5 @@ kela_reimburement 			= '/data/original_data/kela_reimbursement/175_522_2020_LAAK
 kela_purchase_filelist		= ['/data/original_data/kela_purchase/175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDs' for n in range(1995,2020)]
 
 
-DETAILED_LONGITUDINAL_PATH 	= ...
-TEST_FOLDER_PATH 			= ...
+DETAILED_LONGITUDINAL_PATH 	= #TOADD
+TEST_FOLDER_PATH 			= #TOADD

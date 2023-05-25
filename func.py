@@ -48,6 +48,7 @@ def Write2TestFile(Data, path=TEST_FILE_PATH):
 	Data.to_csv(path_or_buf=TEST_FILE_PATH, mode="w", sep=';', encoding='latin-1')
 
 
+
 def SpecialCharacterSplit(Data):
 
 	#------------------
@@ -84,6 +85,7 @@ def SpecialCharacterSplit(Data):
 	Data.loc[Data['IS_AND'] == True,'CODE2'] = part2
 
 	return Data	
+
 
 
 def Hilmo_DefineOutpat(hilmo):
