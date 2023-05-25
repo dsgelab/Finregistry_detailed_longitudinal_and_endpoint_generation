@@ -35,6 +35,8 @@ COLUMNS_2_KEEP = [
 	"CODE6", 
 	"CODE7"]
 
+
+
 ##########################################################
 # UTILITY FUNCTIONS
 
@@ -42,7 +44,7 @@ def Write2DetailedLongitudinal(Data, path=DETAILED_LONGITUDINAL_PATH):
 	Data.to_csv(path_or_buf=path, mode="a", sep=';', encoding='latin-1')
 
 def Write2TestFile(Data, path=TEST_FILE_PATH):
-	#NB: replace existing file if there is 
+	#NB: replace existing file if there is one
 	Data.to_csv(path_or_buf=TEST_FILE_PATH, mode="w", sep=';', encoding='latin-1')
 
 
@@ -197,7 +199,7 @@ def Hilmo_69_86_processing(file_path:str, file_sep=';',DOB_map, test=False):
 	Data.drop_duplicates(keep='first', inplace=True)
 
 	# special character split
-	...
+	Data = SpecialCharacterSplit(Data)
 
 	# FINALIZE
 	Data = Data.loc[ !Data.EVENT_AGE<0 & !Data.EVENT_AGE>110]
@@ -320,8 +322,7 @@ def Hilmo_87_93_processing(file_path:str, file_sep=';',DOB_map, test=False):
 	Data.drop_duplicates(keep='first', inplace=True)
 
 	# special character split
-	...
-
+	Data = SpecialCharacterSplit(Data)
 
 	# FINALIZE
 	Data = Data.loc[ !Data.EVENT_AGE<0 & !Data.EVENT_AGE>110]
@@ -442,8 +443,7 @@ def Hilmo_94_95_processing(file_path:str, file_sep=';',DOB_map, test=False):
 	Data.drop_duplicates(keep='first', inplace=True)
 
 	# special character split
-	...
-
+	Data = SpecialCharacterSplit(Data)
 
 	# FINALIZE
 	Data = Data.loc[ !Data.EVENT_AGE<0 & !Data.EVENT_AGE>110]
@@ -564,10 +564,10 @@ def Hilmo_POST95_processing(file_path:str,file_sep=';', test=False):
 	Data.drop_duplicates(keep='first', inplace=True)
 
 	# special character split
-	...	
+	Data = SpecialCharacterSplit(Data)
 
 	# FIX OUTPAT: names and codes 
-	...
+	# TODO 
 
 	# FINALIZE
 	Data = Data.loc[ !Data.EVENT_AGE<0 & !Data.EVENT_AGE>110]
@@ -695,7 +695,7 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 	Data = Data.loc[ !( Data.CODE1.isna() & Data.CODE2.isna() )] 
 
 	#remove patient row if category is missing
-	...
+	Data = SpecialCharacterSplit(Data)
 
 	# FINALIZE
 	Data = Data.loc[ !Data.EVENT_AGE<0 & !Data.EVENT_AGE>110]
