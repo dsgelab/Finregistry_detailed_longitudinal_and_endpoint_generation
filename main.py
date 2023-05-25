@@ -25,11 +25,11 @@ if __name__ == '__main__':
 
 	# HILMO
 	print('start processing hilmo files')
-	Hilmo_69_86_processing(hilmo_1969_1986,DOB_map=BIRTH_DEATH_MAP)
-	Hilmo_87_93_processing(hilmo_1987_1993,DOB_map=BIRTH_DEATH_MAP)
-	Hilmo_94_95_processing(hilmo_1994_1995,DOB_map=BIRTH_DEATH_MAP)	
-	Hilmo_POST95_processing(hilmo_1995_2018)
-	Hilmo_POST95_processing(hilmo_2019_2021)
+	Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=BIRTH_DEATH_MAP)
+	Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=BIRTH_DEATH_MAP)
+	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP)	
+	Hilmo_POST95_processing(hilmo_1995_2018, DOB_map=BIRTH_DEATH_MAP)
+	Hilmo_POST95_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP)
 
 	Hilmo_diagnosis_processing(hilmo_diag_1995_2018)
 	Hilmo_diagnosis_processing(hilmo_diag_2019_2021)
@@ -45,33 +45,44 @@ if __name__ == '__main__':
 
 	# AVOHILMO
 	print('start processing avohilmo files')
-	AvoHilmo_icd10_processing(avohilmo_icd10_2011_2016)
-	AvoHilmo_icd10_processing(avohilmo_icd10_2017_2019)
-	AvoHilmo_icd10_processing(avohilmo_icd10_2020_2021)
-	#concat everything togheter -> filter year 
+	icd10_11_16 = AvoHilmo_icd10_processing(avohilmo_icd10_2011_2016)
+	icd10_17_19 = AvoHilmo_icd10_processing(avohilmo_icd10_2017_2019)
+	icd10_20_21 = AvoHilmo_icd10_processing(avohilmo_icd10_2020_2021)
+	#concat everything togheter 
+	icd10 = pd.concat([icd10_11_16,icd10_17_19,icd10_20_21])
 
-	icd10 = pd.concat([...])
 
-	AvoHilmo_icpc2_processing(avohilmo_icpc2_2011_2016)
-	AvoHilmo_icpc2_processing(avohilmo_icpc2_2017_2020)
-	AvoHilmo_icpc2_processing(avohilmo_icpc2_2020_2021)
+	icpc2_11_16 = AvoHilmo_icpc2_processing(avohilmo_icpc2_2011_2016)
+	icpc2_17_19 = AvoHilmo_icpc2_processing(avohilmo_icpc2_2017_2019)
+	icpc2_20_21 = AvoHilmo_icpc2_processing(avohilmo_icpc2_2020_2021)
 	#concat everything togheter
+	icpc2 = pd.concat([icpc2_11_16,icpc2_17_19,icpc2_20_21])
 
-	AvoHilmo_oral_processing(avohilmo_oral_2011_2016)
-	AvoHilmo_oral_processing(avohilmo_oral_2017_2019)
-	AvoHilmo_oral_processing(avohilmo_oper_2020_2021)
+
+	oral_11_16 = AvoHilmo_oral_processing(avohilmo_oral_2011_2016)
+	oral_17_19 = AvoHilmo_oral_processing(avohilmo_oral_2017_2019)
+	oral_20_21 = AvoHilmo_oral_processing(avohilmo_oral_2020_2021)
 	#concat everything togheter
+	oral = pd.concat([oral_11_16,oral_17_19,oral_20_21])
 
-	AvoHilmo_processing(avohilmo_2011_2012,DOB_map=BIRTH_DEATH_MAP)
-	AvoHilmo_processing(avohilmo_2013_2014,DOB_map=BIRTH_DEATH_MAP)
-	AvoHilmo_processing(avohilmo_2015_2016,DOB_map=BIRTH_DEATH_MAP)
-	AvoHilmo_processing(avohilmo_2017_2018,DOB_map=BIRTH_DEATH_MAP)
-	AvoHilmo_processing(avohilmo_2019_2020,DOB_map=BIRTH_DEATH_MAP)
-	AvoHilmo_processing(avohilmo_2020,DOB_map=BIRTH_DEATH_MAP)
-	AvoHilmo_processing(avohilmo_2021,DOB_map=BIRTH_DEATH_MAP)
+
+	oper_11_16 = AvoHilmo_operations_processing(avohilmo_oper_2011_2016)
+	oper_17_19 = AvoHilmo_operations_processing(avohilmo_oper_2017_2019)
+	oper_20_21 = AvoHilmo_operations_processing(avohilmo_oper_2020_2021)
+	#concat everything togheter
+	oper = pd.concat([oper_11_16,oper_17_19,oper_20_21])
+
+	# merge to main avohilmo files and push to detailed longitudinal
+	avohilmo_to_merge = [icd10,icpc2,oral,oper]
+	avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016,avohilmo_2017_2018,avohilmo_2019_2020,avohilmo_2020,avohilmo_2021]
+	for avohilmo in avohilmo_to_process:
+		for df in avohilmo_to_merge:
+			AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
+
 	# merge with previous part
 
-	AvoHilmo = foo(icd10.loc[icd10["year"].isin(2011, 2012)])
+
+	AvoHilmo = foo()
 
 	# OTHER REGISTRIES
 	print('start processing death registry')
