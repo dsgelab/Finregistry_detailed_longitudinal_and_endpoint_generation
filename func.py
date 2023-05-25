@@ -13,7 +13,7 @@ import numpy as np
 from config import DETAILED_LONGITUDINAL_PATH
 
 
-#-------------------
+##########################################################
 # UTILITY VARIABLES
 
 DAYS_TO_YEARS = 365.24
@@ -35,11 +35,11 @@ COLUMNS_2_KEEP = [
 	"CODE6", 
 	"CODE7"]
 
-#--------------------
+##########################################################
 # UTILITY FUNCTIONS
 
-def Write2DetailedLongitudinal(df, path=DETAILED_LONGITUDINAL_PATH):
-	df.to_csv(mode="a")
+def Write2DetailedLongitudinal(Data, path=DETAILED_LONGITUDINAL_PATH):
+	Data.to_csv(path_or_buf=path, mode="a", sep=';', encoding='latin-1')
 
 
 def SpecialCharacterSplit(Data):
@@ -97,10 +97,10 @@ def Hilmo_DefineOutpat(hilmo):
 	return hilmo
 
 
-#---------------------
+##########################################################
 # REGISTRY-SPECIFIC FUNCTIONS
 
-def Hilmo_69_86_preparation(file_path:str, file_sep=';',DOB_map):
+def Hilmo_69_86_processing(file_path:str, file_sep=';',DOB_map):
 
 	# fetch Data
 	Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
@@ -211,7 +211,7 @@ def Hilmo_69_86_preparation(file_path:str, file_sep=';',DOB_map):
 
 
 
-def Hilmo_87_93_preparation(file_path:str, file_sep=';',DOB_map):
+def Hilmo_87_93_processing(file_path:str, file_sep=';',DOB_map):
 
 	# fetch Data
 	Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
@@ -333,7 +333,7 @@ def Hilmo_87_93_preparation(file_path:str, file_sep=';',DOB_map):
 
 
 
-def Hilmo_94_95_preparation(file_path:str, file_sep=';',DOB_map):
+def Hilmo_94_95_processing(file_path:str, file_sep=';',DOB_map):
 
 	# fetch Data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -453,7 +453,7 @@ def Hilmo_94_95_preparation(file_path:str, file_sep=';',DOB_map):
 
 
 
-def Hilmo_POST95_Preparation(file_path:str,file_sep=';'):
+def Hilmo_POST95_processing(file_path:str,file_sep=';'):
 
 	# fetch Data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -577,16 +577,16 @@ def Hilmo_POST95_Preparation(file_path:str,file_sep=';'):
 
 
 
-def Hilmo_externalreason_preparation(file_path:str,file_sep=';'):
+def Hilmo_externalreason_processing(file_path:str,file_sep=';'):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
 
 	return ...
 
-	
 
-def Hilmo_diagnosis_preparation(file_path:str,file_sep=';'):
+
+def Hilmo_diagnosis_processing(file_path:str,file_sep=';'):
 
 	#fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -614,7 +614,7 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';'):
 
 
 
-def Hilmo_operations_preparation(file_path:str,file_sep=';'):
+def Hilmo_operations_processing(file_path:str,file_sep=';'):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')	
@@ -635,7 +635,7 @@ def Hilmo_operations_preparation(file_path:str,file_sep=';'):
 	Write2DetailedLongitudinal(CodeCheck)
 
 
-def Hilmo_heart_preparation(file_path:str,file_sep=';'):
+def Hilmo_heart_processing(file_path:str,file_sep=';'):
 	
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -697,7 +697,7 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';'):
 
 
 
-def AvoHilmo_icd10_preparation(file_path:str,file_sep=';'):
+def AvoHilmo_icd10_processing(file_path:str,file_sep=';'):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -720,7 +720,7 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=';'):
 
 
 
-def AvoHilmo_icpc2_preparation(file_path:str,file_sep=';'):
+def AvoHilmo_icpc2_processing(file_path:str,file_sep=';'):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -740,7 +740,7 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=';'):
 
 
 
-def AvoHilmo_oral_preparation(file_path:str,file_sep=';'):
+def AvoHilmo_oral_processing(file_path:str,file_sep=';'):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -759,7 +759,7 @@ def AvoHilmo_oral_preparation(file_path:str,file_sep=';'):
 
 
 
-def AvoHilmo_operations_preparation(file_path:str,file_sep=';'):
+def AvoHilmo_operations_processing(file_path:str,file_sep=';'):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -778,7 +778,7 @@ def AvoHilmo_operations_preparation(file_path:str,file_sep=';'):
 
 
 
-def AvoHilmo_preparation(file_path:str,file_sep=';',DOB_map):
+def AvoHilmo_processing(file_path:str,file_sep=';',DOB_map):
 
 	# fetch data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -846,7 +846,7 @@ def AvoHilmo_preparation(file_path:str,file_sep=';',DOB_map):
 
 
 
-def DeathRegistry_preparation(file_path:str, file_sep=';', DOB_map):
+def DeathRegistry_processing(file_path:str, file_sep=';', DOB_map):
 	
 	# fetch Data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -934,7 +934,7 @@ def DeathRegistry_preparation(file_path:str, file_sep=';', DOB_map):
 
 
 
-def CancerRegistry_preparation(file_path:str, file_sep=';', DOB_map):
+def CancerRegistry_processing(file_path:str, file_sep=';', DOB_map):
 	
 	# fetch Data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -996,7 +996,7 @@ def CancerRegistry_preparation(file_path:str, file_sep=';', DOB_map):
 
 
 
-def KelaReimbursement_preparation(file_path:str, file_sep=';', DOB_map):
+def KelaReimbursement_processing(file_path:str, file_sep=';', DOB_map):
 
 	# fetch Data
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
@@ -1062,7 +1062,7 @@ def KelaReimbursement_preparation(file_path:str, file_sep=';', DOB_map):
 
 
 
-def KelaPurchase_preparation(file_path:str, file_sep=';',DOB_map):
+def KelaPurchase_processing(file_path:str, file_sep=';',DOB_map):
 
 	# create aggregated Dataset
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
