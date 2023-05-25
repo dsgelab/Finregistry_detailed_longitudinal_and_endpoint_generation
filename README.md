@@ -18,6 +18,7 @@ This repository contains the script for creating the detailed longitudinal file 
 - in Kela datasets the column names are alreay in uppercase
 - in cancer registry not defining the following variables:
 'MY_CANC_COD_TOPO','MY_CANC_COD_AGE','MY_CANC_COD_YEAR'
+- age randomization is only performed in FinnGen not in Finregistry
 
 # PROCESSING SUMMARY
 

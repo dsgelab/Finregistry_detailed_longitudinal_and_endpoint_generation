@@ -10,6 +10,8 @@ import re
 import pandas as pd
 import numpy as np
 
+from config import DETAILED_LONGITUDINAL_PATH
+
 
 #-------------------
 # UTILITY VARIABLES
@@ -35,6 +37,10 @@ COLUMNS_2_KEEP = [
 
 #--------------------
 # UTILITY FUNCTIONS
+
+def Write2DetailedLongitudinal(df, path=DETAILED_LONGITUDINAL_PATH):
+	df.to_csv(mode="a")
+
 
 def SpecialCharacterSplit(Data):
 
@@ -186,8 +192,22 @@ def Hilmo_69_86_preparation(file_path:str, file_sep=';',DOB_map):
 	...
 
 	# special character split
+	...
 
-	return CodeCheck
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 	
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -292,7 +312,24 @@ def Hilmo_87_93_preparation(file_path:str, file_sep=';',DOB_map):
 	# remove duplicates ?
 	...
 
-	return CodeCheck
+	# special character split
+	...
+
+
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -395,8 +432,24 @@ def Hilmo_94_95_preparation(file_path:str, file_sep=';',DOB_map):
 	# remove duplicates ?
 	...
 
-	return CodeCheck
+	# special character split
+	...
 
+
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 	
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -497,14 +550,30 @@ def Hilmo_POST95_Preparation(file_path:str,file_sep=';'):
 	# check special characters
 	CodeCheck.loc[CodeCheck.CODE1 in ["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"],'CODE1'] = np.NaN
 
-	# remove duplicates ?
+	# remove duplicates ?	
 	...
+
+	# special character split
+	...	
 
 	# FIX OUTPAT: names and codes 
 	...
 
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
 
-	return CodeCheck
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 
+
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -514,6 +583,8 @@ def Hilmo_externalreason_preparation(file_path:str,file_sep=';'):
 	Data = pd.read_csv(file_path,sep = file_sep, encoding='latin-1')
 
 	return ...
+
+	
 
 def Hilmo_diagnosis_preparation(file_path:str,file_sep=';'):
 
@@ -538,7 +609,8 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';'):
 	else:
 		Data['CODE3'] = np.NaN
 
-	return ...
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -559,7 +631,8 @@ def Hilmo_operations_preparation(file_path:str,file_sep=';'):
 	Data['CODE3'] = np.NaN
 	Data['CODE4'] = np.NaN
 
-	return ...
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 def Hilmo_heart_preparation(file_path:str,file_sep=';'):
@@ -606,7 +679,20 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';'):
 	#remove patient row if category is missing
 	...
 
-	return ...
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 	
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -628,7 +714,8 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=';'):
 	# remove ICD code dots
 	FinalData.loc[FinalData.CATEGORY=='ICD','CODE1'] = FinalData['CODE1'].replace({".", ""})
 
-	return FinalData
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 	
 
 
@@ -648,8 +735,8 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=';'):
 	FinalData = Data.loc[ !( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )] 
 
 
-	return FinalData
-
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -667,7 +754,8 @@ def AvoHilmo_oral_preparation(file_path:str,file_sep=';'):
 	# filter data
 	FinalData = Data.loc[ !( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )] 
 
-	return FinalData
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -685,7 +773,8 @@ def AvoHilmo_operations_preparation(file_path:str,file_sep=';'):
 	# filter data
 	FinalData = Data.loc[ !( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )] 
 
-	return FinalData
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -739,7 +828,20 @@ def AvoHilmo_preparation(file_path:str,file_sep=';',DOB_map):
 	# remove duplicates ?
 	...
 
-	return AgeCheck	
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 	
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -815,7 +917,20 @@ def DeathRegistry_preparation(file_path:str, file_sep=';', DOB_map):
 	# remove duplicates ?
 	...
 
-	return AgeCheck
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 	
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -864,7 +979,20 @@ def CancerRegistry_preparation(file_path:str, file_sep=';', DOB_map):
 	# remove duplicates ?
 	...
 
-	return CodeCheck
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -916,7 +1044,21 @@ def KelaReimbursement_preparation(file_path:str, file_sep=';', DOB_map):
 
 	# remove ICD code dots
 	CodeCheck['CODE2'] = CodeCheck['CODE2'].replace({".", ""})
-	return CodeCheck
+
+	# FINALIZE
+	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
+	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
+
+	# add PALTU info
+	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
+	SortedData['CODE7'] = SortedData.CODE7.to_numeric
+	FinalData = SortedData.merge(palm, left_on="CODE7", right_on="PALTU")
+	# correct missing PALTU
+	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
+	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 	
+
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
 
 
 
@@ -968,47 +1110,9 @@ def KelaPurchase_preparation(file_path:str, file_sep=';',DOB_map):
 	AgeCheck 	= SubsetData.loc[ !SubsetData.EVENT_AGE.isna() ]
 	CodeCheck 	= AgeCheck.loc[ !( AgeCheck.CODE1.isna() & AgeCheck.CODE2.isna() )] 
 
-	return CodeCheck
-	
-
-def CreateDetailedLongitudinal(hilmo_pre95,hilmo_pre95_operations,hilmo_post95_inpat,hilmo_post95_outpat,avohilmo,kela_purchases,kela_reimbursement,cancer,causeofdeath):
-
-	# Data SPLITS
-	AvoHilmo_splitted 		= SpecialCharacterSplit(avohilmo)
-	Hilmo_pre95_splitted 	= SpecialCharacterSplit(hilmo_pre95)
-	Hilmo_post95_splitted 	= SpecialCharacterSplit(hilmo_post95)
-
-	# FIX NOMESCO/INDEXES
-
-	# JOIN Data
-
-	# select the following columns for everyone
-	# but why here ?! and why again ?!
-	# "FINNGENID","SOURCE", "EVENT_AGE", "PVM", "EVENT_YRMNTH", 
-	# "CODE1", "CODE2", "CODE3", "CODE4", "CODE5", "CODE6", "CODE7", "CODE8", "CODE9", 
-	# "ICDVER", "CATEGORY", "INDEX"
-
-
-	# all missing values are setted to NA, no ""
-
-	# CERATE FINAL DataSET
-	JointData = pd.concat(
-		AvoHilmo_splitted, 
-		Hilmo_pre95_splitted,
-		Hilmo_post95_splitted,
-		avohilmo,
-		kela_purchases,
-		kela_reimbursement,
-		cancer,
-		causeofdeath
-		)
-
 	# FINALIZE
 	FilteredData = JointData.loc[ !JointData.EVENT_AGE<0 & !JointData.EVENT_AGE>110]
 	SortedData = FilteredData.sort_values( by = ['FINREGISTRYID','EVENT_AGE'])
-
-	# age randomization
-	# NOT IN FINREGISTRY - ONLY IN FINNGEN
 
 	# add PALTU info
 	palm = pd.read_csv("PALTU_mapping.csv",file_sep=',')
@@ -1018,4 +1122,6 @@ def CreateDetailedLongitudinal(hilmo_pre95,hilmo_pre95_operations,hilmo_post95_i
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	FinalData.loc[FinalData.CODE7 in registry_tocheck & FinalData.CODE7.isna()]['CODE7'] = 'Other Hospital' 
 
-	return FinalData
+	# WRITE TO DETAILED LONGITUDINAL
+	Write2DetailedLongitudinal(CodeCheck)
+
