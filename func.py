@@ -40,16 +40,67 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
-def Write2DetailedLongitudinal(Data, path=DETAILED_LONGITUDINAL_PATH):
-	Data.to_csv(path_or_buf=path, mode="a", sep=';', encoding='latin-1')
+def Write2DetailedLongitudinal(Data: pd.DataFrame, path:str = DETAILED_LONGITUDINAL_PATH):
+    """Writes pandas dataframe to detailed_longitudianl
 
-def Write2TestFile(Data, path=TEST_FILE_PATH):
-	#NB: replace existing file if there is one
-	Data.to_csv(path_or_buf=TEST_FILE_PATH, mode="w", sep=';', encoding='latin-1')
+    append if already exist and also insert date in the filename
 
 
+    Args:
+        Data (pd.DataFrame): the dataframe to be written.
+        path (str, optional): The file path to write the data to. 
+                              Defaults to DETAILED_LONGITUDINAL_PATH.
 
-def SpecialCharacterSplit(Data):
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the provided Data is not a pandas DataFrame.
+        IOError: If there is an error writing the data to the specified path.
+    """
+	today = datetime.today().strftime("%Y-%m-%d")
+    filename = "detailed_longitudinal" + "_" + today + ".csv"
+	Data.to_csv(path_or_buf=path+filename, mode="a", sep=';', encoding='latin-1')
+
+
+
+def Write2TestFile(Data:pd.DataFrame, path:str = TEST_FILE_PATH):
+	"""Writes pandas dataframe to the test file
+	
+	overwrite if already exist and also insert date in the filename
+
+    Args:
+        Data (pd.DataFrame): the dataframe to be written.
+        path (str, optional): The file path to write the data to. 
+                              Defaults to TEST_FILE_PATH.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the provided Data is not a pandas DataFrame.
+        IOError: If there is an error writing the data to the specified path.
+    """
+    today = datetime.today().strftime("%Y-%m-%d")
+    filename = "test_detail_long" + "_" + today + ".csv"
+	Data.to_csv(path_or_buf=path+filename, mode="w", sep=';', encoding='latin-1')
+
+
+
+def SpecialCharacterSplit(Data:pd.DataFrame):
+	"""Splits the input dataframe CODE1 based on special characters.
+
+	applies specific rules to split the CODE1 based on the presence of certain special characters.
+
+    Args:
+        Data (pd.DataFrame): the dataframe to be split.
+
+    Returns:
+        Data (pd.DataFrame): the splitted dataframe.
+
+	Raises:
+    ValueError: If the provided Data is not a pandas DataFrame.
+	"""
 
 	#------------------
 	# RULE: if CODE1 has a '*' then ?!
@@ -88,7 +139,20 @@ def SpecialCharacterSplit(Data):
 
 
 
-def Hilmo_DefineOutpat(hilmo):
+def Hilmo_DefineOutpat(hilmo:pd.DataFrame):
+	"""Define SOURCE outpat for hilmo dataframes
+
+	applies specific rules to split the CODE1 based on the presence of certain special characters.
+
+    Args:
+        Data (pd.DataFrame): hilmo dataframe to work on.
+
+    Returns:
+        Data (pd.DataFrame): hilmo dataframe with correct SOURCEs.
+
+	Raises:
+    ValueError: If the provided Data is not a pandas DataFrame.
+	"""
 
 	# define OUTPAT after 2018
 	hilmo.loc[ !( hilmo.TULOPVM.year>2018 & hilmo.YHTEYSTAPA=='R80' ),'SOURCE'] = 'OUTPAT'
@@ -109,6 +173,27 @@ def Hilmo_DefineOutpat(hilmo):
 # REGISTRY-SPECIFIC FUNCTIONS
 
 def Hilmo_69_86_processing(file_path:str, file_sep=';',DOB_map, test=False):
+	"""Process the Hilmo information from 1969 to 1986.
+
+    This function reads and processes an Hilmo file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -222,6 +307,27 @@ def Hilmo_69_86_processing(file_path:str, file_sep=';',DOB_map, test=False):
 
 
 def Hilmo_87_93_processing(file_path:str, file_sep=';',DOB_map, test=False):
+	"""Process the Hilmo information from 1987 to 1993.
+
+    This function reads and processes an Hilmo file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -345,6 +451,27 @@ def Hilmo_87_93_processing(file_path:str, file_sep=';',DOB_map, test=False):
 
 
 def Hilmo_94_95_processing(file_path:str, file_sep=';',DOB_map, test=False):
+	"""Process the Hilmo information from 1994 to 1995.
+
+    This function reads and processes an Hilmo file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -464,7 +591,28 @@ def Hilmo_94_95_processing(file_path:str, file_sep=';',DOB_map, test=False):
 	else: 		Write2DetailedLongitudinal(Data)
 
 
-def Hilmo_POST95_processing(file_path:str,file_sep=';', test=False):
+def Hilmo_POST95_processing(file_path:str,file_sep=';', DOB_map, test=False):
+	"""Process the Hilmo information after 1995.
+
+    This function reads and processes an Hilmo file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -590,6 +738,23 @@ def Hilmo_POST95_processing(file_path:str,file_sep=';', test=False):
 
 
 def Hilmo_externalreason_processing(file_path:str,file_sep=';', test=False):
+	"""Process Hilmo external reason of death.
+
+    This function reads and processes an Hilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -601,7 +766,24 @@ def Hilmo_externalreason_processing(file_path:str,file_sep=';', test=False):
 
 
 
-def Hilmo_diagnosis_processing(file_path:str,file_sep=';'):
+def Hilmo_diagnosis_processing(file_path:str,file_sep=';', test=False):
+	"""Process Hilmo diagnosis.
+
+    This function reads and processes an Hilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -632,6 +814,23 @@ def Hilmo_diagnosis_processing(file_path:str,file_sep=';'):
 
 
 def Hilmo_operations_processing(file_path:str,file_sep=';', test=False):
+	"""Process Hilmo surgical operations.
+
+    This function reads and processes an Hilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -655,6 +854,23 @@ def Hilmo_operations_processing(file_path:str,file_sep=';', test=False):
 
 
 def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
+	"""Process Hilmo heart surgeries.
+
+    This function reads and processes an Hilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 	
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -719,6 +935,23 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 
 
 def AvoHilmo_icd10_processing(file_path:str,file_sep=';', test=False):
+	"""Process AvoHilmo ICD10 diagnosis.
+
+    This function reads and processes an AvoHilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the AvoHilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -742,6 +975,23 @@ def AvoHilmo_icd10_processing(file_path:str,file_sep=';', test=False):
 
 
 def AvoHilmo_icpc2_processing(file_path:str,file_sep=';', test=False):
+	"""Process AvoHilmo ICPC2 diagnosis.
+
+    This function reads and processes an AvoHilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the AvoHilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -762,6 +1012,23 @@ def AvoHilmo_icpc2_processing(file_path:str,file_sep=';', test=False):
 
 
 def AvoHilmo_oral_processing(file_path:str,file_sep=';', test=False):
+	"""Process AvoHilmo oral operation.
+
+    This function reads and processes an AvoHilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the AvoHilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -781,6 +1048,23 @@ def AvoHilmo_oral_processing(file_path:str,file_sep=';', test=False):
 
 
 def AvoHilmo_operations_processing(file_path:str,file_sep=';', test=False):
+	"""Process AvoHilmo surgery operations.
+
+    This function reads and processes an AvoHilmo file located at the specified file_path.  
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the AvoHilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -800,6 +1084,28 @@ def AvoHilmo_operations_processing(file_path:str,file_sep=';', test=False):
 
 
 def AvoHilmo_processing(file_path:str,file_sep=';',DOB_map, extra_to_merge ,test=False):
+	"""Process AvoHilmo general file.
+
+    This function reads and processes an AvoHilmo file located at the specified file_path.  
+    also reads an extra AvoHilmo dataset about diagnosis/operations in order to add CODE1 and CATEGORY columns. 
+    The processed data can be read/saved in a test setting if specified.
+
+    Args:
+        file_path (str): The path to the AvoHilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        extra_to_merge (pd.dataframe, optional): dataframe to map CODE1 and CATEGORY inside the AvoHilmo file
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+        ValueError: If the provided extra_to_merge is not a pandas DataFrame.
+    """
 
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
@@ -873,7 +1179,28 @@ def AvoHilmo_processing(file_path:str,file_sep=';',DOB_map, extra_to_merge ,test
 
 
 def DeathRegistry_processing(file_path:str, file_sep=';', DOB_map, test=False):
-	
+	"""Process the information from death registry.
+
+    This function reads and processes file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
+
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
 	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
@@ -964,7 +1291,28 @@ def DeathRegistry_processing(file_path:str, file_sep=';', DOB_map, test=False):
 
 
 def CancerRegistry_processing(file_path:str, file_sep=';', DOB_map, test=False):
-	
+	"""Process the information from cancer registry.
+
+    This function reads and processes file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
+
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
 	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
@@ -1029,7 +1377,27 @@ def CancerRegistry_processing(file_path:str, file_sep=';', DOB_map, test=False):
 
 
 def KelaReimbursement_processing(file_path:str, file_sep=';', DOB_map, test=False):
+	"""Process the information from kela reimbursement registry.
 
+    This function reads and processes file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
 	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
@@ -1098,7 +1466,27 @@ def KelaReimbursement_processing(file_path:str, file_sep=';', DOB_map, test=Fals
 
 
 def KelaPurchase_processing(file_path:str, file_sep=';',DOB_map, test=False):
+	"""Process the information from kela purchases registry.
 
+    This function reads and processes file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
 	# fetch Data
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
 	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
