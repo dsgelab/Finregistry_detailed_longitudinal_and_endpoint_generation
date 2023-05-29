@@ -54,4 +54,4 @@ kela_purchase_filelist		= ['/data/original_data/kela_purchase/175_522_2020_LAAKE
 
 
 DETAILED_LONGITUDINAL_PATH 	= '/data/processed_data/detailed_longitudinal/R10/service_sector/'
-TEST_FOLDER_PATH 			= "/data/projects/project_mferro/service_sector_update/"
+TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/'
