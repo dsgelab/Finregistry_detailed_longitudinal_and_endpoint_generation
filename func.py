@@ -238,24 +238,14 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# the CATEGORY names are going to be remapped to the desired names
 
 	# perform the reshape
-	CATEGORY_DICTIONARY	= {
-		'DG1':'0',
-		'DG2':'1',
-		'DG3':'2',
-		'DG4':'3'}
-	VAR_FOR_RESHAPE = list(CATEGORY_DICTIONARY.keys())
-	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
-
-	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY,inplace=True)
-
-	#create the final dataset
-	VAR_NOT_FOR_RESHAPE = set(Data.columns)^set(VAR_FOR_RESHAPE)
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+	CATEGORY_DICTIONARY = {"DG1": "0", "DG2": "1", "DG3": "2", "DG4": "3"}
+	reshaped_data = pd.melt(Data, 
+		id_vars=["TNRO"], 
+		value_vars=CATEGORY_DICTIONARY.keys(), 
+		var_name="CATEGORY", 
+		value_name="CODE1")
+	reshaped_data["CATEGORY"].replace(CATEGORY_DICTIONARY, inplace=True)
+	Data = reshaped_data.merge( Data.drop(CATEGORY_DICTIONARY.keys(), axis=1), on="TNRO")
 
 	# define OUTPAT
 	# not in this hilmo
@@ -362,23 +352,26 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# the CATEGORY names are going to be remapped to the desired names  
 
 	# rename categories 
-	column_names 	= Data.columns
+	CATEGORY_DICTIONARY = {
 	# FULL RENAME
-	new_names		= [s.replace('PDG','0') for s in column_names]
-	new_names		= [s.replace('EDIA','EX') for s in new_names]
-	new_names		= [s.replace('MTMP1K1','NOM4') for s in new_names]
-	new_names		= [s.replace('MTMP2K1','NOM5') for s in new_names]
+	'PDG':'0',
+	'EDIA':'EX',
+	'MTMP1K1':'NOM4',
+	'MTMP2K1':'NOM5',
 	# PREFIX RENAME
-	new_names		= [s.replace('SDG','') for s in new_names]
-	new_names 		= [s.replace('PTMPK','NOM') for s in new_names]
-	new_names 		= [s.replace('TMP','MFHL') for s in new_names]
-	new_names 		= [s.replace('TP','SFHL') for s in new_names]
-	new_names 		= [s.replace('TPTYP','HPO') for s in new_names]
-	new_names 		= [s.replace('TMPC','HPN') for s in new_names]
-	Data.columns = new_names
+	'SDG':'',
+	'PTMPK':'NOM',
+	'TMP':'MFHL',
+	'TP':'SFHL',
+	'TPTYP':'HPO',
+	'TMPC':'HPN'
+	 }
+
+	for name in CATEGORY_DICTIONARY.keys():
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in column_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = Data.columns[ Data.columns in [set(new_names)^set(column_names)] ]
+	VAR_FOR_RESHAPE = set(new_names)^set(column_names)
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
@@ -507,22 +500,27 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
 	# the CATEGORY names are going to be remapped to the desired names  
 
-	# rename categories
-	column_names 	= Data.columns
-	new_names		= [s.replace('PDG','0') for s in column_names]
-	new_names		= [s.replace('EDIA','EX') for s in new_names]
-	new_names		= [s.replace('SDG','') for s in new_names]
-	new_names 		= [s.replace('PTMPK','NOM') for s in new_names]
-	new_names		= [s.replace('MTMP1K1','NOM4') for s in new_names]
-	new_names		= [s.replace('MTMP2K1','NOM5') for s in new_names]
-	new_names 		= [s.replace('TMP','MFHL') for s in new_names]
-	new_names 		= [s.replace('TP','SFHL') for s in new_names]
-	new_names 		= [s.replace('TPTYP','HPO') for s in new_names]
-	new_names 		= [s.replace('TMPC','HPN') for s in new_names]
-	Data.columns = new_names
+# rename categories 
+	CATEGORY_DICTIONARY = {
+	# FULL RENAME
+	'PDG':'0',
+	'EDIA':'EX',
+	'MTMP1K1':'NOM4',
+	'MTMP2K1':'NOM5',
+	# PREFIX RENAME
+	'SDG':'',
+	'PTMPK':'NOM',
+	'TMP':'MFHL',
+	'TP':'SFHL',
+	'TPTYP':'HPO',
+	'TMPC':'HPN'
+	 }
+
+	for name in CATEGORY_DICTIONARY.keys():
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in column_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = Data.columns[ Data.columns in [set(new_names)^set(column_names)] ]
+	VAR_FOR_RESHAPE = set(new_names)^set(column_names)
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
@@ -651,22 +649,27 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
 	# the CATEGORY names are going to be remapped to the desired names 
 
-	# rename categories
-	column_names 	= Data.columns
-	new_names		= [s.replace('PDG','0') for s in column_names]
-	new_names		= [s.replace('EDIA','EX') for s in new_names]
-	new_names		= [s.replace('SDG','') for s in new_names]
-	new_names 		= [s.replace('PTMPK','NOM') for s in new_names]
-	new_names		= [s.replace('MTMP1K1','NOM4') for s in new_names]
-	new_names		= [s.replace('MTMP2K1','NOM5') for s in new_names]
-	new_names 		= [s.replace('TMP','MFHL') for s in new_names]
-	new_names 		= [s.replace('TP','SFHL') for s in new_names]
-	new_names 		= [s.replace('TPTYP','HPO') for s in new_names]
-	new_names 		= [s.replace('TMPC','HPN') for s in new_names]
-	Data.columns = new_names
+# rename categories 
+	CATEGORY_DICTIONARY = {
+	# FULL RENAME
+	'PDG':'0',
+	'EDIA':'EX',
+	'MTMP1K1':'NOM4',
+	'MTMP2K1':'NOM5',
+	# PREFIX RENAME
+	'SDG':'',
+	'PTMPK':'NOM',
+	'TMP':'MFHL',
+	'TP':'SFHL',
+	'TPTYP':'HPO',
+	'TMPC':'HPN'
+	 }
+
+	for name in CATEGORY_DICTIONARY.keys():
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in column_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = Data.columns[ Data.columns in [set(new_names)^set(column_names)] ]
+	VAR_FOR_RESHAPE = set(new_names)^set(column_names)
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
