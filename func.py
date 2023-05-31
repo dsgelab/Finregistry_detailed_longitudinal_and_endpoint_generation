@@ -10,6 +10,7 @@ import re
 import pandas as pd
 import numpy as np
 from datetime import datetime as dt
+from pathlib import Path
 
 from config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
 
@@ -41,7 +42,7 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
-def Write2DetailedLongitudinal(Data: pd.DataFrame, path:str = DETAILED_LONGITUDINAL_PATH):
+def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_PATH):
     """Writes pandas dataframe to detailed_longitudianl
 
     append if already exist and also insert date in the filename
@@ -60,13 +61,13 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path:str = DETAILED_LONGITUDI
         IOError: If there is an error writing the data to the specified path.
     """
 
-	today = dt.today().strftime("%Y-%m-%d")
+	today = dt.today().strftime("%Y_%m_%d")
     filename = "detailed_longitudinal" + "_" + today + ".csv"
-	Data.to_csv(path_or_buf=path+filename, mode="a", sep=';', encoding='latin-1')
+	Data.to_csv(path_or_buf= Path(path)/filename, mode="a", sep=';', encoding='latin-1')
 
 
 
-def Write2TestFile(Data:pd.DataFrame, path:str = TEST_FOLDER_PATH):
+def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
 	"""Writes pandas dataframe to the test file
 	
 	overwrite if already exist and also insert date in the filename
@@ -84,9 +85,9 @@ def Write2TestFile(Data:pd.DataFrame, path:str = TEST_FOLDER_PATH):
         IOError: If there is an error writing the data to the specified path.
     """
 
-    today = dt.today().strftime("%Y-%m-%d")
+    today = dt.today().strftime("%Y_%m_%d")
     filename = "test_detailed_longitudinal" + "_" + today + ".csv"
-	Data.to_csv(path_or_buf=path+filename, mode="w", sep=';', encoding='latin-1')
+	Data.to_csv(path_or_buf= Path(path)/filename, mode="w", sep=';', encoding='latin-1')
 
 
 
@@ -244,7 +245,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		value_vars=CATEGORY_DICTIONARY.keys(), 
 		var_name="CATEGORY", 
 		value_name="CODE1")
-	reshaped_data["CATEGORY"].replace(CATEGORY_DICTIONARY, inplace=True)
+	reshaped_data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 	Data = reshaped_data.merge( Data.drop(CATEGORY_DICTIONARY.keys(), axis=1), on="TNRO")
 
 	# define OUTPAT
@@ -329,11 +330,11 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str,    format='%Y-%m-%d', errors='coerce' )
-	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date.str, format='%Y-%m-%d', errors='coerce')
+	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM,    format='%Y-%m-%d', errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce')
 	# format date columns (patient in and out dates)
-	Data['TULOPVM'] 		= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
-	Data['LAHTOPVM']		= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['TULOPVM'] 		= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	Data['LAHTOPVM']		= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
 	# check that event is after death
 	Data.loc[Data.TULOPVM > Data.DEATH_DATE,'TULOPVM'] = Data.DEATH_DATE
@@ -344,8 +345,12 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
 	Data['SOURCE'] 			= 'INPAT'
 	Data['ICDVER'] 			= 9
+	Data['CODE2']			= np.NaN
 	Data['CODE3']			= np.NaN
 	Data['CODE4']			= (Data.LAHTOPVM - Data.TULOPVM).dt.days
+	# CODE5 should be PALA but is not in columns ..
+	Data['CODE5']			= np.NaN
+
 
 	# the following code will reshape the Dataframe from wide to long
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
@@ -367,11 +372,12 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	'TMPC':'HPN'
 	 }
 
+	new_names = Data.columns
 	for name in CATEGORY_DICTIONARY.keys():
-    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in column_names]
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = set(new_names)^set(column_names)
+	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
@@ -379,37 +385,30 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
 		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY,inplace=True)
+	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	#create the final Dataset
-	VAR_NOT_FOR_RESHAPE = set(Data.columns)^set(VAR_FOR_RESHAPE)
+	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
 	# define OUTPAT
-	Data = Hilmo_DefineOutpat(Data)
+	# not in this hilmo
 
 	# define OPER_IN
-	Data.loc[ Data.SOURCE=='INPAT' & Data.CATEGORY.str.contains('NOM'),'SOURCE'] = 'OPER_IN'
-	Data.loc[ Data.SOURCE=='INPAT' & Data.CATEGORY.str.contains('HPN'),'SOURCE'] = 'OPER_IN'
-	Data.loc[ Data.SOURCE=='INPAT' & Data.CATEGORY.str.contains('HPO'),'SOURCE'] = 'OPER_IN'
+	# not in this hilmo
 
 	# define OPER_OUT
-	Data.loc[ Data.SOURCE=='OUTPAT' & Data.CATEGORY.str.contains('NOM'),'SOURCE'] = 'OPER_OUT'
-	Data.loc[ Data.SOURCE=='OUTPAT' & Data.CATEGORY.str.contains('HPN'),'SOURCE'] = 'OPER_OUT'
-	Data.loc[ Data.SOURCE=='OUTPAT' & Data.CATEGORY.str.contains('HPO'),'SOURCE'] = 'OPER_OUT'
+	# not in this hilmo
 
 	#rename columns
 	Data.rename( 
 		columns = {
 		'TULOPVM':'PVM',
-		'PALA':'CODE5',
+		#'PALA':'CODE5',
 		'EA':'CODE6',
 		'PALTU':'CODE7'
 		},
 		inplace=True)
-
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
 
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
@@ -439,6 +438,9 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital' 
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -478,11 +480,11 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str,    format='%Y-%m-%d', errors='coerce' )
-	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date.str, format='%Y-%m-%d', errors='coerce' )
+	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM,    format='%Y-%m-%d', errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce' )
 	# format date columns (patient in and out dates)
-	Data['TULOPVM'] 		= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
-	Data['LAHTOPVM']		= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['TULOPVM'] 		= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	Data['LAHTOPVM']		= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 	
 	# check that event is after death
 	Data.loc[Data.TULOPVM > Data.DEATH_DATE,'TULOPVM'] = Data.DEATH_DATE
@@ -516,11 +518,12 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	'TMPC':'HPN'
 	 }
 
+	new_names = Data.columns
 	for name in CATEGORY_DICTIONARY.keys():
-    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in column_names]
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = set(new_names)^set(column_names)
+	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
@@ -528,10 +531,10 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
 		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY,inplace=True)
+	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	#create the final Dataset
-	VAR_NOT_FOR_RESHAPE = set(Data.columns)^set(VAR_FOR_RESHAPE)
+	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
 	# define OUTPAT
@@ -556,9 +559,6 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		'PALTU':'CODE7'
 		},
 		inplace=True)
-
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
 
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
@@ -589,9 +589,13 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'	
 
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
+
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
 	else: 		Write2DetailedLongitudinal(Data)
+
 
 
 def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
@@ -630,8 +634,8 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str,    format='%Y-%m-%d', errors='coerce' )
-	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date.str, format='%Y-%m-%d', errors='coerce' )
+	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM,    format='%Y-%m-%d', errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce' )
 	# format date columns (patient in and out dates)
 	Data['TULOPVM'] 		= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
 	Data['LAHTOPVM']		= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
@@ -665,11 +669,12 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	'TMPC':'HPN'
 	 }
 
+	new_names = Data.columns
 	for name in CATEGORY_DICTIONARY.keys():
-    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in column_names]
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = set(new_names)^set(column_names)
+	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
@@ -677,10 +682,10 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
 		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY,inplace=True)
+	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	#create the final Dataset
-	VAR_NOT_FOR_RESHAPE = set(Data.columns)^set(VAR_FOR_RESHAPE)
+	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
 	# define OUTPAT
@@ -705,9 +710,6 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		'PALTU':'CODE7'
 		},
 		inplace=True)
-
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
 
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
@@ -740,6 +742,9 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -895,13 +900,12 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 	# the CATEGORY names are going to be remapped to the desired names
 
 	# rename categories
-	column_names 	= Data.columns
-	new_names		= [s.replace('TMPTYP','HPO') for s in column_names]
-	new_names 		= [s.replace('TMPC','HPN') for s in new_names]
-	Data.columns = new_names
+	new_names 	= Data.columns
+	new_names	= [s.replace('TMPTYP','HPO') for s in new_names]
+	new_names 	= [s.replace('TMPC','HPN') for s in new_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = Data.columns[ Data.columns in [set(new_names)^set(column_names)] ]
+	VAR_FOR_RESHAPE = list(set(Data.columns)-set(new_names)) 
 	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
 	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
@@ -909,10 +913,10 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
 		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY,inplace=True)
+	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	#create the final Dataset
-	VAR_NOT_FOR_RESHAPE = set(Data.columns)^set(VAR_FOR_RESHAPE)
+	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
 	# add other (empty) code columns 
@@ -1132,8 +1136,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	# format date columns ( ? )
 	Data['KAYNTI_ALKOI'] 	= pd.to_datetime( Data['KAYNTI_ALKOI'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str, format='%Y-%m-%d',errors='coerce' )
-	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date.str, format='%Y-%m-%d', errors='coerce')
+	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM, 	format='%Y-%m-%d', errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, 	format='%Y-%m-%d', errors='coerce' )
 
 	# check that event is after death
 	Data.loc[Data.KAYNTI_ALKOI > Data.DEATH_DATE,'KAYNTI_ALKOI'] = Data.DEATH_DATE
@@ -1161,9 +1165,6 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	# merge CODE1 and CATEGORY from extra file
 	Data = Data.merge(extra_to_merge, on = 'AVOHILMO_ID', how='inner')
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
-
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
 	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
@@ -1183,6 +1184,9 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'	
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -1260,10 +1264,10 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
 		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY,inplace=True)
+	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	#create the final Dataset
-	VAR_NOT_FOR_RESHAPE = set(Data.columns)^set(VAR_FOR_RESHAPE)
+	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
 	# rename columns
@@ -1272,9 +1276,6 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		'dg_date':'PVM'
 		},
 		inplace=True)
-
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
 
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
@@ -1295,6 +1296,9 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital' 	
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -1359,9 +1363,6 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		},
 		inplace=True)
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
-
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
 	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
@@ -1381,6 +1382,9 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital' 
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -1444,9 +1448,6 @@ def KelaReimbursement_processing(file_path:str, DOB_map, file_sep=';', test=Fals
 		}, 
 		inplace = True )
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
-
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
 	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
@@ -1469,6 +1470,9 @@ def KelaReimbursement_processing(file_path:str, DOB_map, file_sep=';', test=Fals
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital' 	
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -1537,9 +1541,6 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	ZERO = pd.Series( ['0'] * Data.shape[0] )
 	Data['CODE3'] = Data.CODE3 + ZERO*MISSING_DIGITS
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
-
 	# remove missing values
 	Data.mask(Data == '' ,inplace=True)
 	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
@@ -1556,6 +1557,9 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
