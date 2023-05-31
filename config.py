@@ -1,5 +1,6 @@
 
 from pathlib import Path
+
 # DEFINE PATHS (in Finregistry):
 
 THL_HILMO_PATH = Path('/data/original_data/thl_hilmo')
@@ -50,7 +51,7 @@ death 						= '/data/original_data/sf_death/thl2019_1776_ksyy_tutkimus.csv.finre
 
 cancer 						= '/data/original_data/thl_cancer/fcr_data.csv.finreg_IDs'
 
-kela_reimburement 			= '/data/original_data/kela_reimbursement/175_522_2020_LAAKEKORVAUSOIKEUDET.csv.finreg_IDs'
+kela_reimbursement 			= '/data/original_data/kela_reimbursement/175_522_2020_LAAKEKORVAUSOIKEUDET.csv.finreg_IDs'
 kela_purchase_filelist		= ['/data/original_data/kela_purchase/175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDs' for n in range(1995,2020)]
 
 
