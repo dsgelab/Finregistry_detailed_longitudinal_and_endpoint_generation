@@ -22,13 +22,13 @@ DAYS_TO_YEARS = 365.24
 
 COLUMNS_2_KEEP = [
 	"FINREGISTRYID",
+	"PVM", 
+	"EVENT_AGE", 
+	"EVENT_YRMNTH", 
+	"INDEX",
 	"SOURCE",
 	"ICDVER",
 	"CATEGORY",
-	"INDEX",
-	"EVENT_AGE", 
-	"EVENT_YRMNTH", 
-	"PVM", 
 	"CODE1", 
 	"CODE2", 
 	"CODE3", 
@@ -91,10 +91,11 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
 
 
 
-def SpecialCharacterSplit(Data:pd.DataFrame):
+def CombinationCodeSplit(Data:pd.DataFrame):
 	"""Splits the input dataframe CODE1 based on special characters.
 
-	applies specific rules to split the CODE1 based on the presence of certain special characters.
+	applies specific rules to split the CODE1 based on the presence of combination codes.
+	NB: check out FinnGen research handbook for more info
 
     Args:
         Data (pd.DataFrame): the dataframe to be split.
@@ -106,12 +107,34 @@ def SpecialCharacterSplit(Data:pd.DataFrame):
     ValueError: If the provided Data is not a pandas DataFrame.
 	"""
 
-	#------------------
-	# RULE: if CODE1 has a '*' then ?!
+
+	Data['IS_STAR'] = Data.CODE1.str.match('\*')
+	Data_tosplit 	= Data.loc[Data['IS_STAR'] == True]
+
+	if Data_tosplit.shape[0] != 0:
+		Data_tosplit[['part1','part2']] = Data_tosplit['CODE1'].str.split('\*',expand=True)
+		Data.loc[Data.IS_STAR == True,'CODE1'] = Data_tosplit.part1
+		Data.loc[Data.IS_STAR == True,'CODE2'] = Data_tosplit.part2
 
 	#------------------
-	# RULE: if CODE1 has a '+' then first part goes to CODE2 and second to CODE1
+	Data['IS_AND'] 	= Data.CODE1.str.match('\&')
+	Data_tosplit 	= Data.loc[Data['IS_AND'] == True]
 
+	if Data_tosplit.shape[0] != 0:
+		Data_tosplit[['part1','part2']] = Data_tosplit['CODE1'].str.split('\&',expand=True)
+		Data.loc[Data.IS_AND == True,'CODE1'] = Data_tosplit.part1
+		Data.loc[Data.IS_AND == True,'CODE2'] = Data_tosplit.part1
+
+	#------------------
+	Data['IS_HAST']	= Data.CODE1.str.match('\#')
+	Data_tosplit 	= Data.loc[Data['IS_HAST'] == True]
+
+	if Data_tosplit.shape[0] != 0:
+		Data_tosplit[['part1','part2']] = Data_tosplit['CODE1'].str.split('\#',expand=True)
+		Data.loc[Data.IS_HAST == True,'CODE1'] = Data_tosplit.part1
+		Data.loc[Data.IS_HAST == True,'CODE3'] = Data_tosplit.part2
+
+	#------------------
 	Data['IS_PLUS'] = Data.CODE1.str.match('\+')
 	Data_tosplit 	= Data.loc[Data['IS_PLUS'] == True]
 
@@ -119,28 +142,6 @@ def SpecialCharacterSplit(Data:pd.DataFrame):
 		Data_tosplit[['part1','part2']] = Data_tosplit['CODE1'].str.split('\+',expand=True)
 		Data.loc[Data.IS_PLUS == True,'CODE2'] = Data_tosplit.part1
 		Data.loc[Data.IS_PLUS == True,'CODE1'] = Data_tosplit.part2
-
-	#------------------
-	# RULE: if CODE1 has a '#' then first part goes to CODE1 and second to CODE3
-
-	Data['IS_HAST']	= Data.CODE1.str.match('\#')
-	Data_tosplit 	= Data.loc[Data['IS_HAST'] == True]
-
-	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[['part1','part2']] = Data_tosplit['CODE1'].str.split('\#',expand=True)
-		Data.loc[Data.IS_HAST == True,'CODE2'] = Data_tosplit.part1
-		Data.loc[Data.IS_HAST == True,'CODE1'] = Data_tosplit.part2
-
-	#------------------
-	# RULE: if CODE1 has a '&' then first part goes to CODE1 and second to CODE2
-
-	Data['IS_AND'] 	= Data.CODE1.str.match('\&')
-	Data_tosplit 	= Data.loc[Data['IS_AND'] == True]
-
-	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[['part1','part2']] = Data_tosplit['CODE1'].str.split('\&',expand=True)
-		Data.loc[Data.IS_AND == True,'CODE2'] = Data_tosplit.part1
-		Data.loc[Data.IS_AND == True,'CODE1'] = Data_tosplit.part1
 
 	return Data	
 
@@ -162,16 +163,18 @@ def Hilmo_DefineOutpat(hilmo:pd.DataFrame):
 	"""
 
 	# define OUTPAT after 2018
-	hilmo.loc[ not ( hilmo.TULOPVM.dt.year>2018 & hilmo.YHTEYSTAPA=='R80' ),'SOURCE'] = 'OUTPAT'
-	hilmo.loc[ not ( hilmo.TULOPVM.dt.year>2018 & hilmo.YHTEYSTAPA=='R10' & hilmo.PALA in [1,3,4,5,6,7,8,31] ),'SOURCE'] = 'OUTPAT'
-	hilmo.loc[ not ( hilmo.TULOPVM.dt.year>2018 & hilmo.YHTEYSTAPA=='' 	& hilmo.PALA in [1,3,4,5,6,7,8,31] ),'SOURCE'] = 'OUTPAT'
+	hilmo.loc[ not ( hilmo.ADMISSION_DATE.dt.year>2018 & hilmo.YHTEYSTAPA=='R80' ),'SOURCE'] = 'OUTPAT'
+	hilmo.loc[ not ( hilmo.ADMISSION_DATE.dt.year>2018 & hilmo.YHTEYSTAPA=='R10' & hilmo.PALA in [1,3,4,5,6,7,8,31] ),'SOURCE'] = 'OUTPAT'
+	hilmo.loc[ not ( hilmo.ADMISSION_DATE.dt.year>2018 & hilmo.YHTEYSTAPA=='' 	& hilmo.PALA in [1,3,4,5,6,7,8,31] ),'SOURCE'] = 'OUTPAT'
 
 	# define OUTPAT before 2018
-	hilmo.loc[ hilmo.TULOPVM.dt.year<=2018 & hilmo.PALA.isna(),'SOURCE'] = 'OUTPAT'
-	hilmo.loc[ hilmo.TULOPVM.dt.year<=2018 & hilmo.PALA not in [1,3,4,5,6,7,8,31],'SOURCE'] = 'OUTPAT'
+	hilmo.loc[ hilmo.ADMISSION_DATE.dt.year<=2018 & hilmo.PALA.isna(),'SOURCE'] = 'OUTPAT'
+	hilmo.loc[ hilmo.ADMISSION_DATE.dt.year<=2018 & hilmo.PALA not in [1,3,4,5,6,7,8,31],'SOURCE'] = 'OUTPAT'
 
 	# NB: all years before 1998 are INPAT (QC)
-	hilmo.loc[ hilmo.TULOPVM.dt.year<1998,'SOURCE'] = 'INPAT'
+	hilmo.loc[ hilmo.ADMISSION_DATE.dt.year<1998,'SOURCE'] = 'INPAT'
+
+	#NB: deinfe based on category HPN and HPO
 
 	return hilmo
 
@@ -189,8 +192,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
     Args:
         file_path (str): The path to the Hilmo file.
-        file_sep (str, optional): The separator used in the file. Defaults to ';'.
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.    
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -208,46 +211,67 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
-	Data.rename( columns ={'date_of_birth':'SYNTPVM'}, inplace = True )
+	Data.rename( columns ={'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM, format='%Y-%m-%d',errors='coerce' )
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d',errors='coerce' )
 	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d',errors='coerce' )
 	# format date columns (patient in and out dates)
-	Data['TULOPVM'] 		= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
-	Data['LAHTOPVM']		= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['ADMISSION_DATE'] 	= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	Data['DISCHARGE_DATE']	= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
-	# check that event is after death
-	Data.loc[Data.TULOPVM > Data.DEATH_DATE,'TULOPVM'] = Data.DEATH_DATE
+	# check if event is after death
+	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,'ADMISSION_DATE'] = Data.DEATH_DATE
 
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.TULOPVM - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YRMNTH']	= Data.TULOPVM.dt.strftime('%Y-%m')
+
+	Data['EVENT_AGE'] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YRMNTH']	= Data.ADMISSION_DATE.dt.strftime('%Y-%m')
 	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
 	Data['SOURCE'] 			= 'INPAT'
 	Data['ICDVER'] 			= 8
 	Data['CODE2']			= np.NaN
 	Data['CODE3']			= np.NaN
-	Data['CODE4']			= (Data.LAHTOPVM - Data.TULOPVM).dt.days
+	Data['CODE4']			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
 	Data['CODE5']			= np.NaN
 	Data['CODE6']			= np.NaN
 	Data['CODE7']			= np.NaN
 
+	#-------------------------------------------
+	# CATEGORY RESHAPE:
 
 	# the following code will reshape the Dataframe from wide to long
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
 	# the CATEGORY names are going to be remapped to the desired names
 
-	# perform the reshape
-	CATEGORY_DICTIONARY = {"DG1": "0", "DG2": "1", "DG3": "2", "DG4": "3"}
-	reshaped_data = pd.melt(Data, 
-		id_vars=["TNRO"], 
-		value_vars=CATEGORY_DICTIONARY.keys(), 
-		var_name="CATEGORY", 
-		value_name="CODE1")
-	reshaped_data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-	Data = reshaped_data.merge( Data.drop(CATEGORY_DICTIONARY.keys(), axis=1), on="TNRO")
+	CATEGORY_DICTIONARY = {
+	"DG1": "0",
+	"DG2": "1",
+	"DG3": "2",
+	"DG4": "3",
+	"TP1":"SFHL1",
+	"TP2":"SFHL2"
+	}
 
+	new_names = Data.columns
+	for name in CATEGORY_DICTIONARY.keys():
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+
+	# perform the reshape
+	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
+	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
+		id_vars 	= 'TNRO',
+		value_vars 	= VAR_FOR_RESHAPE,
+		var_name 	= 'CATEGORY',
+		value_name	= 'CODE1')
+	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+
+	#create the final Dataset
+	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
+	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	#-------------------------------------------
 	# define OUTPAT
 	# not in this hilmo
 
@@ -257,32 +281,13 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# define OPER_OUT
 	# not in this hilmo
 
-	#rename columns
-	Data.rename( columns = {'TULOPVM':'PVM',}, inplace=True)
-
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
-
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
+	# rename columns
+	Data.rename( columns = {'ADMISSION_DATE':'PVM',}, inplace=True)
 
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),'CODE1'] = np.NaN
-
-	# remove duplicates
-	Data.drop_duplicates(keep='first', inplace=True)
-
 	# special character split
-	Data = SpecialCharacterSplit(Data)
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
+	Data = CombinationCodeSplit(Data)
 
 	# add PALTU info
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=',')
@@ -291,6 +296,23 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'
+
+	#-------------------------------------------
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+	# if negative hospital days than missing value
+	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -327,50 +349,48 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM,    format='%Y-%m-%d', errors='coerce' )
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce' )
 	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce')
 	# format date columns (patient in and out dates)
-	Data['TULOPVM'] 		= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
-	Data['LAHTOPVM']		= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['ADMISSION_DATE'] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	Data['DISCHARGE_DATE']	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
-	# check that event is after death
-	Data.loc[Data.TULOPVM > Data.DEATH_DATE,'TULOPVM'] = Data.DEATH_DATE
+	# check if event is after death
+	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,'ADMISSION_DATE'] = Data.DEATH_DATE
 
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.TULOPVM - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YRMNTH']	= Data.TULOPVM.dt.strftime('%Y-%m')
+
+	Data['EVENT_AGE'] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YRMNTH']	= Data.ADMISSION_DATE.dt.strftime('%Y-%m')
 	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
 	Data['SOURCE'] 			= 'INPAT'
 	Data['ICDVER'] 			= 9
 	Data['CODE2']			= np.NaN
 	Data['CODE3']			= np.NaN
-	Data['CODE4']			= (Data.LAHTOPVM - Data.TULOPVM).dt.days
+	Data['CODE4']			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
 	# CODE5 should be PALA but is not in columns ..
 	Data['CODE5']			= np.NaN
 
+	#-------------------------------------------
+	# CATEGORY RESHAPE:
 
 	# the following code will reshape the Dataframe from wide to long
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
 	# the CATEGORY names are going to be remapped to the desired names  
 
-	# rename categories 
 	CATEGORY_DICTIONARY = {
-	# FULL RENAME
-	'PDG':'0',
-	'EDIA':'EX',
-	'MTMP1K1':'NOM4',
-	'MTMP2K1':'NOM5',
-	# PREFIX RENAME
-	'SDG':'',
-	'PTMPK':'NOM',
-	'TMP':'MFHL',
-	'TP':'SFHL',
-	'TPTYP':'HPO',
-	'TMPC':'HPN'
-	 }
+	"PDG": "0",
+	"SDG1": "1",
+	"SDG2": "2",
+	"SDG3": "3",
+	"TMP1":"MFHL1",
+	"TMP2":"MFHL2",
+	"EDIA":"EX"
+	}
 
 	new_names = Data.columns
 	for name in CATEGORY_DICTIONARY.keys():
@@ -378,9 +398,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
-
-	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
+	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -391,6 +409,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	#-------------------------------------------
 	# define OUTPAT
 	# not in this hilmo
 
@@ -403,33 +422,17 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	#rename columns
 	Data.rename( 
 		columns = {
-		'TULOPVM':'PVM',
+		'ADMISSION_DATE':'PVM',
 		#'PALA':'CODE5',
 		'EA':'CODE6',
 		'PALTU':'CODE7'
 		},
 		inplace=True)
 
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
-
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),'CODE1'] = np.NaN
-
-	# remove duplicates
-	Data.drop_duplicates(keep='first', inplace=True)
-
 	# special character split
-	Data = SpecialCharacterSplit(Data)
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
+	Data = CombinationCodeSplit(Data)
 
 	# add PALTU info
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=',')
@@ -438,6 +441,20 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital' 
+
+	#-------------------------------------------
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+	# if negative hospital days than missing value
+	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -477,46 +494,44 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM,    format='%Y-%m-%d', errors='coerce' )
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce' )
 	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce' )
 	# format date columns (patient in and out dates)
-	Data['TULOPVM'] 		= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
-	Data['LAHTOPVM']		= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['ADMISSION_DATE'] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	Data['DISCHARGE_DATE']	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 	
-	# check that event is after death
-	Data.loc[Data.TULOPVM > Data.DEATH_DATE,'TULOPVM'] = Data.DEATH_DATE
+	# check if event is after death
+	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,'ADMISSION_DATE'] = Data.DEATH_DATE
 
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.TULOPVM - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YRMNTH']	= Data.TULOPVM.dt.strftime('%Y-%m')
+
+	Data['EVENT_AGE'] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YRMNTH']	= Data.ADMISSION_DATE.dt.strftime('%Y-%m')
 	Data['INDEX'] 			= np.arange(Data.shape[0] ) + 1
 	Data['SOURCE'] 			= 'INPAT'
 	Data['ICDVER'] 			= 9
 	Data['CODE2']			= np.NaN
 	Data['CODE3']			= np.NaN
-	Data['CODE4']			= (Data.LAHTOPVM - Data.TULOPVM).dt.days
+	Data['CODE4']			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+
+	#-------------------------------------------
+	# CATEGORY RESHAPE:
 
 	# the following code will reshape the Dataframe from wide to long
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
 	# the CATEGORY names are going to be remapped to the desired names  
 
-# rename categories 
 	CATEGORY_DICTIONARY = {
-	# FULL RENAME
-	'PDG':'0',
-	'EDIA':'EX',
-	'MTMP1K1':'NOM4',
-	'MTMP2K1':'NOM5',
-	# PREFIX RENAME
-	'SDG':'',
-	'PTMPK':'NOM',
-	'TMP':'MFHL',
-	'TP':'SFHL',
-	'TPTYP':'HPO',
-	'TMPC':'HPN'
+	"PDG": "0",
+	"SDG1": "1",
+	"SDG2": "2",
+	"TMP1":"MFHL1",
+	"TMP2":"MFHL2",
+	"TMP3":"MFHL3"
 	 }
 
 	new_names = Data.columns
@@ -525,9 +540,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
-
-	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
+	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -538,6 +551,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	#-------------------------------------------
 	# define OUTPAT
 	# not in this hilmo
 
@@ -550,33 +564,17 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	#rename columns
 	Data.rename( 
 		columns = {
-		'TULOPVM':'PVM',
+		'ADMISSION_DATE':'PVM',
 		'PALA':'CODE5',
 		'EA':'CODE6',
 		'PALTU':'CODE7'
 		},
 		inplace=True)
 
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
-
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),'CODE1'] = np.NaN
-
-	# remove duplicates
-	Data.drop_duplicates(keep='first', inplace=True)
-
 	# special character split
-	Data = SpecialCharacterSplit(Data)
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
+	Data = CombinationCodeSplit(Data)
 
 	# add PALTU info
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=',')
@@ -585,6 +583,19 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'	
+
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+	# if negative hospital days than missing value
+	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -628,24 +639,29 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM,    format='%Y-%m-%d', errors='coerce' )
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce' )
 	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce' )
 	# format date columns (patient in and out dates)
-	Data['TULOPVM'] 		= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
-	Data['LAHTOPVM']		= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['ADMISSION_DATE'] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['DISCHARGE_DATE']	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.TULOPVM - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YRMNTH']	= Data.TULOPVM.dt.strftime('%Y-%m')
+
+	Data['EVENT_AGE'] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YRMNTH']	= Data.ADMISSION_DATE.dt.strftime('%Y-%m')
 	Data['INDEX'] 			= np.arange(Data.shape[0] ) + 1
 	Data['SOURCE'] 			= 'INPAT'
 	Data['CODE2']			= np.NaN
 	Data['CODE3']			= np.NaN
-	Data['CODE4']			= (Data.LAHTOPVM - Data.TULOPVM).dt.days
+	Data['CODE4']			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
 	Data['ICDVER'] 			= 10
+
+	#-------------------------------------------
+	# CATEGORY RESHAPE:
 
 	# the following code will reshape the Dataframe from wide to long
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
@@ -659,12 +675,12 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	'MTMP1K1':'NOM4',
 	'MTMP2K1':'NOM5',
 	# PREFIX RENAME
-	'SDG':'',
-	'PTMPK':'NOM',
-	'TMP':'MFHL',
-	'TP':'SFHL',
-	'TPTYP':'HPO',
-	'TMPC':'HPN'
+	'^SDG':'',
+	'^PTMPK':'NOM',
+	'^TMP':'MFHL',
+	'^TP':'SFHL',
+	'^TPTYP':'HPO',
+	'^TMPC':'HPN'
 	 }
 
 	new_names = Data.columns
@@ -673,9 +689,7 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
-
-	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
+	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -686,42 +700,27 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	#-------------------------------------------
 	# define OUTPAT / OPER IN / OPER OUT 
 	# talk with sami
 
 	#rename columns
 	Data.rename( 
 		columns = {
-		'TULOPVM':'PVM',
+		'ADMISSION_DATE':'PVM',
 		'PALA':'CODE5',
 		'EA':'CODE6',
 		'PALTU':'CODE7'
 		},
 		inplace=True)
 
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
-
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),'CODE1'] = np.NaN
-
-	# remove duplicates
-	Data.drop_duplicates(keep='first', inplace=True)
-
 	# special character split
-	Data = SpecialCharacterSplit(Data)
+	Data = CombinationCodeSplit(Data)
 
 	# FIX OUTPAT: names and codes 
 	# TODO 
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
 
 	# add PALTU info
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=',')
@@ -730,6 +729,20 @@ def Hilmo_POST95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'
+
+	#-------------------------------------------
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+	# if negative hospital days than missing value
+	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -816,7 +829,7 @@ def Hilmo_diagnosis_processing(file_path:str,file_sep=';', test=False):
 
 
 
-def Hilmo_operations_processing(file_path:str,file_sep=';', test=False):
+def Hilmo_operations_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	"""Process Hilmo surgical operations.
 
     This function reads and processes an Hilmo file located at the specified file_path.  
@@ -839,19 +852,43 @@ def Hilmo_operations_processing(file_path:str,file_sep=';', test=False):
 	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
 	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
+	# add date of birth
+	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
+	Data.rename( columns ={'date_of_birth':'BIRTH_DATE'}, inplace = True )
+
+	# format date columns (birth and death date)
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d',errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d',errors='coerce' )
+	# format date columns (patient in and out dates)
+	Data['ADMISSION_DATE'] 	= pd.to_datetime( Data.TOIMPALKUPVM.str.slice(stop=10),  format='%d.%m.%Y',errors='coerce' )
+	Data['DISCHARGE_DATE']	= pd.to_datetime( Data.TOIMPLOPPUPVM.str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+
+	# check if event is after death
+	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,'ADMISSION_DATE'] = Data.DEATH_DATE
+
+	#-------------------------------------------
+	# define columns for detailed longitudinal
+
+	Data['EVENT_AGE'] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YRMNTH']	= Data.ADMISSION_DATE.dt.strftime('%Y-%m')
+	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
+	Data['SOURCE'] 			= 'INPAT'
+	Data['ICDVER'] 			= 10
+	Data['CATEGORY'] 		= 'NOM' + Data['N'].astype('string')
+	Data['CODE2']			= np.NaN
+	Data['CODE3']			= np.NaN
+	Data['CODE4']			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+	Data['CODE5']			= np.NaN
+	Data['CODE6']			= np.NaN
+	Data['CODE7']			= np.NaN
+
 	# rename columns
 	Data.rename( 
 		columns = {
 		'TOIMP':'CODE1',
-		'TOIMPLOPPUPVM':'PVM'
-		},
-		inplace=True )
-
-	# define columns for detailed longitudinal
-	Data['CATEGORY'] = 'NOM' + Data['N'].astype('string')
-	Data['CODE2']	 = np.NaN
-	Data['CODE3']	 = np.NaN
-	Data['CODE4']	 = np.NaN
+		'ADMISSION_DATE':'PVM'
+		}, 
+		inplace=True)
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -888,7 +925,9 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
 	# the CATEGORY names are going to be remapped to the desired names
 
-	# rename categories
+	#-------------------------------------------
+	# CATEGORY RESHAPE:
+
 	CATEGORY_DICTIONARY = {'TMPTYP':'HPO','TMPC':'HPN'}
 
 	new_names = Data.columns
@@ -896,10 +935,8 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
     	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
 	# perform the reshape
-	VAR_FOR_RESHAPE = list(set(Data.columns)-set(new_names)) 
-	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
-
-	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
+	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
+	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
 		id_vars 	= 'TNRO',
 		value_vars 	= VAR_FOR_RESHAPE,
 		var_name 	= 'CATEGORY',
@@ -910,7 +947,9 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	#-------------------------------------------
 	# add other (empty) code columns 
+
 	Data['CODE2'] 	= np.NaN
 	Data['CODE3'] 	= np.NaN
 	Data['CODE4'] 	= np.NaN
@@ -920,7 +959,6 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 	Data['INDEX']  	= Data.HILMO_ID
 
 	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ,].reset_index(drop=True,inplace=True) 
 
 	# WRITE TO DETAILED LONGITUDINAL
@@ -930,7 +968,7 @@ def Hilmo_heart_processing(file_path:str,file_sep=';', test=False):
 
 
 
-def AvoHilmo_icd10_processing(file_path:str,file_sep=';', test=False):
+def AvoHilmo_icd10_preparation(file_path:str,file_sep=';', test=False):
 	"""Process AvoHilmo ICD10 diagnosis.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
@@ -970,7 +1008,7 @@ def AvoHilmo_icd10_processing(file_path:str,file_sep=';', test=False):
 
 
 
-def AvoHilmo_icpc2_processing(file_path:str,file_sep=';', test=False):
+def AvoHilmo_icpc2_preparation(file_path:str,file_sep=';', test=False):
 	"""Process AvoHilmo ICPC2 diagnosis.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
@@ -1006,7 +1044,7 @@ def AvoHilmo_icpc2_processing(file_path:str,file_sep=';', test=False):
 
 
 
-def AvoHilmo_oral_processing(file_path:str,file_sep=';', test=False):
+def AvoHilmo_oral_preparation(file_path:str,file_sep=';', test=False):
 	"""Process AvoHilmo oral operation.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
@@ -1042,7 +1080,7 @@ def AvoHilmo_oral_processing(file_path:str,file_sep=';', test=False):
 
 
 
-def AvoHilmo_operations_processing(file_path:str,file_sep=';', test=False):
+def AvoHilmo_operations_preparation(file_path:str,file_sep=';', test=False):
 	"""Process AvoHilmo surgery operations.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
@@ -1108,21 +1146,22 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
 	# format date columns ( ? )
-	Data['KAYNTI_ALKOI'] 	= pd.to_datetime( Data['KAYNTI_ALKOI'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
+	Data['EVENT_DATE'] 	= pd.to_datetime( Data['KAYNTI_ALKOI'].str.slice(stop=10), format='%d.%m.%Y',errors='coerce' )
 	# format date columns (birth and death date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM, 	format='%Y-%m-%d', errors='coerce' )
-	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, 	format='%Y-%m-%d', errors='coerce' )
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce' )
 
-	# check that event is after death
-	Data.loc[Data.KAYNTI_ALKOI > Data.DEATH_DATE,'KAYNTI_ALKOI'] = Data.DEATH_DATE
+	# check if event is after death
+	Data.loc[Data.EVENT_DATE > Data.DEATH_DATE,'EVENT_DATE'] = Data.DEATH_DATE
 
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.KAYNTI_ALKOI - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YRMNTH']	= Data.KAYNTI_ALKOI.dt.strftime('%Y-%m')
-	Data['EVENT_YEAR']		= Data.KAYNTI_ALKOI.dt.year
+	Data['EVENT_AGE'] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YRMNTH']	= Data.EVENT_DATE.dt.strftime('%Y-%m')
+	Data['EVENT_YEAR']		= Data.EVENT_DATE.dt.year
 	Data['ICDVER']			= 10
 	Data['SOURCE']			= 'PRIM_OUT'
 	Data['INDEX']			= Data.AVOHILMO_ID
@@ -1136,23 +1175,13 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 		'KAYNTI_YHTEYSTAPA':'CODE5',
 		'KAYNTI_PALVELUMUOTO':'CODE6',
 		'KAYNTI_AMMATTI':'CODE7',
-		'KAYNTI_ALKOI':'PVM'},
+		'EVENT_DATE':'PVM'},
 		inplace=True )
+
+	#-------------------------------------------
 
 	# merge CODE1 and CATEGORY from extra file
 	Data = Data.merge(extra_to_merge, on = 'AVOHILMO_ID', how='inner')
-
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-
-	# remove duplicates
-	Data.drop_duplicates(keep='first', inplace=True)
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
 
 	# add PALTU info
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=',')
@@ -1161,6 +1190,20 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	# correct missing PALTU
 	registry_tocheck = ["INPAT", "OUTPAT", "OPER_IN", "OPER_OUT"]
 	Data.loc[ Data.CODE7.isin(registry_tocheck) & Data.CODE7.isna(),'CODE7'] = 'Other Hospital'	
+
+	#-------------------------------------------
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+	# if negative hospital days than missing value
+	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -1201,15 +1244,15 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = 'TNRO',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 	# format date columns (birth date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str.slice(stop=10), format='%Y-%m-%d' )
-	Data['KPV']				= pd.to_datetime( Data.KPV.str.slice(stop=10), 	format='%d.%m.%Y' )
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE.str.slice(stop=10), format='%Y-%m-%d' )
+	Data['EVENT_DATE']		= pd.to_datetime( Data.KPV.str.slice(stop=10), format='%d.%m.%Y' )
 
 	# # define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.KPV - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YEAR'] 		= Data.KPV.dt.year	
-	Data['EVENT_YRMNTH']	= Data.KPV.dt.strftime('%Y-%m')
+	Data['EVENT_AGE'] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YEAR'] 		= Data.EVENT_DATE.dt.year	
+	Data['EVENT_YRMNTH']	= Data.EVENT_DATE.dt.strftime('%Y-%m')
 	Data['INDEX'] 			= np.arange(Data.shape[0] ) + 1
 	Data['ICDVER'] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
 	Data['SOURCE'] 			= 'DEATH'
@@ -1220,6 +1263,8 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data['CODE6']			= np.NaN
 	Data['CODE7']			= np.NaN
 
+	#-------------------------------------------
+	# CATEGORY RESHAPE:
 
 	# the following code will reshape the Dataframe from wide to long
 	# if there was a value under one of the category columns this will be transferred under the column CODE1
@@ -1247,24 +1292,26 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	#-------------------------------------------
 	# rename columns
+
 	Data.rename( 
 		columns = {
-		'KPV':'PVM'
+		'EVENT_DATE':'PVM'
 		},
 		inplace=True)
 
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	# NOT performing code check in this registry
+	#-------------------------------------------
+	# QUALITY CONTROL:
 
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
 	# remove duplicates
 	Data.drop_duplicates(keep='first', inplace=True)
 
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
+	# NOT performing code check in this registry
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -1304,19 +1351,24 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map, on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
-	# format date columns (birth date and diagnosis date)
-	Data['SYNTPVM'] 			= pd.to_datetime( Data.SYNTPVM.str.slice(stop=10), format='%Y-%m-%d' )	
-	Data['dg_date']				= pd.to_datetime( Data.dg_date, format='%Y-%m-%d' )
+	Data.rename( columns = {'date_of_birth':'DOB'}, inplace = True )
 
+	# format date columns (birth and death date)
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d',errors='coerce' )
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d',errors='coerce' )
+	# format date columns (diagnosis date)
+	Data['EVENT_DATE']		= pd.to_datetime( Data.dg_date, format='%Y-%m-%d', errors='coerce' )
+
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.dg_date - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)	
-	Data['EVENT_YEAR'] 		= Data.dg_date.dt.year	
-	Data['EVENT_YRMNTH']	= Data.dg_date.dt.strftime('%Y-%m')
+
+	Data['EVENT_AGE'] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+	Data['EVENT_YEAR'] 		= Data.EVENT_DATE.dt.year	
+	Data['EVENT_YRMNTH']	= Data.EVENT_DATE.dt.strftime('%Y-%m')
 	Data['ICDVER'] 			= 'O3'
 	Data['INDEX'] 			= np.arange(Data.shape[0] ) + 1
 	Data['SOURCE'] 			= 'CANC'
-	Data['CATEGORY'] 		= np.NaN  # maybe is 'O3' but in the code is saying to put this in ICDVER .. 
+	Data['CATEGORY'] 		= np.NaN
 	Data['CODE4']			= np.NaN
 	Data['CODE5']			= np.NaN
 	Data['CODE6']			= np.NaN
@@ -1328,21 +1380,21 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		'topo':'CODE1',
 		'morpho':'CODE2',
 		'beh':'CODE3',
-		'dg_date':'PVM'
+		'EVENT_DATE':'PVM'
 		},
 		inplace=True)
 
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	#-------------------------------------------
+	# QUALITY CONTROL:
 
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep='first', inplace=True)
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -1353,7 +1405,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 
 
-def KelaReimbursement_processing(file_path:str, DOB_map, file_sep=';', test=False):
+def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	"""Process the information from kela reimbursement registry.
 
     This function reads and processes file located at the specified file_path. 
@@ -1381,15 +1433,21 @@ def KelaReimbursement_processing(file_path:str, DOB_map, file_sep=';', test=Fals
 
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = 'HETU',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
-	# format date columns (birth date and reimbursement date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str.slice(stop=10), format='%Y-%m-%d' )	
-	Data['LAAKEKORVPVM']	= pd.to_datetime( Data.ALPV, format='%Y-%m-%d' )
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
+	# format date columns (birth and death date)
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce')
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce')
+	# format date columns (reimbursement date)
+	Data['REIMB_START']		= pd.to_datetime( Data.ALPV, format='%Y-%m-%d', errors='coerce')
+	Data['REIMB_END']		= pd.to_datetime( Data.LOPV, format='%Y-%m-%d', errors='coerce')
+
+	#-------------------------------------------
 	# define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.LAAKEKORVPVM - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)
-	Data['EVENT_YEAR'] 		= Data.LAAKEKORVPVM.dt.year
-	Data['EVENT_YRMNTH']	= Data.LAAKEKORVPVM.dt.strftime('%Y-%m')
+
+	Data['EVENT_AGE'] 		= round( (Data.REIMB_START - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
+	Data['EVENT_YEAR'] 		= Data.REIMB_START.dt.year
+	Data['EVENT_YRMNTH']	= Data.REIMB_START.dt.strftime('%Y-%m')
 	Data['ICDVER'] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
 	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
 	Data['SOURCE'] 			= 'REIMB'
@@ -1405,24 +1463,24 @@ def KelaReimbursement_processing(file_path:str, DOB_map, file_sep=';', test=Fals
 		columns = {
 		'SK1':'CODE1',
 		'DIAG':'CODE2',
-		'LAAKEKORVPVM':'PVM'
+		'REIMB_START':'PVM'
 		}, 
 		inplace = True )
 
-	# remove missing values
-	Data.mask(Data == '' ,inplace=True)
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	#-------------------------------------------
+	# QUALITY CONTROL:
 
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep='first', inplace=True)
 
 	# remove ICD code dots
 	Data['CODE2'] = Data['CODE2'].replace({".", ""})
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -1430,6 +1488,90 @@ def KelaReimbursement_processing(file_path:str, DOB_map, file_sep=';', test=Fals
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
 	else: 		Write2DetailedLongitudinal(Data)
+
+def KelaReimbursement_20_21__processing(file_path:str, DOB_map, file_sep=';', test=False):
+	"""Process the information from kela reimbursement registry.
+
+    This function reads and processes file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ';'.
+        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
+	# fetch Data
+	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+
+	# add date of birth
+	Data = Data.merge(DOB_map, left_on = 'HETU',right_on = 'FINREGISTRYID')
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
+
+	# format date columns (birth and death date)
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce')
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce')
+	# format date columns (reimbursement date)
+	Data['REIMB_START']		= pd.to_datetime( Data.korvausoikeus_alpv, format='%Y-%m-%d', errors='coerce')
+	Data['REIMB_END']		= pd.to_datetime( Data.korvausoikeus_lopv, format='%Y-%m-%d', errors='coerce')
+
+	#-------------------------------------------
+	# define columns for detailed longitudinal
+
+	Data['EVENT_AGE'] 		= round( (Data.REIMB_START - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
+	Data['EVENT_YEAR'] 		= Data.REIMB_START.dt.year
+	Data['EVENT_YRMNTH']	= Data.REIMB_START.dt.strftime('%Y-%m')
+	Data['ICDVER'] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
+	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
+	Data['SOURCE'] 			= 'REIMB'
+	Data['CATEGORY'] 		= np.NaN
+	Data['CODE3']			= np.NaN
+	Data['CODE4']			= np.NaN
+	Data['CODE5']			= np.NaN
+	Data['CODE6']			= np.NaN
+	Data['CODE7']			= np.NaN
+
+	#rename columns
+	Data.rename(
+		columns = {
+		'KORVAUSOIKEUS_KOODI':'CODE1',
+		'DIAGNOOSI_KOODI':'CODE2',
+		'EVENT_DATE':'PVM'
+		}, 
+		inplace = True )
+
+	#-------------------------------------------
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+
+	# remove ICD code dots
+	Data['CODE2'] = Data['CODE2'].replace({".", ""})
+
+	# select desired columns 
+	Data = Data[ COLUMNS_2_KEEP ]
+
+	# WRITE TO DETAILED LONGITUDINAL
+	if test: 	Write2TestFile(Data)
+	else: 		Write2DetailedLongitudinal(Data)	
 
 
 
@@ -1461,15 +1603,19 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'HETU',right_on = 'FINREGISTRYID')
-	Data.rename( columns = {'date_of_birth':'SYNTPVM'}, inplace = True )
-	# format date columns (birth date and purchase date)
-	Data['SYNTPVM'] 		= pd.to_datetime( Data.SYNTPVM.str.slice(stop=10), format='%Y-%m-%d' )
-	Data['LAAKEOSTPVM'] 	= pd.to_datetime( Data.OSTOPV, format='%Y-%m-%d' ) 	
+	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
+	# format date columns (birth and death date)
+	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE, format='%Y-%m-%d', errors='coerce')
+	Data['DEATH_DATE'] 		= pd.to_datetime( Data.death_date, format='%Y-%m-%d', errors='coerce')
+	# format date columns (purchase date)
+	Data['EVENT_DATE'] 		= pd.to_datetime( Data.OSTOPV, format='%Y-%m-%d', errors='coerce') 	
 
-	# # define columns for detailed longitudinal
-	Data['EVENT_AGE'] 		= round( (Data.LAAKEOSTPVM - Data.SYNTPVM).dt.days/DAYS_TO_YEARS, 2)
-	Data['EVENT_YEAR'] 		= Data.LAAKEOSTPVM.dt.year
-	Data['EVENT_YRMNTH']	= Data.LAAKEOSTPVM.dt.strftime('%Y-%m')
+	#-------------------------------------------	
+	# define columns for detailed longitudinal
+
+	Data['EVENT_AGE'] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
+	Data['EVENT_YEAR'] 		= Data.EVENT_DATE.dt.year
+	Data['EVENT_YRMNTH']	= Data.EVENT_DATE.dt.strftime('%Y-%m')
 	Data['ICDVER'] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
 	Data['INDEX'] 			= np.arange(Data.shape[0]) + 1
 	Data['SOURCE'] 			= 'PURCH'
@@ -1485,26 +1631,30 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		'KORV_EUR':'CODE5',
 		'KAKORV_EUR':'CODE6',
 		'LAJI':'CODE7',
-		'LAAKEOSTPVM':'PVM'
+		'EVENT_DATE':'PVM'
 		},
 		inplace = True )
 
+	#-------------------------------------------
+	# QUALITY CONTROL:
+
+	# check that EVENT_AGE is in predefined range 
+	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	# check that EVENT_AGE is not missing
+	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	# check that CODE1 and 2 are not missing
+	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	# remove duplicates
+	Data.drop_duplicates(keep='first', inplace=True)
+
 	# remove dot in VNRO code
 	Data['CODE3'] = Data.CODE3.astype('string').str.split('.',expand=True)[0]
-
 	# complete VNR code if shorter than 6 digits
 	MISSING_DIGITS = 6 - Data.CODE3.str.len()
 	ZERO = pd.Series( ['0'] * Data.shape[0] ).astype('string')
 	Data['CODE3'] = Data.CODE3 + ZERO*MISSING_DIGITS
 
-	# remove missing values
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-
-	# FINALIZE
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	Data.sort_values( by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
-
+	#-------------------------------------------
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
 

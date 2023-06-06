@@ -13,7 +13,7 @@ This repository contains the script for creating the detailed longitudinal file 
 - no adding of PIC to the datasets      --> already available in Finregistry 
 - no joining of Finngen IDs             --> already available in Finregistry 
 - no removing of ID denials             --> don't have those in Finregistry
-- birth date is not created using the htun2date() function but is imported from minimal_phenotype file (Finregistry dataset)
+- birth date is not created using the htun2date() function but is imported from a sample of minimal_phenotype file (Finregistry dataset) 
 - death date is also imported from minimal_phenotype file (Finregistry dataset)
 - in Kela datasets the column names are alreay in uppercase
 - in cancer registry not defining the following variables:
@@ -22,10 +22,26 @@ This repository contains the script for creating the detailed longitudinal file 
 
 # PROCESSING SUMMARY
 
-Each register is transformed into a detailed longitudinal file structure containing the following variables: <br>FINREGISTRYID, PVM, EVENT_AGE, EVENT_YRMNTH, CODE1, CODE2, CODE3, CODE4, ICDVER, CATEGORY, INDEX, SOURCE. 
-All missing values in detailed longitudinal are replaced with a string "NA" 
+Each register is transformed into a detailed longitudinal file structure containing the following variables: <br>
+FINREGISTRYID, PVM, EVENT_AGE, EVENT_YRMNTH, 
+CODE1, CODE2, CODE3, CODE4, 
+CATEGORY, INDEX, SOURCE, ICDVER. 
 
-NB: EVENT_AGE is going to be round up to 2 decimal positions
+## General Rules
+
+EVENT_AGE is going to be round up to 2 decimal positions
+
+**QUALITY CONTROL RULES**:
+
+Check that EVENT_DATE is not after DEATH_DATE
+
+If EVENT_AGE is less than 0 or more than 110 then row is deleted<br>
+If EVENT_AGE is missing the row is deleted<br>
+If CODE1 or CODE2 is missing then row is deleted<br>
+If duplicate row then remove row<br>
+If CODE4 is negative then set to missing
+
+In Kela dataframes check that the ATC / VNRO code are formatted the correct way
 
 ## Hilmo 
 
@@ -35,6 +51,8 @@ Throughout the registry existence three ICD disease classification versions chan
 * ICD10: From 1996-01-01 up to now.
 
 In addition to that, for the period 1994-1995 there is a separate Hilmo file with ICD9 codes, this is due to the change of coding within the register in 1994 (not due to the change in ICD version): "The care notification register was introduced in 1994, in which case it replaced the previously used Deletion Notification Register".
+
+Finnish Hospital league codes were used until 1996 when the use of Nomesco codes started.
 
 Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column of detailed longitudinal). The inpatient/outpatient split is made according to 'PALA' up to 2019 and 'YHTEYSTAPA'+’PALA’ codes for 2019-2021. 
 NB: see function *Hilmo_defineOutpat()* in **func.py** 
@@ -62,14 +80,25 @@ six columns contain ICD 8 to 10codes: The basic cause of death (TPKS), the immed
 Some light data cleaning was done: 
 * removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
 * removed duplicates 
+* all VNRO codes to be without "." and 6-digit long 
 * death date from COD was used to correct event dates recorded after death date (those dates were changed to death date)
 
 ## Kela reimbursement
 
 Kela reimbursement preprocessing is strigtforward and self-explanatory 
 
+NB: there are 2 different functions depending on the year
+
 
 # EXTRA INFORMATION
+
+**FinnGen handbook**
+look at this file for more info on the registers used for detailed longitudinal
+https://finngen.gitbook.io/finngen-analyst-handbook/finngen-data-specifics/red-library-data-individual-level-data/what-phenotype-files-are-available-in-sandbox-1/detailed-longitudinal-data/registers-in-the-detailed-longitudinal-data
+
+and this for more info on the CODEs names/meaning
+https://finngen.gitbook.io/finngen-analyst-handbook/finngen-data-specifics/finnish-health-registers-and-medical-coding/international-and-finnish-health-code-sets
+
 
 **A note on causes of death pre-processing**
 
@@ -80,4 +109,6 @@ Trying to match IDs between files there are some small differences in variables 
 **A note on the updated Kela reimbursements file**
 
 A data update file despite containing reimbursement information for two additional years (2020-2021) had considerably fewer entries compared to an old file. This in part was due to the removal of rows with missing information (rows with missing full dates were removed in data update file).
+
+Also column names have been changed in the meanwhile
 

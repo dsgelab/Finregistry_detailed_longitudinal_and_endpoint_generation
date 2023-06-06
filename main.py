@@ -37,45 +37,41 @@ if __name__ == '__main__':
 	Hilmo_diagnosis_processing(hilmo_diag_1995_2018)
 	Hilmo_diagnosis_processing(hilmo_diag_2019_2021)
 
-	Hilmo_operations_processing(hilmo_oper_1995_2018)
-	Hilmo_operations_processing(hilmo_oper_2019_2021)
+	Hilmo_operations_processing(hilmo_oper_1995_2018, DOB_map=BIRTH_DEATH_MAP)
+	Hilmo_operations_processing(hilmo_oper_2019_2021, DOB_map=BIRTH_DEATH_MAP)
 
 	Hilmo_heart_processing(hilmo_heart_1994_1995)
 	Hilmo_heart_processing(hilmo_heart_1995_2018)
 	Hilmo_heart_processing(hilmo_heart_2019_2021)
 
-	# remember to select columns at the end
-
 	# AVOHILMO
 	print('start processing avohilmo files')
-	icd10_11_16 = AvoHilmo_icd10_processing(avohilmo_icd10_2011_2016)
-	icd10_17_19 = AvoHilmo_icd10_processing(avohilmo_icd10_2017_2019)
-	icd10_20_21 = AvoHilmo_icd10_processing(avohilmo_icd10_2020_2021)
+	icd10_11_16 = AvoHilmo_icd10_preparation(avohilmo_icd10_2011_2016)
+	icd10_17_19 = AvoHilmo_icd10_preparation(avohilmo_icd10_2017_2019)
+	icd10_20_21 = AvoHilmo_icd10_preparation(avohilmo_icd10_2020_2021)
 	#concat everything togheter 
 	icd10 = pd.concat([icd10_11_16,icd10_17_19,icd10_20_21])
 
-
-	icpc2_11_16 = AvoHilmo_icpc2_processing(avohilmo_icpc2_2011_2016)
-	icpc2_17_19 = AvoHilmo_icpc2_processing(avohilmo_icpc2_2017_2019)
-	icpc2_20_21 = AvoHilmo_icpc2_processing(avohilmo_icpc2_2020_2021)
+	icpc2_11_16 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2011_2016)
+	icpc2_17_19 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2017_2019)
+	icpc2_20_21 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2020_2021)
 	#concat everything togheter
 	icpc2 = pd.concat([icpc2_11_16,icpc2_17_19,icpc2_20_21])
 
-
-	oral_11_16 = AvoHilmo_oral_processing(avohilmo_oral_2011_2016)
-	oral_17_19 = AvoHilmo_oral_processing(avohilmo_oral_2017_2019)
-	oral_20_21 = AvoHilmo_oral_processing(avohilmo_oral_2020_2021)
+	oral_11_16 = AvoHilmo_oral_preparation(avohilmo_oral_2011_2016)
+	oral_17_19 = AvoHilmo_oral_preparation(avohilmo_oral_2017_2019)
+	oral_20_21 = AvoHilmo_oral_preparation(avohilmo_oral_2020_2021)
 	#concat everything togheter
 	oral = pd.concat([oral_11_16,oral_17_19,oral_20_21])
 
-
-	oper_11_16 = AvoHilmo_operations_processing(avohilmo_oper_2011_2016)
-	oper_17_19 = AvoHilmo_operations_processing(avohilmo_oper_2017_2019)
-	oper_20_21 = AvoHilmo_operations_processing(avohilmo_oper_2020_2021)
+	oper_11_16 = AvoHilmo_operations_preparation(avohilmo_oper_2011_2016)
+	oper_17_19 = AvoHilmo_operations_preparation(avohilmo_oper_2017_2019)
+	oper_20_21 = AvoHilmo_operations_preparation(avohilmo_oper_2020_2021)
 	#concat everything togheter
 	oper = pd.concat([oper_11_16,oper_17_19,oper_20_21])
 
 	# merge to main avohilmo files and push to detailed longitudinal
+	print('starting avohilmo merging for loop')
 	avohilmo_to_merge = [icd10,icpc2,oral,oper]
 	avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016,avohilmo_2017_2018,avohilmo_2019_2020,avohilmo_2020,avohilmo_2021]
 	for avohilmo in avohilmo_to_process:
@@ -90,7 +86,9 @@ if __name__ == '__main__':
 	CancerRegistry_processing(cancer,DOB_map=BIRTH_DEATH_MAP)
 
 	print('start processing kela registry')
-	KelaReimbursement_processing(kela_reimburement)
+	KelaReimbursement_PRE20_processing(kela_reimbursement_pre2020)
+	KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021)
+
 	for purchase_file in kela_purchase_filelist:
 		KelaPurchase_processing(purchase_file,DOB_map=BIRTH_DEATH_MAP)
 
