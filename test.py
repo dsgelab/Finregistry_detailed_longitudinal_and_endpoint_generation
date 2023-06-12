@@ -49,6 +49,7 @@ if __name__ == '__main__':
 	Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=BIRTH_DEATH_MAP, test=True)
 	Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=BIRTH_DEATH_MAP, test=True)
 	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP, test=True)	
+	print('hilmo pre 95 completed')
 
 	hilmo_to_merge = [diag,oper,heart]
 	for df in hilmo_to_merge:
@@ -87,10 +88,11 @@ if __name__ == '__main__':
 	oper = pd.concat([oper_11_16,oper_17_19,oper_20_21])
 
 	# merge to main avohilmo files and push to detailed longitudinal
-	print('starting avohilmo merging for loop')
+	print('starting avohilmo merging loop')
 	avohilmo_to_merge = [icd10,icpc2,oral,oper]
 	avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016,avohilmo_2017_2018,avohilmo_2019_2020,avohilmo_2020,avohilmo_2021]
 	for avohilmo in avohilmo_to_process:
+		print(f'{avohilmo} completed')
 		for df in avohilmo_to_merge:
 			AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df, test=True)
 
@@ -109,7 +111,7 @@ if __name__ == '__main__':
 	print('start processing cancer registry')
 	START = datetime.now()
 
-	CancerRegistry_processing(cancer,DOB_map=BIRTH_DEATH_MAPm, test=True)
+	CancerRegistry_processing(cancer,DOB_map=BIRTH_DEATH_MAP, test=True)
 
 	END = datetime.now()
 	print(f'the processing took { (END-START)} hour:min:sec')
@@ -117,8 +119,8 @@ if __name__ == '__main__':
 	print('start processing kela registry')
 	START = datetime.now()
 
-	KelaReimbursement_PRE20_processing(kela_reimbursement_pre2020, test=True)
-	KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021, test=True)
+	KelaReimbursement_PRE20_processing(kela_reimbursement_pre2020, DOB_map=BIRTH_DEATH_MAP, test=True)
+	KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021, DOB_map=BIRTH_DEATH_MAP, test=True)
 
 	for purchase_file in kela_purchase_filelist:
 		KelaPurchase_processing(purchase_file,DOB_map=BIRTH_DEATH_MAP, test=True)

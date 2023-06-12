@@ -1635,7 +1635,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=';', tes
 	if test: 	Write2TestFile(Data)
 	else: 		Write2DetailedLongitudinal(Data)
 
-def KelaReimbursement_20_21__processing(file_path:str, DOB_map, file_sep=';', test=False):
+def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	"""Process the information from kela reimbursement registry.
 
     This function reads and processes file located at the specified file_path. 
@@ -1662,6 +1662,7 @@ def KelaReimbursement_20_21__processing(file_path:str, DOB_map, file_sep=';', te
 	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
+	Data.columns = ['HETU'] + list(Data.columns[1:])
 	Data = Data.merge(DOB_map, left_on = 'HETU',right_on = 'FINREGISTRYID')
 	Data.rename( columns = {'date_of_birth':'BIRTH_DATE'}, inplace = True )
 
@@ -1693,7 +1694,7 @@ def KelaReimbursement_20_21__processing(file_path:str, DOB_map, file_sep=';', te
 		columns = {
 		'KORVAUSOIKEUS_KOODI':'CODE1',
 		'DIAGNOOSI_KOODI':'CODE2',
-		'EVENT_DATE':'PVM'
+		'REIMB_START':'PVM'
 		}, 
 		inplace = True )
 
