@@ -65,14 +65,14 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
 
 	today = dt.today().strftime("%Y_%m_%d")
     filename = "detailed_longitudinal" + "_" + today + ".csv"
-    header = True if file == files[0] else False
+    HEADER = True if filename.is_file() else False
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
 		sep=';', 
 		encoding='latin-1', 
 		index=False,
-		header=header)
+		header=HEADER)
 
 
 
@@ -96,14 +96,14 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
 
     today = dt.today().strftime("%Y_%m_%d")
     filename = "test_detailed_longitudinal" + "_" + today + ".csv"
-    header = True if file == files[0] else False
+    HEADER = True if filename.is_file() else False
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
 		sep=';', 
 		encoding='latin-1', 
 		index=False,
-		header=header)
+		header=HEADER)
 
 
 def CombinationCodesSplit(Data:pd.DataFrame):
