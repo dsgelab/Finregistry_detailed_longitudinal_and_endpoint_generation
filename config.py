@@ -8,17 +8,17 @@ THL_HILMO_PATH = Path('/data/original_data/thl_hilmo')
 hilmo_1969_1986 			= THL_HILMO_PATH/'thl2019_1776_poisto_6986.csv.finreg_IDs'
 hilmo_1987_1993 			= THL_HILMO_PATH/'thl2019_1776_poisto_8793.csv.finreg_IDs'
 hilmo_1994_1995  			= THL_HILMO_PATH/'thl2019_1776_hilmo_9495.csv.finreg_IDs' 
-hilmo_1995_2018  			= THL_HILMO_PATH/'thl2019_1776_hilmo.csv.finreg_IDs' 
+hilmo_1996_2018  			= THL_HILMO_PATH/'thl2019_1776_hilmo.csv.finreg_IDs' 
 hilmo_2019_2021  			= THL_HILMO_PATH/'THL2021_2196_HILMO_2019_2021.csv.finreg_IDs' 
 
-hilmo_diag_1995_2018 		= THL_HILMO_PATH/'thl2019_1776_hilmo_diagnoosit_kaikki.csv.finreg_IDs'
+hilmo_diag_1996_2018 		= THL_HILMO_PATH/'thl2019_1776_hilmo_diagnoosit_kaikki.csv.finreg_IDs'
 hilmo_diag_2019_2021		= THL_HILMO_PATH/'THL2021_2196_HILMO_DIAG.csv.finreg_IDs'
 
-hilmo_oper_1995_2018		= THL_HILMO_PATH/'thl2019_1776_hilmo_toimenpide.csv.finreg_IDs'
+hilmo_oper_1996_2018		= THL_HILMO_PATH/'thl2019_1776_hilmo_toimenpide.csv.finreg_IDs'
 hilmo_oper_2019_2021		= THL_HILMO_PATH/'THL2021_2196_HILMO_TOIMP.csv.finreg_IDs'
 
-hilmo_heart_1994_1995		= THL_HILMO_PATH/'thl2019_1776_hilmo_9495_syp.csv.finreg_IDs '
-hilmo_heart_1995_2018		= THL_HILMO_PATH/'thl2019_1776_hilmo_syp.csv.finreg_IDs'
+hilmo_heart_1994_1995		= THL_HILMO_PATH/'thl2019_1776_hilmo_9495_syp.csv.finreg_IDs'
+hilmo_heart_1996_2018		= THL_HILMO_PATH/'thl2019_1776_hilmo_syp.csv.finreg_IDs'
 hilmo_heart_2019_2021		= THL_HILMO_PATH/'THL2021_2196_HILMO_SYP.csv.finreg_IDs'
 
 THL_AVOHILMO_PATH = Path('/data/original_data/thl_avohilmo')

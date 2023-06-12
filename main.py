@@ -28,24 +28,38 @@ if __name__ == '__main__':
 
 	# HILMO
 	print('start processing hilmo files')
+
+	diag_96_18 = Hilmo_extra_diagnosis_preparation(hilmo_diag_1996_2018)
+	diag_19_21 = Hilmo_extra_diagnosis_preparation(hilmo_diag_2019_2021)
+	#concat everything togheter
+	diag = pd.concat([diag_96_18,diag_19_21])
+
+	oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018, DOB_map=BIRTH_DEATH_MAP)
+	oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021, DOB_map=BIRTH_DEATH_MAP)
+	#concat everything togheter
+	oper = pd.concat([oper_96_18,oper_19_21])
+
+	heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
+	heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018)
+	heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021)
+	#concat everything togheter
+	heart = pd.concat([heart_94_95,heart_96_18,heart_19_21])
+
+	# merge to main hilmo files and push to detailed longitudinal
+	# NB: need to merge in data only after 1995
+
 	Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=BIRTH_DEATH_MAP)
 	Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=BIRTH_DEATH_MAP)
-	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP)	
-	Hilmo_POST95_processing(hilmo_1995_2018, DOB_map=BIRTH_DEATH_MAP)
-	Hilmo_POST95_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP)
 
-	Hilmo_diagnosis_processing(hilmo_diag_1995_2018)
-	Hilmo_diagnosis_processing(hilmo_diag_2019_2021)
-
-	Hilmo_operations_processing(hilmo_oper_1995_2018, DOB_map=BIRTH_DEATH_MAP)
-	Hilmo_operations_processing(hilmo_oper_2019_2021, DOB_map=BIRTH_DEATH_MAP)
-
-	Hilmo_heart_processing(hilmo_heart_1994_1995)
-	Hilmo_heart_processing(hilmo_heart_1995_2018)
-	Hilmo_heart_processing(hilmo_heart_2019_2021)
+	hilmo_to_merge = [diag,oper,heart]
+	for df in hilmo_to_merge:
+		Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)	
+		Hilmo_95_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
+		Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
 
 	# AVOHILMO
 	print('start processing avohilmo files')
+
 	icd10_11_16 = AvoHilmo_icd10_preparation(avohilmo_icd10_2011_2016)
 	icd10_17_19 = AvoHilmo_icd10_preparation(avohilmo_icd10_2017_2019)
 	icd10_20_21 = AvoHilmo_icd10_preparation(avohilmo_icd10_2020_2021)
@@ -58,15 +72,15 @@ if __name__ == '__main__':
 	#concat everything togheter
 	icpc2 = pd.concat([icpc2_11_16,icpc2_17_19,icpc2_20_21])
 
-	oral_11_16 = AvoHilmo_oral_preparation(avohilmo_oral_2011_2016)
-	oral_17_19 = AvoHilmo_oral_preparation(avohilmo_oral_2017_2019)
-	oral_20_21 = AvoHilmo_oral_preparation(avohilmo_oral_2020_2021)
+	oral_11_16 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2011_2016)
+	oral_17_19 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2017_2019)
+	oral_20_21 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2020_2021)
 	#concat everything togheter
 	oral = pd.concat([oral_11_16,oral_17_19,oral_20_21])
 
-	oper_11_16 = AvoHilmo_operations_preparation(avohilmo_oper_2011_2016)
-	oper_17_19 = AvoHilmo_operations_preparation(avohilmo_oper_2017_2019)
-	oper_20_21 = AvoHilmo_operations_preparation(avohilmo_oper_2020_2021)
+	oper_11_16 = AvoHilmo_interventions_preparation(avohilmo_oper_2011_2016)
+	oper_17_19 = AvoHilmo_interventions_preparation(avohilmo_oper_2017_2019)
+	oper_20_21 = AvoHilmo_interventions_preparation(avohilmo_oper_2020_2021)
 	#concat everything togheter
 	oper = pd.concat([oper_11_16,oper_17_19,oper_20_21])
 
