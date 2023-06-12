@@ -1,11 +1,13 @@
 
-This repository contains the script for creating the detailed longitudinal file used in Finregistry, the script have been transposed starting from the original FinnGen one (see here: https://github.com/FINNGEN/service-sector-data-processing/tree/master ) with some minor changes, for more info see **CHANGES** section of this file.
+This repository contains the script for creating the detailed longitudinal file used in Finregistry, the script have been transposed starting from the original FinnGen one (see [here](https://github.com/FINNGEN/service-sector-data-processing/tree/master) ) with some minor changes, for more info see **CHANGES** section of this file.
 
 # CODE
 
-*main.py* defines all data file paths and perform all the processing in order to then to create the deatiled longitudial file by concatenating the output files
+*config.py* contains all data file paths to be used in the creation of the detailed longitudinal file
 
-*func.py* contains all the function used to process the dataset in main.py, for more info see **PREPARATION RULES** section of this file
+*main.py* perform all the processing in order to then to create the deatiled longitudial file by concatenating the output files
+
+*func.py* contains all the function used to process the dataset in main.py, for more info see **PROCESSING SUMMARY** section of this file
 
 # CHANGES
 
@@ -16,18 +18,20 @@ This repository contains the script for creating the detailed longitudinal file 
 - birth date is not created using the htun2date() function but is imported from a sample of minimal_phenotype file (Finregistry dataset) 
 - death date is also imported from minimal_phenotype file (Finregistry dataset)
 - in Kela datasets the column names are alreay in uppercase
-- in cancer registry not defining the following variables:
-'MY_CANC_COD_TOPO','MY_CANC_COD_AGE','MY_CANC_COD_YEAR'
 - age randomization is only performed in FinnGen not in Finregistry
+
+- armonize INDEX definition to the one of every other registry
 
 # PROCESSING SUMMARY
 
 Each register is transformed into a detailed longitudinal file structure containing the following variables: <br>
-FINREGISTRYID, PVM, EVENT_AGE, EVENT_YRMNTH, 
-CODE1, CODE2, CODE3, CODE4, 
+FINREGISTRYID, PVM, EVENT_YRMNTH, EVENT_AGE,  
+CODE1, CODE2, CODE3, CODE4, CODE5, CODE6, CODE7, 
 CATEGORY, INDEX, SOURCE, ICDVER. 
 
 ## General Rules
+
+**PROCESSING RULES**:
 
 EVENT_AGE is going to be round up to 2 decimal positions
 
@@ -54,28 +58,48 @@ In addition to that, for the period 1994-1995 there is a separate Hilmo file wit
 
 Finnish Hospital league codes were used until 1996 when the use of Nomesco codes started.
 
-Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column of detailed longitudinal). The inpatient/outpatient split is made according to 'PALA' up to 2019 and 'YHTEYSTAPA'+’PALA’ codes for 2019-2021. 
+Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column of detailed longitudinal). The inpatient/outpatient split is made according to 'PALA' from 1998 to 2019 and 'YHTEYSTAPA'+’PALA’ codes from 2019 to 2021 (now).   
 NB: see function *Hilmo_defineOutpat()* in **func.py** 
 
-In addition to the 'general' hilmo file we have information about diagnostic ICD codes (hilmo diagnosis), heart surgery codes (hilmo heart, recorded from 1994) and other surgical codes (hilmo operations). 
+In addition to the hilmo inpatient and outpatient files we have information about:
+- diagnostic ICD codes (hilmo diagnosis) to be joined to hilmo after 1995, before that year the codes where already present in the main hilmo dataset.
+- heart surgery codes (hilmo heart, recorded from 1994)
+- other surgical codes (hilmo operations) referring to day hospital operations. 
 
-Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained a special characters {+,\*,#,@} which were also removed. 
+For a period up to 2019 a small correction is made inside hilmo heart to the 'CATEGORY' variable which records a source of a code.
 
-HilmoICD10_heart contains heart surgery codes (recorded from 1994). For a period up to 2019 a small correction is made to a 'CATEGORY' variable which records a source of a code  HPO1:3 - Procedure for demanding heart patient, old coding and HPN1:N - Procedure for demanding heart patient, new coding. Some HPO (old) fully numeric codes were mixed in with HPN (new) codes always starting with the letter “A”. HPN is changed to HPO for fully numeric codes.
+HPO1:3 - Procedure for demanding heart patient, old coding and <br>
+HPN1:N - Procedure for demanding heart patient, new coding. 
+
+Some HPO (old) fully numeric codes were mixed in with HPN (new) codes always starting with the letter “A”. HPN is changed to HPO for fully numeric codes.
+
+Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained a special characters {+,\*,#,@} which were also processed.
+For more info check the function *CombinationCodesSplit()* in **func.py** 
 
 ## AvoHilmo
+
+Register codes given in the primary health care visits are not as confirmed as codes given in hospital (inpatient data) or codes coming from the specialized outpatient visits (outpatient data). Finnish doctors are legally responsible for ICD codes in Hilmo, but Avohilmo codes do not carry the same responsibility. Avohilmo data includes also codes that are given by nurse (ICPC2), these codes include procedures as well.
 
 Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained a special characters {+,\*,#,@} which were also removed. 
 
 ## Cancer Registry
 
-Cancer preprocessing is strigtforward and self-explanatory.
+Processing is strigtforward and self-explanatory, nothing to declare.
 
 ## death registry
 
-six columns contain ICD 8 to 10codes: The basic cause of death (TPKS), the immediate cause of death (VKS)and four contributing causes of death (M1-M4). All those codes are transferred to the ‘CODE1’ column of detailed longitudinal with an appropriate 'CATEGORY' label denoting a code type. 
+Between 1969 to 1986, the international classification ICD-8 was in use, with Finnish additions. Some Finnish additions to the ICD-codes can be found from [here](https://taika.stat.fi/en/aineistokuvaus.html#!?dataid=ksyyt_197100_jua_kuolemansyyt_001.xml).
+
+Between 1987 and 1995, the data were classified using the national classification of diseases ICD9, where comparability to international version is maintained.
+
+Since 1996, the statistics have been compiled based on the 10th revision of the International Classification of Diseases (ICD-10), with some Finnish additions (listed [here](https://taika.stat.fi/en/aineistokuvaus.html#!?dataid=ksyyt_197100_jua_kuolemansyyt_001.xml) ). 
+Note that this is the WHO version of ICD10 and therefore does not include some of the subtypes/extensions of the ICD10 codes used in the full Finnish se of ICD codes.
+
+There are six columns contain ICD codes: 
+The basic cause of death (TPKS), the immediate cause of death (VKS) and four contributing causes of death (M1-M4). All those codes are transferred to the ‘CODE1’ column of detailed longitudinal with an appropriate 'CATEGORY' label denoting a code type. 
 
 ## Kela purchases
+
 
 Some light data cleaning was done: 
 * removal of entries which did not contain either ATC code or Kela reimbursement code (SAIR)
@@ -85,10 +109,7 @@ Some light data cleaning was done:
 
 ## Kela reimbursement
 
-Kela reimbursement preprocessing is strigtforward and self-explanatory 
-
-NB: there are 2 different functions depending on the year
-
+Processing is strigtforward and self-explanatory, nothing to declare.
 
 # EXTRA INFORMATION
 
