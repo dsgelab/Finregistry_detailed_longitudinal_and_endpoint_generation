@@ -65,7 +65,14 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
 
 	today = dt.today().strftime("%Y_%m_%d")
     filename = "detailed_longitudinal" + "_" + today + ".csv"
-	Data.to_csv(path_or_buf= Path(path)/filename, mode="a", sep=';', encoding='latin-1', index=False)
+    header = True if file == files[0] else False
+	Data.to_csv(
+		path_or_buf= Path(path)/filename, 
+		mode="a", 
+		sep=';', 
+		encoding='latin-1', 
+		index=False,
+		header=header)
 
 
 
@@ -89,8 +96,14 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
 
     today = dt.today().strftime("%Y_%m_%d")
     filename = "test_detailed_longitudinal" + "_" + today + ".csv"
-	Data.to_csv(path_or_buf= Path(path)/filename, mode="w", sep=';', encoding='latin-1', index=False)
-
+    header = True if file == files[0] else False
+	Data.to_csv(
+		path_or_buf= Path(path)/filename, 
+		mode="a", 
+		sep=';', 
+		encoding='latin-1', 
+		index=False,
+		header=header)
 
 
 def CombinationCodesSplit(Data:pd.DataFrame):
@@ -942,6 +955,8 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';', test=False):
     Raises:
         FileNotFoundError: If the specified file_path does not exist.
         ValueError: If the provided file_sep is not a valid separator.
+
+    TODO:  cut at CODE3 ?
     """
 
 	# fetch Data
@@ -955,15 +970,12 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';', test=False):
 	ReshapedData.columns = 'CODE' + ReshapedData.columns.astype('string')
 	Data = ReshapedData.reset_index()
 
-	# cut at CODE3 ?
-
 	# rename columns
-	Data.rename( 
-		columns = {
-		'TNRO':'FINREGISTRYID',
-		'KENTTA':'CATEGORY'
-		},
-		inplace=True )
+	Data.rename( columns = {'KENTTA':'CATEGORY'}, inplace=True )
+
+	# keep only columns of interest
+	Data.reset_index(drop=True,inplace=True)
+	Data = Data[ ['HILMO_ID','CATEGORY','CODE1'] ]
 
 	return Data
 
@@ -997,11 +1009,14 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=';', test=Fals
 	# rename columns
 	Data.rename( 
 		columns = {
-		'TNRO':'FINREGISTRYID',
 		'N':'CATEGORY',
 		'TOIMP':'CODE1'
 		},
 		inplace=True )
+
+	# keep only columns of interest
+	Data.reset_index(drop=True,inplace=True)
+	Data = Data[ ['HILMO_ID','CATEGORY','CODE1'] ]
 
 	return Data
 
@@ -1058,9 +1073,13 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';', test=False):
 		value_name	= 'CODE1')
 	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
-	#create the final Dataset
+	# create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	# keep only columns of interest
+	Data.reset_index(drop=True,inplace=True)
+	Data = Data[ ['HILMO_ID','CATEGORY','CODE1'] ]
 
 	return Data
 
@@ -1271,7 +1290,6 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	# rename columns
 	Data.rename( 
 		columns = {
-		'TNRO':'FINREGISTRYID',
 		'KAYNTI_YHTEYSTAPA':'CODE5',
 		'KAYNTI_PALVELUMUOTO':'CODE6',
 		'KAYNTI_AMMATTI':'CODE7',

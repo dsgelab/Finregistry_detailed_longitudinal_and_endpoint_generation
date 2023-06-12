@@ -5,20 +5,18 @@
 ##########################################################
 
 
-import os
-import re
-import pandas as pd
-import numpy as np
-
-# import info on Date_Of_Birth and Date_Of_Death 
-BIRTH_DEATH_MAP = pd.read_csv('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv',sep = ',', encoding='latin-1')
-BIRTH_DEATH_MAP = BIRTH_DEATH_MAP[['FINREGISTRYID','date_of_birth','death_date']]
+from datetime import datetime
 
 # import all processing functions
 from func import *
 
 # import all file paths
 from config import *
+
+# import info on Date_Of_Birth and Date_Of_Death 
+BIRTH_DEATH_MAP = pd.read_csv('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv',sep = ',', encoding='latin-1')
+BIRTH_DEATH_MAP = BIRTH_DEATH_MAP[['FINREGISTRYID','date_of_birth','death_date']]
+
 
 
 ##########################################################
@@ -28,9 +26,10 @@ if __name__ == '__main__':
 
 	# HILMO
 	print('start processing hilmo files')
+	START = datetime.now()
 
-	diag_96_18 = Hilmo_extra_diagnosis_preparation(hilmo_diag_1996_2018)
-	diag_19_21 = Hilmo_extra_diagnosis_preparation(hilmo_diag_2019_2021)
+	diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
+	diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
 	#concat everything togheter
 	diag = pd.concat([diag_96_18,diag_19_21])
 
@@ -57,8 +56,12 @@ if __name__ == '__main__':
 		Hilmo_95_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
 		Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
 
+	END = datetime.now()
+	print(f'the processing took { (END-START)} seconds')
+
 	# AVOHILMO
 	print('start processing avohilmo files')
+	START = datetime.now()
 
 	icd10_11_16 = AvoHilmo_icd10_preparation(avohilmo_icd10_2011_2016)
 	icd10_17_19 = AvoHilmo_icd10_preparation(avohilmo_icd10_2017_2019)
@@ -92,18 +95,36 @@ if __name__ == '__main__':
 		for df in avohilmo_to_merge:
 			AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df)
 
+	END = datetime.now()
+	print(f'the processing took { (END-START)} seconds')
+
 	# OTHER REGISTRIES
 	print('start processing death registry')
+	START = datetime.now()
+
 	DeathRegistry_processing(death,DOB_map=BIRTH_DEATH_MAP)
 
+	END = datetime.now()
+	print(f'the processing took { (END-START)} seconds')
+
 	print('start processing cancer registry')
+	START = datetime.now()
+
 	CancerRegistry_processing(cancer,DOB_map=BIRTH_DEATH_MAP)
 
+	END = datetime.now()
+	print(f'the processing took { (END-START)} seconds')
+
 	print('start processing kela registry')
+	START = datetime.now()
+
 	KelaReimbursement_PRE20_processing(kela_reimbursement_pre2020)
 	KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021)
 
 	for purchase_file in kela_purchase_filelist:
 		KelaPurchase_processing(purchase_file,DOB_map=BIRTH_DEATH_MAP)
+
+	END = datetime.now()
+	print(f'the processing took { (END-START)} seconds')
 
 
