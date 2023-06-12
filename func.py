@@ -65,7 +65,8 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
 
 	today = dt.today().strftime("%Y_%m_%d")
     filename = "detailed_longitudinal" + "_" + today + ".csv"
-    HEADER = True if filename.is_file() else False
+    #remove header if file is already existing
+    HEADER = True if (Path(path)/filename).is_file() else False
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
@@ -96,7 +97,8 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
 
     today = dt.today().strftime("%Y_%m_%d")
     filename = "test_detailed_longitudinal" + "_" + today + ".csv"
-    HEADER = True if filename.is_file() else False
+    #remove header if file is already existing
+    HEADER = True if (Path(path)/filename).is_file() else False
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
@@ -660,7 +662,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 
 
-def Hilmo_95_18_processing(file_path:str, DOB_map, file_sep=';', test=False):
+def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', test=False):
 	"""Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -755,6 +757,14 @@ def Hilmo_95_18_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	# merge CODE1 and CATEGORY from extra file
+	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
+	merged_data = temp.merge(extra_to_merge, on = 'HILMO_ID', how='inner')
+	#append to original data (missing CODE1 will be removed later)
+	old_data = Data.copy()
+	Data = pd.concat([old_data,merged_data])
+
+	#-------------------------------------------
 	# SOURCE definitions
 	Data['PALA'] = Data['CODE5']
 	Data['YHTEYSTAPA'] = np.NaN
@@ -799,7 +809,7 @@ def Hilmo_95_18_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	if test: 	Write2TestFile(Data)
 	else: 		Write2DetailedLongitudinal(Data)
 
-def Hilmo_POST18_processing(file_path:str, DOB_map, file_sep=';', test=False):
+def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', test=False):
 	"""Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -894,6 +904,14 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
 
+	# merge CODE1 and CATEGORY from extra file
+	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
+	merged_data = temp.merge(extra_to_merge, on = 'HILMO_ID', how='inner')
+	#append to original data (missing CODE1 will be removed later)
+	old_data = Data.copy()
+	Data = pd.concat([old_data,merged_data])
+
+	#-------------------------------------------
 	# SOURCE definitions
 	Data['PALA'] = Data['CODE5']
 	Data = Define_INPAT(Data)

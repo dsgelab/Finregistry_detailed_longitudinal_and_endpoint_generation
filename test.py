@@ -48,15 +48,15 @@ if __name__ == '__main__':
 
 	Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=BIRTH_DEATH_MAP, test=True)
 	Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=BIRTH_DEATH_MAP, test=True)
+	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP, test=True)	
 
 	hilmo_to_merge = [diag,oper,heart]
 	for df in hilmo_to_merge:
-		Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df, test=True)	
-		Hilmo_95_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df, test=True)
+		Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df, test=True)
 		Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df, test=True)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} seconds')
+	print(f'the processing took { (END-START)} hour:min:sec')
 
 	# AVOHILMO
 	print('start processing avohilmo files')
@@ -95,7 +95,7 @@ if __name__ == '__main__':
 			AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=df, test=True)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} seconds')
+	print(f'the processing took { (END-START)} hour:min:sec')
 
 	# OTHER REGISTRIES
 	print('start processing death registry')
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 	DeathRegistry_processing(death,DOB_map=BIRTH_DEATH_MAP, test=True)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} seconds')
+	print(f'the processing took { (END-START)} hour:min:sec')
 
 	print('start processing cancer registry')
 	START = datetime.now()
@@ -112,7 +112,7 @@ if __name__ == '__main__':
 	CancerRegistry_processing(cancer,DOB_map=BIRTH_DEATH_MAPm, test=True)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} seconds')
+	print(f'the processing took { (END-START)} hour:min:sec')
 
 	print('start processing kela registry')
 	START = datetime.now()
@@ -124,6 +124,6 @@ if __name__ == '__main__':
 		KelaPurchase_processing(purchase_file,DOB_map=BIRTH_DEATH_MAP, test=True)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} seconds')
+	print(f'the processing took { (END-START)} hour:min:sec')
 
 

@@ -28,7 +28,7 @@ avohilmo_icd10_2017_2019	= THL_AVOHILMO_PATH/'thl2019_1776_avohilmo_17_20_icd10.
 avohilmo_icd10_2020_2021	= THL_AVOHILMO_PATH/'THL2021_2196_AVOHILMO_ICD10_DIAG.csv.finreg_IDs'
 
 avohilmo_icpc2_2011_2016	= THL_AVOHILMO_PATH/'thl2019_1776_avohilmo_icpc2.csv.finreg_IDs'
-avohilmo_icpc2_2017_2019	= THL_AVOHILMO_PATH/'thl2019_1776_avohilmo_17_20_icpc2.csv.finreg_IDs '
+avohilmo_icpc2_2017_2019	= THL_AVOHILMO_PATH/'thl2019_1776_avohilmo_17_20_icpc2.csv.finreg_IDs'
 avohilmo_icpc2_2020_2021	= THL_AVOHILMO_PATH/'THL2021_2196_AVOHILMO_ICPC2_DIAG.csv.finreg_IDs'
 
 avohilmo_oral_2011_2016		= THL_AVOHILMO_PATH/'thl2019_1776_avohilmo_suu_toimenpide.csv.finreg_IDs'
