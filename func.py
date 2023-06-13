@@ -63,13 +63,12 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
         IOError: If there is an error writing the data to the specified path.
     """
 
-	today = dt.today().strftime("%Y_%m_%d")
-    filename = "detailed_longitudinal" + "_" + today + ".csv"
+    filename = "detailed_longitudinal.csv"
     #remove header if file is already existing
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
-		sep=';', 
+		sep=',', 
 		encoding='latin-1', 
 		index=False,
 		header=header)
@@ -100,7 +99,7 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH, header = False):
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
-		sep=';', 
+		sep=',', 
 		encoding='latin-1', 
 		index=False,
 		header=header)
@@ -374,9 +373,9 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 
-		Write2TestFile(Data)
+		Write2TestFile(Data,header=True)
 	else: 		
-		Write2DetailedLongitudinal(Data)
+		Write2DetailedLongitudinal(Data,header=True)
 
 
 
