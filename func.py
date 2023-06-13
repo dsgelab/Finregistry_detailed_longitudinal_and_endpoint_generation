@@ -44,7 +44,7 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
-def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_PATH):
+def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_PATH ,header = False):
     """Writes pandas dataframe to detailed_longitudianl
 
     append if already exist and also insert date in the filename
@@ -66,18 +66,17 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
 	today = dt.today().strftime("%Y_%m_%d")
     filename = "detailed_longitudinal" + "_" + today + ".csv"
     #remove header if file is already existing
-    HEADER = True if (Path(path)/filename).is_file() else False
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
 		sep=';', 
 		encoding='latin-1', 
 		index=False,
-		header=HEADER)
+		header=header)
 
 
 
-def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
+def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH, header = False):
 	"""Writes pandas dataframe to the test file
 	
 	overwrite if already exist and also insert date in the filename
@@ -98,14 +97,13 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH):
     today = dt.today().strftime("%Y_%m_%d")
     filename = "test_detailed_longitudinal" + "_" + today + ".csv"
     #remove header if file is already existing
-    HEADER = True if (Path(path)/filename).is_file() else False
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
 		sep=';', 
 		encoding='latin-1', 
 		index=False,
-		header=HEADER)
+		header=header)
 
 
 def CombinationCodesSplit(Data:pd.DataFrame):
@@ -267,8 +265,10 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
@@ -324,16 +324,18 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-	#create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+
+	# remove missing CODE1
+	Data.dropna(subset=["CODE1"], inplace=True)
+	Data.reset_index(drop=True, inplace=True)
 
 	# SOURCE definitions
 	Data['PALA'] = np.NaN
@@ -355,7 +357,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -370,8 +373,10 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 
 
@@ -399,8 +404,10 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
     """	
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
@@ -463,16 +470,18 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-	#create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+
+	# remove missing CODE1
+	Data.dropna(subset=["CODE1"], inplace=True)
+	Data.reset_index(drop=True, inplace=True)
 
 	# SOURCE definitions
 	Data['PALA'] = np.NaN
@@ -500,7 +509,8 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -515,8 +525,10 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 
 
@@ -544,8 +556,10 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
@@ -605,16 +619,18 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-	#create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+
+	# remove missing CODE1
+	Data.dropna(subset=["CODE1"], inplace=True)
+	Data.reset_index(drop=True, inplace=True)
 
 	# SOURCE definitions
 	Data['PALA'] = Data['CODE5']
@@ -642,7 +658,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -657,8 +674,10 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 
 
@@ -685,8 +704,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';',
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# remove wrong codes
 	wrong_codes = ['H','M','N','Z6','ZH','ZZ']
@@ -746,16 +767,14 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';',
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-	#create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# merge CODE1 and CATEGORY from extra file
 	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
@@ -791,7 +810,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';',
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -806,8 +826,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';',
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', test=False):
 	"""Process the Hilmo information after 1995.
@@ -832,8 +854,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';'
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# remove wrong codes
 	wrong_codes = ['H','M','N','Z6','ZH','ZZ']
@@ -893,16 +917,14 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';'
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-	#create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# merge CODE1 and CATEGORY from extra file
 	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
@@ -937,7 +959,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';'
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -952,8 +975,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';'
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 
 def Hilmo_diagnosis_preparation(file_path:str,file_sep=';', test=False):
@@ -978,8 +1003,10 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';', test=False):
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	ReshapedData = pd.pivot(Data,
     	index 	= ['HILMO_ID','TNRO','KENTTA'],
@@ -1019,8 +1046,10 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=';', test=Fals
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	#remove opearation date ?
 
@@ -1061,8 +1090,10 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';', test=False):
     """
 	
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 
 	#-------------------------------------------
@@ -1084,16 +1115,14 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';', test=False):
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	ReshapedData = pd.melt(Data[ VAR_FOR_RESHAPE+['TNRO'] ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-	# create the final Dataset
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# keep only columns of interest
 	Data.reset_index(drop=True,inplace=True)
@@ -1124,8 +1153,11 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=';', test=False):
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	
 	Data.rename( columns = {'ICD10':'CODE1'}, inplace=True )
 
 	# define the category column 
@@ -1164,8 +1196,11 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=';', test=False):
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+
 	Data.rename( columns = {'ICPC2':'CODE1'}, inplace=True )
 
 	# define the category column 
@@ -1200,8 +1235,11 @@ def AvoHilmo_dental_measures_preparation(file_path:str,file_sep=';', test=False)
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+
 	Data.rename( columns = {'TOIMENPIDE':'CODE1'}, inplace=True )
 
 	# define the category column 
@@ -1236,8 +1274,11 @@ def AvoHilmo_interventions_preparation(file_path:str,file_sep=';', test=False):
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+
 	Data.rename( columns = {'TOIMENPIDE':'CODE1'},inplace=True )
 
 	# define the category column 
@@ -1277,8 +1318,10 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
     """
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'TNRO',right_on = 'FINREGISTRYID')
@@ -1333,7 +1376,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -1378,8 +1422,10 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
     """	
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = 'TNRO',right_on = 'FINREGISTRYID')
@@ -1388,7 +1434,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data['BIRTH_DATE'] 		= pd.to_datetime( Data.BIRTH_DATE.str.slice(stop=10), format='%Y-%m-%d' )
 	Data['EVENT_DATE']		= pd.to_datetime( Data.KPV.str.slice(stop=10), format='%d.%m.%Y' )
 
-	# # define columns for detailed longitudinal
+	# define columns for detailed longitudinal
 	Data['EVENT_AGE'] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
 	Data['EVENT_YEAR'] 		= Data.EVENT_DATE.dt.year	
 	Data['EVENT_YRMNTH']	= Data.EVENT_DATE.dt.strftime('%Y-%m')
@@ -1416,7 +1462,6 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# if there was a value under one of the category columns this will be transferred under the column CODE1
 	# NB: the category column values are going to be remapped after as desired  
 
-	# perform the reshape
 	CATEGORY_DICTIONARY	= {
 		'TPKS':'U',
 		'VKS':'I',
@@ -1424,19 +1469,25 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 		'M2':'c2',
 		'M3':'c3',
 		'M4':'c4'}
-	VAR_FOR_RESHAPE = list(CATEGORY_DICTIONARY.keys())
-	TO_RESHAPE = VAR_FOR_RESHAPE + ['TNRO']
 
-	ReshapedData = pd.melt(Data[ TO_RESHAPE ],
-		id_vars 	= 'TNRO',
-		value_vars 	= VAR_FOR_RESHAPE,
-		var_name 	= 'CATEGORY',
-		value_name	= 'CODE1')
-	ReshapedData['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+	new_names = Data.columns
+	for name in CATEGORY_DICTIONARY.keys():
+    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
-	#create the final Dataset
+    # perform the reshape
+	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-	Data = ReshapedData.merge(Data[ VAR_NOT_FOR_RESHAPE ], on = 'TNRO')
+
+	Data = pd.melt(Data,
+	    id_vars 	= VAR_NOT_FOR_RESHAPE,
+	    value_vars 	= VAR_FOR_RESHAPE,
+	    var_name 	= 'CATEGORY',
+	    value_name	= 'CODE1')
+	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+
+	# remove missing CODE1
+	Data.dropna(subset=["CODE1"], inplace=True)
+	Data.reset_index(drop=True, inplace=True)
 
 	#-------------------------------------------
 	# QUALITY CONTROL:
@@ -1444,7 +1495,8 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# remove duplicates
 	Data.drop_duplicates(keep='first', inplace=True)
 
@@ -1457,8 +1509,10 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 
 
@@ -1486,8 +1540,10 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
     """	
 
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map, on = 'FINREGISTRYID')
@@ -1530,7 +1586,8 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -1543,8 +1600,10 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 
 
@@ -1571,8 +1630,10 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=';', tes
         ValueError: If the provided DOB_map is not a pandas DataFrame.
     """	
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = 'HETU',right_on = 'FINREGISTRYID')
@@ -1616,7 +1677,8 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=';', tes
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -1632,8 +1694,10 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=';', tes
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
 def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	"""Process the information from kela reimbursement registry.
@@ -1658,8 +1722,10 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=';', tes
         ValueError: If the provided DOB_map is not a pandas DataFrame.
     """	
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data.columns = ['HETU'] + list(Data.columns[1:])
@@ -1704,7 +1770,8 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=';', tes
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -1748,8 +1815,10 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
         ValueError: If the provided DOB_map is not a pandas DataFrame.
     """	
 	# fetch Data
-	if test: 	Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
-	else: 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
+	if test: 	
+		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding='latin-1')		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = 'HETU',right_on = 'FINREGISTRYID')
@@ -1791,7 +1860,8 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	# check that EVENT_AGE is in predefined range 
 	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
 	# check that EVENT_AGE is not missing
-	Data.loc[ Data.EVENT_AGE.notna() ,].reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
@@ -1811,6 +1881,8 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=';', test=False):
 	Data.sort_values(by = ['FINREGISTRYID','EVENT_AGE'], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+	if test: 	
+		Write2TestFile(Data)
+	else: 		
+		Write2DetailedLongitudinal(Data)
 
