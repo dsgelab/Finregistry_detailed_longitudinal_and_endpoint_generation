@@ -126,7 +126,7 @@ if __name__ == '__main__':
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oral)
 
-	print('avohilmo + icpc2 completed')
+	print('avohilmo + oral completed')
 	oral = 0  
     END = datetime.now()
 	print(f'the processing took { (END-START)} hour:min:sec')
@@ -138,8 +138,8 @@ if __name__ == '__main__':
 	#concat everything togheter
 	oper = pd.concat([oper_11_16,oper_17_19,oper_20_21])
 
-	print('avohilmo + icpc2 completed')
-	oral = 0  
+	print('avohilmo + oper completed')
+	oper = 0  
     END = datetime.now()
 	print(f'the processing took { (END-START)} hour:min:sec')
 	
