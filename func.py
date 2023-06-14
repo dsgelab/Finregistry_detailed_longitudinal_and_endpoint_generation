@@ -188,7 +188,7 @@ def Define_INPAT(Data:pd.DataFrame):
 	YEAR_TO_KEEP = (Data.PVM.dt.year>2018)
 	Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
 	Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R10") & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
-	Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="   ) & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
+	Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA==""   ) & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
 
 	return Data
 
@@ -267,8 +267,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     "TNRO": str,
     "TULOPV":  str, 
     "LAHTOPV": str,
-    "DG1": str
-	"DG2": str
+    "DG1": str,
+	"DG2": str,
 	"DG3": str,
 	"DG4": str,
 	"TP1": str,
@@ -586,7 +586,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
     "TUPVA":str, 
     "LPVM": str,
 	"PDG":  str,
-	"SDG1": str
+	"SDG1": str,
 	"SDG2": str,
 	"TMP1": str,
 	"TMP2": str,
