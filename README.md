@@ -32,11 +32,10 @@ CATEGORY, INDEX, SOURCE, ICDVER.
 
 **PROCESSING RULES**:
 
-EVENT_AGE is going to be round up to 2 decimal positions
+EVENT_AGE is going to be round up to 2 decimal positions<br>
+Check that EVENT_DATE is not after DEATH_DATE
 
 **QUALITY CONTROL RULES**:
-
-Check that EVENT_DATE is not after DEATH_DATE
 
 If EVENT_AGE is less than 0 or more than 110 then row is deleted<br>
 If EVENT_AGE is missing the row is deleted<br>

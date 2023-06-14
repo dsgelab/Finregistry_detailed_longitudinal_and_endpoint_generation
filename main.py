@@ -6,6 +6,7 @@
 
 
 from datetime import datetime
+import gc
 
 # import all processing functions
 from func import *
@@ -38,26 +39,15 @@ if __name__ == '__main__':
 	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()
 
-	diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag_96_18)
-	diag_96_18 = 0 
-
-	diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag_19_21) 
-	diag_19_21 = 0
-
-	print('hilmo post 95 + diagnosis completed')
-	END = datetime.now()
-	print(f'the processing took {(END-START)} hour:min:sec')
-	START = datetime.now()
-
 	oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018, DOB_map=BIRTH_DEATH_MAP)
 	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oper_96_18)
-	oper_96_18 = 0
+	del oper_96_18
+	gc.collect() 
 
 	oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021, DOB_map=BIRTH_DEATH_MAP)
 	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oper_19_21) 
-	oper_19_21 = 0
+	del oper_19_21
+	gc.collect() 
 
 	print('hilmo post 95 + operation completed')
 	END = datetime.now()
@@ -67,13 +57,30 @@ if __name__ == '__main__':
 	#heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
 	heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018)
 	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart_96_18)
-	heart_96_18 = 0 
+	del heart_96_18
+	gc.collect() 
 
 	heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021)
 	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart_19_21)
-	heart_19_21 = 0 
+	del heart_19_21
+	gc.collect() 
 
 	print('hilmo post 95 + heart completed')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
+	START = datetime.now()
+
+	diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag_96_18)
+	del diag_96_18
+	gc.collect() 
+
+	diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag_19_21) 
+	del diag_19_21
+	gc.collect() 
+
+	print('hilmo post 95 + diagnosis completed')
 	END = datetime.now()
 	print(f'the processing took {(END-START)} hour:min:sec')
 
@@ -94,7 +101,8 @@ if __name__ == '__main__':
 		AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=icd10)
 
 	print('avohilmo + icd10 completed')
-	icd10 = 0  
+	del icd10
+	gc.collect() 
 	END = datetime.now()
 	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()		
@@ -109,7 +117,8 @@ if __name__ == '__main__':
 		AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=icpc2)
 
 	print('avohilmo + icpc2 completed')
-	icpc2 = 0  
+	del icpc2
+	gc.collect() 
 	END = datetime.now()
 	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()	
@@ -124,7 +133,8 @@ if __name__ == '__main__':
 		AvoHilmo_processing(avohilmo, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oral)
 
 	print('avohilmo + oral completed')
-	oral = 0  
+	del oral
+	gc.collect()  
 	END = datetime.now()
 	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()		
@@ -136,7 +146,8 @@ if __name__ == '__main__':
 	oper = pd.concat([oper_11_16,oper_17_19,oper_20_21])
 
 	print('avohilmo + oper completed')
-	oper = 0  
+	del oper
+	gc.collect() 
 	END = datetime.now()
 	print(f'the processing took {(END-START)} hour:min:sec')
 	
@@ -149,14 +160,14 @@ if __name__ == '__main__':
 	DeathRegistry_processing(death,DOB_map=BIRTH_DEATH_MAP)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	print(f'the processing took {(END-START)} hour:min:sec')
 	print('start processing cancer registry')
 	START = datetime.now()
 
 	CancerRegistry_processing(cancer,DOB_map=BIRTH_DEATH_MAP)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	print(f'the processing took {(END-START)} hour:min:sec')
 	print('start processing kela reimbursement')
 	START = datetime.now()
 
@@ -164,7 +175,7 @@ if __name__ == '__main__':
 	KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021, DOB_map=BIRTH_DEATH_MAP)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	print(f'the processing took {(END-START)} hour:min:sec')
 	print('start processing kela purchase')
 	START = datetime.now()
 
@@ -172,6 +183,6 @@ if __name__ == '__main__':
 		KelaPurchase_processing(purchase_file,DOB_map=BIRTH_DEATH_MAP)
 
 	END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	print(f'the processing took {(END-START)} hour:min:sec')
 
 

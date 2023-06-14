@@ -780,11 +780,9 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';',
 	Data.reset_index(drop=True, inplace=True)
 
 	# merge CODE1 and CATEGORY from extra file
-	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
-	merged_data = temp.merge(extra_to_merge, on = 'HILMO_ID', how='inner')
-	#append to original data (missing CODE1 will be removed later)
-	old_data = Data.copy()
-	Data = pd.concat([old_data,merged_data])
+	Data = Data.merge(extra_to_merge, on = 'HILMO_ID', how='left')
+	Data['CATEGORY'] = np.where(Data.CATEGORY_y=='' , Data.CATEGORY_x, Data.CATEGORY_y)
+	Data['CODE1']	 = np.where(Data.CODE1_y=='' , Data.CODE1_x, Data.CODE1_y)
 
 	#-------------------------------------------
 	# SOURCE definitions
@@ -934,11 +932,9 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';'
 	Data.reset_index(drop=True, inplace=True)	
 
 	# merge CODE1 and CATEGORY from extra file
-	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
-	merged_data = temp.merge(extra_to_merge, on = 'HILMO_ID', how='inner')
-	#append to original data (missing CODE1 will be removed later)
-	old_data = Data.copy()
-	Data = pd.concat([old_data,merged_data])
+	Data = Data.merge(extra_to_merge, on = 'HILMO_ID', how='left')
+	Data['CATEGORY'] = np.where(Data.CATEGORY_y=='' , Data.CATEGORY_x, Data.CATEGORY_y)
+	Data['CODE1']	 = np.where(Data.CODE1_y=='' , Data.CODE1_x, Data.CODE1_y)
 
 	#-------------------------------------------
 	# SOURCE definitions
@@ -1132,6 +1128,11 @@ def Hilmo_heart_preparation(file_path:str,file_sep=';', test=False):
 	    var_name 	= 'CATEGORY',
 	    value_name	= 'CODE1')
 	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+
+	# A correction for some HPO (fully numeric codes) 
+	# mixed in within NPN codes (which always start with letter A). 
+	Data['CODE1'] 		= Data.CODE1.astype(str)
+	Data['CATEGORY']	= np.where(Data.CODE1.isnumeric(), Data.CATEGORY.replace("N", "O"), Data.CATEGORY)
 
 	# keep only columns of interest
 	Data.reset_index(drop=True,inplace=True)
@@ -1391,8 +1392,6 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';', te
 	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep='first', inplace=True)
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,'CODE4'] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
