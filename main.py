@@ -35,50 +35,47 @@ if __name__ == '__main__':
 
 	print('hilmo pre 95 completed')
 	END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()
 
 	diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag_96_18)
+	diag_96_18 = 0 
+
 	diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
-	#concat everything togheter
-	diag = pd.concat([diag_96_18,diag_19_21])
-    
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag) 
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=diag_19_21) 
+	diag_19_21 = 0
 
 	print('hilmo post 95 + diagnosis completed')
-    diag = 0
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()
 
 	oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018, DOB_map=BIRTH_DEATH_MAP)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oper_96_18)
+	oper_96_18 = 0
+
 	oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021, DOB_map=BIRTH_DEATH_MAP)
-	#concat everything togheter
-	oper = pd.concat([oper_96_18,oper_19_21])
-    
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oper)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oper) 
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=oper_19_21) 
+	oper_19_21 = 0
 
 	print('hilmo post 95 + operation completed')
-	oper = 0  
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()
 
-	heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
+	#heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
 	heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart_96_18)
+	heart_96_18 = 0 
+
 	heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021)
-	#concat everything togheter
-	heart = pd.concat([heart_94_95,heart_96_18,heart_19_21])
-    
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart)
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart_19_21)
+	heart_19_21 = 0 
 
 	print('hilmo post 95 + heart completed')
-	heart = 0  
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 
 	#--------------------------------------
 	# AVOHILMO
@@ -98,8 +95,8 @@ if __name__ == '__main__':
 
 	print('avohilmo + icd10 completed')
 	icd10 = 0  
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()		
 
 	icpc2_11_16 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2011_2016)
@@ -113,8 +110,8 @@ if __name__ == '__main__':
 
 	print('avohilmo + icpc2 completed')
 	icpc2 = 0  
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()	
 
 	oral_11_16 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2011_2016)
@@ -128,8 +125,8 @@ if __name__ == '__main__':
 
 	print('avohilmo + oral completed')
 	oral = 0  
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 	START = datetime.now()		
 
 	oper_11_16 = AvoHilmo_interventions_preparation(avohilmo_oper_2011_2016)
@@ -140,8 +137,8 @@ if __name__ == '__main__':
 
 	print('avohilmo + oper completed')
 	oper = 0  
-    END = datetime.now()
-	print(f'the processing took { (END-START)} hour:min:sec')
+	END = datetime.now()
+	print(f'the processing took {(END-START)} hour:min:sec')
 	
 	#--------------------------------------
 	# OTHER REGISTRIES

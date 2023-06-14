@@ -19,7 +19,6 @@ This repository contains the script for creating the detailed longitudinal file 
 - death date is also imported from minimal_phenotype file (Finregistry dataset)
 - in Kela datasets the column names are alreay in uppercase
 - age randomization is only performed in FinnGen not in Finregistry
-
 - armonize INDEX definition to the one of every other registry
 
 # PROCESSING SUMMARY
@@ -59,7 +58,7 @@ In addition to that, for the period 1994-1995 there is a separate Hilmo file wit
 Finnish Hospital league codes were used until 1996 when the use of Nomesco codes started.
 
 Since 1998 the register also contains outpatient care codes (inpatient and outpatient codes can be distinguished from the SOURCE column of detailed longitudinal). The inpatient/outpatient split is made according to 'PALA' from 1998 to 2019 and 'YHTEYSTAPA'+’PALA’ codes from 2019 to 2021 (now).   
-NB: see function *Hilmo_defineOutpat()* in **func.py** 
+NB: see functions *Define_INPAT()*,*Define_OPERIN()* and *Define_OPEROUT()* in **func.py** 
 
 In addition to the hilmo inpatient and outpatient files we have information about:
 - diagnostic ICD codes (hilmo diagnosis) to be joined to hilmo after 1995, before that year the codes where already present in the main hilmo dataset.
@@ -81,6 +80,8 @@ For more info check the function *CombinationCodesSplit()* in **func.py**
 Register codes given in the primary health care visits are not as confirmed as codes given in hospital (inpatient data) or codes coming from the specialized outpatient visits (outpatient data). Finnish doctors are legally responsible for ICD codes in Hilmo, but Avohilmo codes do not carry the same responsibility. Avohilmo data includes also codes that are given by nurse (ICPC2), these codes include procedures as well.
 
 Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained a special characters {+,\*,#,@} which were also removed. 
+
+In addition to icd10 and icpc2 information, there are files (to be joined with avohilmo) referring to dental measures and interventions.
 
 ## Cancer Registry
 
@@ -114,6 +115,7 @@ Processing is strigtforward and self-explanatory, nothing to declare.
 # EXTRA INFORMATION
 
 **FinnGen handbook**
+
 look at this file for more info on the registers used for detailed longitudinal
 https://finngen.gitbook.io/finngen-analyst-handbook/finngen-data-specifics/red-library-data-individual-level-data/what-phenotype-files-are-available-in-sandbox-1/detailed-longitudinal-data/registers-in-the-detailed-longitudinal-data
 

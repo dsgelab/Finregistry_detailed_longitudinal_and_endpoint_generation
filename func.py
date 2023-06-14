@@ -775,6 +775,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';',
 	    value_name	= 'CODE1')
 	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
+	# remove missing CODE1
+	Data.dropna(subset=["CODE1"], inplace=True)
+	Data.reset_index(drop=True, inplace=True)
+
 	# merge CODE1 and CATEGORY from extra file
 	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
 	merged_data = temp.merge(extra_to_merge, on = 'HILMO_ID', how='inner')
@@ -925,6 +929,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=';'
 	    value_name	= 'CODE1')
 	Data['CATEGORY'].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
+	# remove missing CODE1
+	Data.dropna(subset=["CODE1"], inplace=True)
+	Data.reset_index(drop=True, inplace=True)	
+
 	# merge CODE1 and CATEGORY from extra file
 	temp = Data.drop(labels=['CATEGORY','CODE1'],axis=1)
 	merged_data = temp.merge(extra_to_merge, on = 'HILMO_ID', how='inner')
@@ -998,7 +1006,6 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';', test=False):
         FileNotFoundError: If the specified file_path does not exist.
         ValueError: If the provided file_sep is not a valid separator.
 
-    TODO:  cut at CODE3 ?
     """
 
 	# fetch Data
@@ -1007,18 +1014,21 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=';', test=False):
 	else: 		
 		Data = pd.read_csv(file_path, sep = file_sep, encoding='latin-1')
 
-	ReshapedData = pd.pivot(Data,
-    	index 	= ['HILMO_ID','TNRO','KENTTA'],
-   		columns = 'N',
-    	values 	= 'KOODI')
-	ReshapedData.columns = 'CODE' + ReshapedData.columns.astype('string')
-	Data = ReshapedData.reset_index()
+	Data['N'] = Data.N + 1
+	Data = Data.loc[Data.N <= 7,:]
+	Data.reset_index(drop=True,inplace=True)
+
+	Data = pd.pivot(Data,
+    index 	= ['HILMO_ID','TNRO','KENTTA'],
+    columns = 'N',
+    values 	= 'KOODI')
+    Data.reset_index(inplace=True)
 
 	# rename columns
-	Data.rename( columns = {'KENTTA':'CATEGORY'}, inplace=True )
+	new_codenames = ['CODE' + n for n in  Data.columns[3:].astype('string').tolist()]
+	Data.columns = ['HILMO_ID','TNRO','CATEGORY'] + new_codenames
 
 	# keep only columns of interest
-	Data.reset_index(drop=True,inplace=True)
 	Data = Data[ ['HILMO_ID','CATEGORY','CODE1'] ]
 
 	return Data
