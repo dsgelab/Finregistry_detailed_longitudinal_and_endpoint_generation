@@ -121,38 +121,38 @@ def CombinationCodesSplit(Data:pd.DataFrame):
     ValueError: If the provided Data is not a pandas DataFrame.
 	"""
 
-	Data["IS_STAR"] = Data.CODE1.str.match("\*")
+	Data["IS_STAR"] = Data.CODE1.str.match("*")
 	Data_tosplit 	= Data.loc[Data["IS_STAR"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split("\*",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "*",expand=True)
 		Data.loc[Data.IS_STAR == True,"CODE1"] = Data_tosplit.part1
 		Data.loc[Data.IS_STAR == True,"CODE2"] = Data_tosplit.part2
 
 	#------------------
-	Data["IS_AND"] 	= Data.CODE1.str.match("\&")
+	Data["IS_AND"] 	= Data.CODE1.str.match("&")
 	Data_tosplit 	= Data.loc[Data["IS_AND"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split("\&",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "&",expand=True)
 		Data.loc[Data.IS_AND == True,"CODE1"] = Data_tosplit.part1
 		Data.loc[Data.IS_AND == True,"CODE2"] = Data_tosplit.part1
 
 	#------------------
-	Data["IS_HAST"]	= Data.CODE1.str.match("\#")
+	Data["IS_HAST"]	= Data.CODE1.str.match("#")
 	Data_tosplit 	= Data.loc[Data["IS_HAST"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split("\#",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "#",expand=True)
 		Data.loc[Data.IS_HAST == True,"CODE1"] = Data_tosplit.part1
 		Data.loc[Data.IS_HAST == True,"CODE3"] = Data_tosplit.part2
 
 	#------------------
-	Data["IS_PLUS"] = Data.CODE1.str.match("\+")
+	Data["IS_PLUS"] = Data.CODE1.str.match("+")
 	Data_tosplit 	= Data.loc[Data["IS_PLUS"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split("\+",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "+",expand=True)
 		Data.loc[Data.IS_PLUS == True,"CODE2"] = Data_tosplit.part1
 		Data.loc[Data.IS_PLUS == True,"CODE1"] = Data_tosplit.part2
 
@@ -583,6 +583,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 
     dtypes = {
     "TNRO": str,
+	"HILMO_ID": str,
     "TUPVA":str, 
     "LPVM": str,
 	"PDG":  str,
@@ -591,7 +592,6 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	"TMP1": str,
 	"TMP2": str,
 	"TMP3": str,
-	"EDIA": str,
 	"PALA": str,
 	"EA":   str,
 	"PALTU":str
@@ -752,6 +752,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
     """
 
     dtypes = {
+	"HILMO_ID": str,
     "TNRO": str,
     "TUPVA":str, 
     "LPVM": str,
@@ -760,141 +761,150 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	"PTMPK3":str,
 	"MTMP1K1":str,
 	"MTMP2K1":str,
-	"EDIA": str,
 	"PALA": str,
 	"EA":   str,
 	"PALTU":str
     }
+	
+	chunksize = 10 ** 6
+	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
+    	for Data in reader:
 
-	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1",)
+			# remove wrong codes
+			wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
+			Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
 
-	# remove wrong codes
-	wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
-	Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
+			# add date of birth
+			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
+			Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
 
-	# add date of birth
-	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
+			# format date columns (birth and death date)
+			Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+			Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
+			# format date columns (patient in and out dates)
+			Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
+			Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
-	# format date columns (patient in and out dates)
-	Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
-	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
+			#-------------------------------------------
+			# define columns for detailed longitudinal
 
-	#-------------------------------------------
-	# define columns for detailed longitudinal
+			Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+			Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
+			Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+			Data["SOURCE"] 			= "OUTPAT"
+			Data["CODE2"]			= np.NaN
+			Data["CODE3"]			= np.NaN
+			Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+			Data["ICDVER"] 			= 10
 
-	Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-	Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
-	Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
-	Data["SOURCE"] 			= "OUTPAT"
-	Data["CODE2"]			= np.NaN
-	Data["CODE3"]			= np.NaN
-	Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-	Data["ICDVER"] 			= 10
+			#rename columns
+			Data.rename( 
+				columns = {
+				"ADMISSION_DATE":"PVM",
+				"PALA":"CODE5",
+				"EA":"CODE6",
+				"PALTU":"CODE7"
+				},
+				inplace=True)
 
-	#rename columns
-	Data.rename( 
-		columns = {
-		"ADMISSION_DATE":"PVM",
-		"PALA":"CODE5",
-		"EA":"CODE6",
-		"PALTU":"CODE7"
-		},
-		inplace=True)
+			#-------------------------------------------
+			# CATEGORY RESHAPE:
 
-	#-------------------------------------------
-	# CATEGORY RESHAPE:
+			# the following code will reshape the Dataframe from wide to long
+			# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+			# the CATEGORY names are going to be remapped to the desired names 
 
-	# the following code will reshape the Dataframe from wide to long
-	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
-	# the CATEGORY names are going to be remapped to the desired names 
+			CATEGORY_DICTIONARY = {
+			"PTMPK1":"NOM1",
+			"PTMPK2":"NOM2",
+			"PTMPK3":"NOM3",
+			"MTMP1K1":"NOM4",
+			"MTMP2K1":"NOM5"
+			 }
 
-	CATEGORY_DICTIONARY = {
-	"PTMPK1":"NOM1",
-	"PTMPK2":"NOM2",
-	"PTMPK3":"NOM3",
-	"MTMP1K1":"NOM4",
-	"MTMP2K1":"NOM5"
-	 }
+			new_names = Data.columns
+			for name in CATEGORY_DICTIONARY.keys():
+		    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
-	new_names = Data.columns
-	for name in CATEGORY_DICTIONARY.keys():
-    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+			# perform the reshape
+			VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
+			VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 
-	# perform the reshape
-	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
+			Data = pd.melt(Data,
+			    id_vars 	= VAR_NOT_FOR_RESHAPE,
+			    value_vars 	= VAR_FOR_RESHAPE,
+			    var_name 	= "CATEGORY",
+			    value_name	= "CODE1")
+			Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
-	Data = pd.melt(Data,
-	    id_vars 	= VAR_NOT_FOR_RESHAPE,
-	    value_vars 	= VAR_FOR_RESHAPE,
-	    var_name 	= "CATEGORY",
-	    value_name	= "CODE1")
-	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+			# remove missing CODE1
+			Data.dropna(subset=["CODE1"], inplace=True)
+			Data.reset_index(drop=True, inplace=True)
 
-	# remove missing CODE1
-	Data.dropna(subset=["CODE1"], inplace=True)
-	Data.reset_index(drop=True, inplace=True)
+			#-------------------------------------------
 
-	# merge CODE1 and CATEGORY from extra file
-	Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
-	Data["CATEGORY"] = np.where(Data.CATEGORY_x=="" , Data.CATEGORY_y, Data.CATEGORY_x)
-	Data["CODE1"]	 = np.where(Data.CODE1_x=="" , Data.CODE1_y, Data.CODE1_x)
+			# SOURCE definitions
+			Data["PALA"] = Data["CODE5"]
+			Data["YHTEYSTAPA"] = np.NaN
+			Data = Define_INPAT(Data)
+			Data = Define_OPERIN(Data)
+			Data = Define_OPEROUT(Data)
 
-	#-------------------------------------------
-	# SOURCE definitions
-	Data["PALA"] = Data["CODE5"]
-	Data["YHTEYSTAPA"] = np.NaN
-	Data = Define_INPAT(Data)
-	Data = Define_OPERIN(Data)
-	Data = Define_OPEROUT(Data)
+			# merge CODE1 and CATEGORY from extra file
+			ToAdd = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner")
+			#rename columns
+			ToAdd.rename( 
+				columns = {
+				"CATEGORY":"CATEGORY_y",
+				"CODE1":"CODE1_y",
+				},
+				inplace=True)
+			ToAdd.drop(columns=['CATEGORY_x','CODE1_x'])
+			Data = pd.concat([Data,ToAdd])
 
-	# check special characters
-	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
-	# special character split
-	Data = CombinationCodesSplit(Data)
+			#-------------------------------------------
 
-	# PALTU mapping
-	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
-	Data["CODE7"] = pd.to_numeric(Data.CODE7)
-	Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
-	# correct missing PALTU
-	Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
-	Data["CODE7"] = Data["hospital_type"]
+			# check special characters
+			Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+			# special character split
+			Data = CombinationCodesSplit(Data)
 
-	#-------------------------------------------
-	# QUALITY CONTROL:
+			# PALTU mapping
+			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
+			Data["CODE7"] = pd.to_numeric(Data.CODE7)
+			Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
+			# correct missing PALTU
+			Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
+			Data["CODE7"] = Data["hospital_type"]
 
-	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
-	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+			#-------------------------------------------
+			# QUALITY CONTROL:
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
+			# check that EVENT_AGE is in predefined range 
+			Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+			# check that EVENT_AGE is not missing
+			Data.dropna(subset=["EVENT_AGE"], inplace=True)
+			Data.reset_index(drop=True,inplace=True)
+			# check that CODE1 and 2 are not missing
+			Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+			# remove duplicates
+			Data.drop_duplicates(keep="first", inplace=True)
+			# if negative hospital days than missing value
+			Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
+			# select desired columns 
+			Data = Data[ COLUMNS_2_KEEP ]
 
-	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+			# sort data
+			Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
+
+			# WRITE TO DETAILED LONGITUDINAL
+			if test: 	
+				Write2TestFile(Data)
+			else: 		
+				Write2DetailedLongitudinal(Data)
+
+
 
 def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", test=False):
 	"""Process the Hilmo information after 1995.
@@ -919,6 +929,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
     """
 
     dtypes = {
+	"HILMO_ID": str,
     "TNRO": str,
     "TUPVA":str, 
     "LPVM": str,
@@ -927,140 +938,155 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 	"PTMPK3":str,
 	"MTMP1K1":str,
 	"MTMP2K1":str,
-	"EDIA": str,
 	"PALA": str,
 	"EA":   str,
-	"PALTU":str
+	"PALTU":str,
+	"YHTEYSTAPA": str
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
+	chunksize = 10 ** 6
+	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
+    	for Data in reader:
+			
+			# remove wrong codes
+			wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
+			Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
 
-	# remove wrong codes
-	wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
-	Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
+			# add date of birth
+			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
+			Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
 
-	# add date of birth
-	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
+			# format date columns (birth and death date)
+			Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+			Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
+			# format date columns (patient in and out dates)
+			Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
+			Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
-	# format date columns (patient in and out dates)
-	Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
-	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
+			#-------------------------------------------
+			# define columns for detailed longitudinal
 
-	#-------------------------------------------
-	# define columns for detailed longitudinal
+			Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+			Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
+			Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+			Data["SOURCE"] 			= "OUTPAT"
+			Data["CODE2"]			= np.NaN
+			Data["CODE3"]			= np.NaN
+			Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+			Data["ICDVER"] 			= 10
 
-	Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-	Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
-	Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
-	Data["SOURCE"] 			= "OUTPAT"
-	Data["CODE2"]			= np.NaN
-	Data["CODE3"]			= np.NaN
-	Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-	Data["ICDVER"] 			= 10
+			#rename columns
+			Data.rename( 
+				columns = {
+				"ADMISSION_DATE":"PVM",
+				"PALA":"CODE5",
+				"EA":"CODE6",
+				"PALTU":"CODE7"
+				},
+				inplace=True)
 
-	#rename columns
-	Data.rename( 
-		columns = {
-		"ADMISSION_DATE":"PVM",
-		"PALA":"CODE5",
-		"EA":"CODE6",
-		"PALTU":"CODE7"
-		},
-		inplace=True)
+			#-------------------------------------------
+			# CATEGORY RESHAPE:
 
-	#-------------------------------------------
-	# CATEGORY RESHAPE:
+			# the following code will reshape the Dataframe from wide to long
+			# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+			# the CATEGORY names are going to be remapped to the desired names 
 
-	# the following code will reshape the Dataframe from wide to long
-	# the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
-	# the CATEGORY names are going to be remapped to the desired names 
+			CATEGORY_DICTIONARY = {
+			"PTMPK1":"NOM1",
+			"PTMPK2":"NOM2",
+			"PTMPK3":"NOM3",
+			"MTMP1K1":"NOM4",
+			"MTMP2K1":"NOM5"
+			 }
 
-	CATEGORY_DICTIONARY = {
-	"PTMPK1":"NOM1",
-	"PTMPK2":"NOM2",
-	"PTMPK3":"NOM3",
-	"MTMP1K1":"NOM4",
-	"MTMP2K1":"NOM5"
-	 }
+			new_names = Data.columns
+			for name in CATEGORY_DICTIONARY.keys():
+		    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
-	new_names = Data.columns
-	for name in CATEGORY_DICTIONARY.keys():
-    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+			# perform the reshape
+			VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
+			VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 
-	# perform the reshape
-	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
+			Data = pd.melt(Data,
+			    id_vars 	= VAR_NOT_FOR_RESHAPE,
+			    value_vars 	= VAR_FOR_RESHAPE,
+			    var_name 	= "CATEGORY",
+			    value_name	= "CODE1")
+			Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
-	Data = pd.melt(Data,
-	    id_vars 	= VAR_NOT_FOR_RESHAPE,
-	    value_vars 	= VAR_FOR_RESHAPE,
-	    var_name 	= "CATEGORY",
-	    value_name	= "CODE1")
-	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+			# remove missing CODE1
+			Data.dropna(subset=["CODE1"], inplace=True)
+			Data.reset_index(drop=True, inplace=True)	
 
-	# remove missing CODE1
-	Data.dropna(subset=["CODE1"], inplace=True)
-	Data.reset_index(drop=True, inplace=True)	
+			# merge CODE1 and CATEGORY from extra file
+			Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
+			Data["CATEGORY"] = np.where(Data.CATEGORY_x=="" , Data.CATEGORY_y, Data.CATEGORY_x)
+			Data["CODE1"]	 = np.where(Data.CODE1_x=="" , Data.CODE1_y, Data.CODE1_x)
 
-	# merge CODE1 and CATEGORY from extra file
-	Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
-	Data["CATEGORY"] = np.where(Data.CATEGORY_x=="" , Data.CATEGORY_y, Data.CATEGORY_x)
-	Data["CODE1"]	 = np.where(Data.CODE1_x=="" , Data.CODE1_y, Data.CODE1_x)
+			#-------------------------------------------
+			
+			# SOURCE definitions
+			Data["PALA"] = Data["CODE5"]
+			Data["YHTEYSTAPA"] = np.NaN
+			Data = Define_INPAT(Data)
+			Data = Define_OPERIN(Data)
+			Data = Define_OPEROUT(Data)
 
-	#-------------------------------------------
-	# SOURCE definitions
-	Data["PALA"] = Data["CODE5"]
-	Data = Define_INPAT(Data)
-	Data = Define_OPERIN(Data)
-	Data = Define_OPEROUT(Data)
+			# merge CODE1 and CATEGORY from extra file
+			ToAdd = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner")
+			#rename columns
+			ToAdd.rename( 
+				columns = {
+				"CATEGORY":"CATEGORY_y",
+				"CODE1":"CODE1_y",
+				},
+				inplace=True)
+			ToAdd.drop(columns=['CATEGORY_x','CODE1_x'])
+			Data = pd.concat([Data,ToAdd])
 
-	# check special characters
-	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
-	# special character split
-	Data = CombinationCodesSplit(Data)
+			#-------------------------------------------
 
-	# PALTU mapping
-	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
-	Data["CODE7"] = pd.to_numeric(Data.CODE7)
-	Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
-	# correct missing PALTU
-	Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
-	Data["CODE7"] = Data["hospital_type"]
+			# check special characters
+			Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+			# special character split
+			Data = CombinationCodesSplit(Data)
 
-	#-------------------------------------------
-	# QUALITY CONTROL:
+			# PALTU mapping
+			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
+			Data["CODE7"] = pd.to_numeric(Data.CODE7)
+			Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
+			# correct missing PALTU
+			Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
+			Data["CODE7"] = Data["hospital_type"]
 
-	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
-	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
-	# if negative hospital days than missing value
-	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+			#-------------------------------------------
+			# QUALITY CONTROL:
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
+			# check that EVENT_AGE is in predefined range 
+			Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+			# check that EVENT_AGE is not missing
+			Data.dropna(subset=["EVENT_AGE"], inplace=True)
+			Data.reset_index(drop=True,inplace=True)
+			# check that CODE1 and 2 are not missing
+			Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+			# remove duplicates
+			Data.drop_duplicates(keep="first", inplace=True)
+			# if negative hospital days than missing value
+			Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
+			# select desired columns 
+			Data = Data[ COLUMNS_2_KEEP ]
 
-	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+			# sort data
+			Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
+
+			# WRITE TO DETAILED LONGITUDINAL
+			if test: 	
+				Write2TestFile(Data)
+			else: 		
+				Write2DetailedLongitudinal(Data)
 
 
 def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
@@ -1090,26 +1116,26 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
     "KOODI": str
     }
 
-
 	# fetch Data
 	if test: 	
 		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
 	else: 		
 		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
 
-	Data["N"] = Data.N + 1
-	Data = Data.loc[Data.N <= 7,:]
+
+	# keep only the main ICD diagnosis code and 3 extra ones 
+	Data = Data.loc[Data.KENTTA.isin(["PDGO","SDGO"])]
+	Data.reset_index(drop=True,inplace=True)
+	Data = Data.loc[Data.N<=3]
 	Data.reset_index(drop=True,inplace=True)
 
-	Data = pd.pivot(Data,
-    index 	= ["HILMO_ID","KENTTA"],
-    columns = "N",
-    values 	= "KOODI")
-    Data.reset_index(inplace=True)
-
 	# rename columns
-	new_codenames = ["CODE" + n for n in  Data.columns[3:].astype("string").tolist()]
-	Data.columns = ["HILMO_ID","CATEGORY"] + new_codenames
+	Data.rename( 
+		columns = {
+		"N":"CATEGORY",
+		"KOODI":"CODE1",
+		},
+		inplace=True)
 
 	# keep only columns of interest
 	Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
@@ -1149,7 +1175,9 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=";", test=Fals
 	else: 		
 		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
 
-	#remove opearation date ?
+	# keep only the main ICD diagnosis code and 3 extra ones 
+	Data = Data.loc[Data.N<=3]
+	Data.reset_index(drop=True,inplace=True)
 
 	# rename columns
 	Data.rename( 
@@ -1187,11 +1215,9 @@ def Hilmo_heart_preparation(file_path:str,file_sep=";", test=False):
         ValueError: If the provided file_sep is not a valid separator.
     """
 
-    dtypes = {
-	"HILMO_ID": str,
-	"TMPTYP": str,
-	"TMPC": str
-    }
+	keys  = ['HILMO_ID'] + ['TMPC'+str(n) for n in range(1,12)] + ['TMPTYP'+str(n) for n in range(1,4)]
+	values = [str for n in range(1,15)]
+	dtypes = dict(zip(keys, values))
 	
 	# fetch Data
 	if test: 	
@@ -1231,7 +1257,7 @@ def Hilmo_heart_preparation(file_path:str,file_sep=";", test=False):
 	# A correction for some HPO (fully numeric codes) 
 	# mixed in within NPN codes (which always start with letter A). 
 	Data["CODE1"] 		= Data.CODE1.astype(str)
-	Data["CATEGORY"]	= np.where(Data.CODE1.isnumeric(), Data.CATEGORY.replace("N", "O"), Data.CATEGORY)
+	Data["CATEGORY"]	= np.where(Data.CODE1.str.isnumeric(), Data.CATEGORY.replace("N", "O"), Data.CATEGORY)
 
 	# keep only columns of interest
 	Data.reset_index(drop=True,inplace=True)
@@ -1464,80 +1490,79 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
+	chunksize = 10 ** 6
+	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
+    	for Data in reader:
 
-	# add date of birth
-	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
+			# add date of birth
+			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
+			Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
 
-	# format date columns 
-	Data["EVENT_DATE"] 		= pd.to_datetime( Data["KAYNTI_ALKOI"].str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
+			# format date columns 
+			Data["EVENT_DATE"] 		= pd.to_datetime( Data["KAYNTI_ALKOI"].str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
+			# format date columns (birth and death date)
+			Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+			Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
 
-	# check if event is after death
-	Data.loc[Data.EVENT_DATE > Data.DEATH_DATE,"EVENT_DATE"] = Data.DEATH_DATE
+			# check if event is after death
+			Data.loc[Data.EVENT_DATE > Data.DEATH_DATE,"EVENT_DATE"] = Data.DEATH_DATE
 
-	#-------------------------------------------
-	# define columns for detailed longitudinal
-	Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-	Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
-	Data["EVENT_YEAR"]		= Data.EVENT_DATE.dt.year
-	Data["ICDVER"]			= 10
-	Data["SOURCE"]			= "PRIM_OUT"
-	Data["INDEX"]			= Data.AVOHILMO_ID
-	Data["CODE2"]			= np.NaN
-	Data["CODE3"]			= np.NaN
-	Data["CODE4"]			= np.NaN
+			#-------------------------------------------
+			# define columns for detailed longitudinal
+			Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+			Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
+			Data["EVENT_YEAR"]		= Data.EVENT_DATE.dt.year
+			Data["ICDVER"]			= 10
+			Data["SOURCE"]			= "PRIM_OUT"
+			Data["INDEX"]			= Data.AVOHILMO_ID
+			Data["CODE2"]			= np.NaN
+			Data["CODE3"]			= np.NaN
+			Data["CODE4"]			= np.NaN
 
-	# rename columns
-	Data.rename( 
-		columns = {
-		"KAYNTI_YHTEYSTAPA":"CODE5",
-		"KAYNTI_PALVELUMUOTO":"CODE6",
-		"KAYNTI_AMMATTI":"CODE7",
-		"EVENT_DATE":"PVM"},
-		inplace=True )
+			# rename columns
+			Data.rename( 
+				columns = {
+				"KAYNTI_YHTEYSTAPA":"CODE5",
+				"KAYNTI_PALVELUMUOTO":"CODE6",
+				"KAYNTI_AMMATTI":"CODE7",
+				"EVENT_DATE":"PVM"},
+				inplace=True )
 
-	#-------------------------------------------
+			#-------------------------------------------
 
-	# merge CODE1 and CATEGORY from extra file
-	Data = Data.merge(extra_to_merge, on = "AVOHILMO_ID", how="left")
+			# merge CODE1 and CATEGORY from extra file
+			Data = Data.merge(extra_to_merge, on = "AVOHILMO_ID", how="left")
 
-	# PALTU mapping
-	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
-	Data["CODE7"] = pd.to_numeric(Data.CODE7)
-	Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
-	# correct missing PALTU
-	Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
-	Data["CODE7"] = Data["hospital_type"]
+			# PALTU mapping
+			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
+			Data["CODE7"] = pd.to_numeric(Data.CODE7)
+			Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
+			# correct missing PALTU
+			Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
+			Data["CODE7"] = Data["hospital_type"]
 
-	#-------------------------------------------
-	# QUALITY CONTROL:
+			#-------------------------------------------
+			# QUALITY CONTROL:
 
-	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
-	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
-	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
-	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+			# check that EVENT_AGE is in predefined range 
+			Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+			# check that EVENT_AGE is not missing
+			Data.dropna(subset=["EVENT_AGE"], inplace=True)
+			Data.reset_index(drop=True,inplace=True)
+			# check that CODE1 and 2 are not missing
+			Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+			# remove duplicates
+			Data.drop_duplicates(keep="first", inplace=True)
 
-	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
+			# select desired columns 
+			Data = Data[ COLUMNS_2_KEEP ]
 
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
+			# sort data
+			Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
-	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)
+			# WRITE TO DETAILED LONGITUDINAL
+			if test: 	Write2TestFile(Data)
+			else: 		Write2DetailedLongitudinal(Data)
 
 
 

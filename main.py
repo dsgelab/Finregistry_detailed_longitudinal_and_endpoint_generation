@@ -18,9 +18,6 @@ from config import *
 BIRTH_DEATH_MAP = pd.read_csv('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv',sep = ',', encoding='latin-1')
 BIRTH_DEATH_MAP = BIRTH_DEATH_MAP[['FINREGISTRYID','date_of_birth','death_date']]
 
-def start_time():
-
-
 
 ##########################################################
 # CREATE DETAILED LONGITUDINAL 
@@ -49,7 +46,7 @@ if __name__ == '__main__':
 	heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
 	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=BIRTH_DEATH_MAP, extra_to_merge=heart_94_95)
 	END = datetime.now()
-	print(f'hilmo_1987_1993 processing took {(END-START)} hour:min:sec')
+	print(f'hilmo_1994_1995 + heart processing took {(END-START)} hour:min:sec')
 	del heart_94_95
 	gc.collect() 
 
