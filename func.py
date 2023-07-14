@@ -121,38 +121,38 @@ def CombinationCodesSplit(Data:pd.DataFrame):
     ValueError: If the provided Data is not a pandas DataFrame.
 	"""
 
-	Data["IS_STAR"] = Data.CODE1.str.match("*")
+	Data["IS_STAR"] = Data.CODE1.str.contains("\*")
 	Data_tosplit 	= Data.loc[Data["IS_STAR"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "*",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\*",expand=True)[[0,1]]
 		Data.loc[Data.IS_STAR == True,"CODE1"] = Data_tosplit.part1
 		Data.loc[Data.IS_STAR == True,"CODE2"] = Data_tosplit.part2
 
 	#------------------
-	Data["IS_AND"] 	= Data.CODE1.str.match("&")
+	Data["IS_AND"] 	= Data.CODE1.str.contains("\&")
 	Data_tosplit 	= Data.loc[Data["IS_AND"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "&",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\&",expand=True)[[0,1]]
 		Data.loc[Data.IS_AND == True,"CODE1"] = Data_tosplit.part1
 		Data.loc[Data.IS_AND == True,"CODE2"] = Data_tosplit.part1
 
 	#------------------
-	Data["IS_HAST"]	= Data.CODE1.str.match("#")
+	Data["IS_HAST"]	= Data.CODE1.str.contains("\#")
 	Data_tosplit 	= Data.loc[Data["IS_HAST"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "#",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\#",expand=True)[[0,1]]
 		Data.loc[Data.IS_HAST == True,"CODE1"] = Data_tosplit.part1
 		Data.loc[Data.IS_HAST == True,"CODE3"] = Data_tosplit.part2
 
 	#------------------
-	Data["IS_PLUS"] = Data.CODE1.str.match("+")
+	Data["IS_PLUS"] = Data.CODE1.str.contains("\+")
 	Data_tosplit 	= Data.loc[Data["IS_PLUS"] == True]
 
 	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "+",expand=True)
+		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\+",expand=True)[[0,1]]
 		Data.loc[Data.IS_PLUS == True,"CODE2"] = Data_tosplit.part1
 		Data.loc[Data.IS_PLUS == True,"CODE1"] = Data_tosplit.part2
 
@@ -675,9 +675,10 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	Data.reset_index(drop=True, inplace=True)	
 
 	# merge CODE1 and CATEGORY from extra file
+	Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
 	Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
-	Data["CATEGORY"] = np.where(Data.CATEGORY_x=="" , Data.CATEGORY_y, Data.CATEGORY_x)
-	Data["CODE1"]	 = np.where(Data.CODE1_x=="" , Data.CODE1_y, Data.CODE1_x)
+	Data["CATEGORY"] = np.where(Data.CATEGORY_orig=="" , Data.CATEGORY, Data.CATEGORY_orig)
+	Data["CODE1"]	 = np.where(Data.CODE1_orig=="" , Data.CODE1, Data.CODE1_orig)
 
 	#------------------------------------------
 	# SOURCE definitions
@@ -851,16 +852,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			Data = Define_OPEROUT(Data)
 
 			# merge CODE1 and CATEGORY from extra file
-			ToAdd = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner")
-			#rename columns
-			ToAdd.rename( 
-				columns = {
-				"CATEGORY":"CATEGORY_y",
-				"CODE1":"CODE1_y",
-				},
-				inplace=True)
-			ToAdd.drop(columns=['CATEGORY_x','CODE1_x'])
-			Data = pd.concat([Data,ToAdd])
+			Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
+			Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
+			Data["CATEGORY"] = np.where(Data.CATEGORY_orig=="" , Data.CATEGORY, Data.CATEGORY_orig)
+			Data["CODE1"]	 = np.where(Data.CODE1_orig=="" , Data.CODE1, Data.CODE1_orig)
 
 			#-------------------------------------------
 
@@ -1021,9 +1016,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			Data.reset_index(drop=True, inplace=True)	
 
 			# merge CODE1 and CATEGORY from extra file
+			Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
 			Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
-			Data["CATEGORY"] = np.where(Data.CATEGORY_x=="" , Data.CATEGORY_y, Data.CATEGORY_x)
-			Data["CODE1"]	 = np.where(Data.CODE1_x=="" , Data.CODE1_y, Data.CODE1_x)
+			Data["CATEGORY"] = np.where(Data.CATEGORY_orig=="" , Data.CATEGORY, Data.CATEGORY_orig)
+			Data["CODE1"]	 = np.where(Data.CODE1_orig=="" , Data.CODE1, Data.CODE1_orig)
 
 			#-------------------------------------------
 			
@@ -1592,7 +1588,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     dtypes = {
 	"TNRO": str,
-	"TPKS": str,
+	"KPV": str,
 	"VKS": str,
 	"M1": str,
 	"M2": str,
@@ -1721,6 +1717,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     dtypes = {
 	"FINREGISTRYID": str,
+	"dg_date":str,
 	"topo": str,
 	"morpho": str,
 	"beh": str
@@ -1918,19 +1915,11 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
         ValueError: If the provided DOB_map is not a pandas DataFrame.
     """	
 
-    dtypes = {
-	"HETU": str,
-	"korvausoikeus_alpv": str,
-	"korvausoikeus_lopv": str,
-	"SK1":  str,
-	"DIAG": str
-    }
-
 	# fetch Data
 	if test: 	
 		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
 	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
+		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1")
 
 	# add date of birth
 	Data.columns = ["HETU"] + list(Data.columns[1:])
