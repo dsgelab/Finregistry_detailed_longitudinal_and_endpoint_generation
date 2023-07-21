@@ -366,12 +366,12 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 	# if negative hospital days than missing value
@@ -533,12 +533,12 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 	# if negative hospital days than missing value
@@ -705,12 +705,12 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 	# if negative hospital days than missing value
@@ -876,12 +876,12 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			# QUALITY CONTROL:
 
 			# check that EVENT_AGE is in predefined range 
-			Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
 			# check that EVENT_AGE is not missing
 			Data.dropna(subset=["EVENT_AGE"], inplace=True)
 			Data.reset_index(drop=True,inplace=True)
 			# check that CODE1 and 2 are not missing
-			Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 			# remove duplicates
 			Data.drop_duplicates(keep="first", inplace=True)
 			# if negative hospital days than missing value
@@ -1061,12 +1061,12 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			# QUALITY CONTROL:
 
 			# check that EVENT_AGE is in predefined range 
-			Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
 			# check that EVENT_AGE is not missing
 			Data.dropna(subset=["EVENT_AGE"], inplace=True)
 			Data.reset_index(drop=True,inplace=True)
 			# check that CODE1 and 2 are not missing
-			Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 			# remove duplicates
 			Data.drop_duplicates(keep="first", inplace=True)
 			# if negative hospital days than missing value
@@ -1285,7 +1285,7 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
 
     dtypes = {
 	"TNRO": str,
-	"AVOHILMO_ID": str,
+	"AVOHILMO_ID": int,
 	"JARJESTYS": int,
 	"ICD10": str
     }
@@ -1304,10 +1304,10 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
 	Data.loc[rows_to_change,"CATEGORY"] = "ICD" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data.loc[ ~( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
 
 	# remove ICD code dots
-	Data.loc[Data.CATEGORY=="ICD","CODE1"] = Data["CODE1"].replace({".", ""})
+	Data["CODE1"] = Data["CODE1"].str.replace(".","",regex=False)
 
 	return Data
 	
@@ -1335,7 +1335,7 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=";", test=False):
 
     dtypes = {
 	"TNRO": str,
-	"AVOHILMO_ID": str,
+	"AVOHILMO_ID": int,
 	"JARJESTYS": int,
 	"ICPC2": str
     }
@@ -1354,7 +1354,7 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=";", test=False):
 	Data.loc[rows_to_change,"CATEGORY"] = "ICP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data.loc[ ~( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
 
 	return Data
 
@@ -1381,7 +1381,7 @@ def AvoHilmo_dental_measures_preparation(file_path:str,file_sep=";", test=False)
 
     dtypes = {
 	"TNRO": str,
-	"AVOHILMO_ID": str,
+	"AVOHILMO_ID": int,
 	"JARJESTYS": int,
 	"TOIMENPIDE": str
     }
@@ -1400,7 +1400,7 @@ def AvoHilmo_dental_measures_preparation(file_path:str,file_sep=";", test=False)
 	Data.loc[rows_to_change,"CATEGORY"] = "MOP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data.loc[ ~( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
 
 	return Data
 
@@ -1427,7 +1427,7 @@ def AvoHilmo_interventions_preparation(file_path:str,file_sep=";", test=False):
 
     dtypes = {
 	"TNRO": str,
-	"AVOHILMO_ID": str,
+	"AVOHILMO_ID": int,
 	"JARJESTYS": int,
 	"TOIMENPIDE": str
     }
@@ -1446,7 +1446,7 @@ def AvoHilmo_interventions_preparation(file_path:str,file_sep=";", test=False):
 	Data.loc[rows_to_change,"CATEGORY"] = "OP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data.loc[ ~( Data.CODE1.isna() & Data.CATEGORY.isna() & Data.JARJESTYS.isna() )].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
 
 	return Data
 
@@ -1478,7 +1478,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 
     dtypes = {
 	"TNRO": str,
-	"AVOHILMO_ID": str,
+	"AVOHILMO_ID": int,
 	"KAYNTI_ALKOI":str,
 	"KAYNTI_YHTEYSTAPA":str,
 	"KAYNTI_PALVELUMUOTO":str,
@@ -1529,6 +1529,9 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			# merge CODE1 and CATEGORY from extra file
 			Data = Data.merge(extra_to_merge, on = "AVOHILMO_ID", how="left")
 
+			# special character split
+			Data = CombinationCodesSplit(Data)
+
 			# PALTU mapping
 			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
 			Data["CODE7"] = pd.to_numeric(Data.CODE7)
@@ -1541,12 +1544,12 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			# QUALITY CONTROL:
 
 			# check that EVENT_AGE is in predefined range 
-			Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
 			# check that EVENT_AGE is not missing
 			Data.dropna(subset=["EVENT_AGE"], inplace=True)
 			Data.reset_index(drop=True,inplace=True)
 			# check that CODE1 and 2 are not missing
-			Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 			# remove duplicates
 			Data.drop_duplicates(keep="first", inplace=True)
 
@@ -1669,7 +1672,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
@@ -1768,12 +1771,12 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 
@@ -1868,17 +1871,17 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 
 	# remove ICD code dots
-	Data["CODE2"] = Data["CODE2"].replace({".", ""})
+	Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -1891,6 +1894,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 		Write2TestFile(Data)
 	else: 		
 		Write2DetailedLongitudinal(Data)
+
 
 def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	"""Process the information from kela reimbursement registry.
@@ -1962,17 +1966,17 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 
 	# remove ICD code dots
-	Data["CODE2"] = Data["CODE2"].replace({".", ""})
+	Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -2065,12 +2069,12 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110), ].reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
 	# check that EVENT_AGE is not missing
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ,].reset_index(drop=True,inplace=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True) 
 	# remove duplicates
 	Data.drop_duplicates(keep="first", inplace=True)
 
