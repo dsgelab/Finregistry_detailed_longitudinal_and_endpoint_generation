@@ -17,6 +17,10 @@ from config import *
 # import info on Date_Of_Birth and Date_Of_Death 
 BIRTH_DEATH_MAP = pd.read_csv('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv',sep = ',', encoding='latin-1')
 BIRTH_DEATH_MAP = BIRTH_DEATH_MAP[['FINREGISTRYID','date_of_birth','death_date']]
+BIRTH_DEATH_MAP.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
+# format date columns (birth and death date)
+BIRTH_DEATH_MAP["BIRTH_DATE"] = pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+BIRTH_DEATH_MAP["DEATH_DATE"] = pd.to_datetime( Data.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
 
 
 ##########################################################

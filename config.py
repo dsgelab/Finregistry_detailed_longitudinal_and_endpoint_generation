@@ -57,4 +57,4 @@ kela_reimbursement_2020_2021= '/data/original_data/kela_reimbursement/81_522_202
 kela_purchase_filelist		= ['/data/original_data/kela_purchase/175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDs' for n in range(1995,2020)]
 
 DETAILED_LONGITUDINAL_PATH 	= '/data/processed_data/detailed_longitudinal/R10/service_sector/'
-TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/'
+TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/test_results/'

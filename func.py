@@ -19,6 +19,7 @@ from config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
 # UTILITY VARIABLES
 
 DAYS_TO_YEARS = 365.24
+#NB: copied from FinnGen
 
 PALA_INPAT_LIST = [1,3,4,5,6,7,8,31]
 
@@ -63,7 +64,7 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
         IOError: If there is an error writing the data to the specified path.
     """
 
-    filename = "detailed_longitudinal.csv"
+    filename = "detailed_longitudinal_new.csv"
     #remove header if file is already existing
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
@@ -104,59 +105,39 @@ def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH, header = False):
 		index=False,
 		header=header)
 
-
-def CombinationCodesSplit(Data:pd.DataFrame):
-	"""Splits the input dataframe CODE1 based on special characters.
-
-	applies specific rules to split the CODE1 based on the presence of combination codes.
-	NB: check out FinnGen research handbook for more info
+def CombinationCodesSplit(Data):
+    """
+    Splits combination codes in the input dataframe CODE1 based on special characters.
+	NB: check FinnGen Analyst Handbook for more info.
+    
+    The `special_chars` dictionary specifies to which column the first and second part of the split cell goes.
+    For example, code "111#111" is split by a hash so the first part goes into CODE1 and the second part to CODE3, according to the dictionary.
 
     Args:
-        Data (pd.DataFrame): the dataframe to be split.
+        Data (pd.DataFrame): Dataframe to be split
 
     Returns:
-        Data (pd.DataFrame): the splitted dataframe.
+        Data (pd.DataFrame): Dataframe with combination codes split into their respective columns
 
-	Raises:
-    ValueError: If the provided Data is not a pandas DataFrame.
-	"""
+    TODO: handle codes with multiple special characters (now only working with 1 special char)
 
-	Data["IS_STAR"] = Data.CODE1.str.contains("\*")
-	Data_tosplit 	= Data.loc[Data["IS_STAR"] == True]
+    """
+    # Specify special characters and their respective column positions
+    split_dict = {
+        "*": ["CODE1", "CODE2"],
+        "&": ["CODE1", "CODE2"],
+        "#": ["CODE1", "CODE3"],
+        "+": ["CODE2", "CODE1"]
+    }
+    original_code = Data["CODE1"]
 
-	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\*",expand=True)[[0,1]]
-		Data.loc[Data.IS_STAR == True,"CODE1"] = Data_tosplit.part1
-		Data.loc[Data.IS_STAR == True,"CODE2"] = Data_tosplit.part2
+    # Loop through special characters and split codes into variables according to the dictionary
+    for split_key in split_dict.keys():
+        indx = original_code.str.contains(pat=split_key, regex=False)
+        if sum(indx) > 0:
+            Data.loc[indx, split_dict[split_key]] = original_code[indx].str.split(pat=split_key, regex=False).tolist()[0]
 
-	#------------------
-	Data["IS_AND"] 	= Data.CODE1.str.contains("\&")
-	Data_tosplit 	= Data.loc[Data["IS_AND"] == True]
-
-	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\&",expand=True)[[0,1]]
-		Data.loc[Data.IS_AND == True,"CODE1"] = Data_tosplit.part1
-		Data.loc[Data.IS_AND == True,"CODE2"] = Data_tosplit.part1
-
-	#------------------
-	Data["IS_HAST"]	= Data.CODE1.str.contains("\#")
-	Data_tosplit 	= Data.loc[Data["IS_HAST"] == True]
-
-	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\#",expand=True)[[0,1]]
-		Data.loc[Data.IS_HAST == True,"CODE1"] = Data_tosplit.part1
-		Data.loc[Data.IS_HAST == True,"CODE3"] = Data_tosplit.part2
-
-	#------------------
-	Data["IS_PLUS"] = Data.CODE1.str.contains("\+")
-	Data_tosplit 	= Data.loc[Data["IS_PLUS"] == True]
-
-	if Data_tosplit.shape[0] != 0:
-		Data_tosplit[["part1","part2"]] = Data_tosplit["CODE1"].str.split(pat = "\+",expand=True)[[0,1]]
-		Data.loc[Data.IS_PLUS == True,"CODE2"] = Data_tosplit.part1
-		Data.loc[Data.IS_PLUS == True,"CODE1"] = Data_tosplit.part2
-
-	return Data	
+    return Data
 
 
 
@@ -281,13 +262,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	else: 		
 		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
 
-	# add date of birth
+	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns ={"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d",errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d",errors="coerce" )
 	# format date columns (patient in and out dates)
 	Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format="%d.%m.%Y",errors="coerce" )
 	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
@@ -373,15 +349,13 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 	# if negative hospital days than missing value
 	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 
@@ -437,11 +411,6 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce")
 	# format date columns (patient in and out dates)
 	Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format="%d.%m.%Y",errors="coerce" )
 	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
@@ -540,15 +509,13 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 	# if negative hospital days than missing value
 	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	
@@ -603,13 +570,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	else: 		
 		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
 
-	# add date of birth
+	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
 	# format date columns (patient in and out dates)
 	Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format="%d.%m.%Y",errors="coerce" )
 	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
@@ -712,15 +674,13 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 	# if negative hospital days than missing value
 	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	
@@ -775,13 +735,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
 			Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
 
-			# add date of birth
+			# add date of birth/death
 			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-			Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-			# format date columns (birth and death date)
-			Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-			Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
 			# format date columns (patient in and out dates)
 			Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 			Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
@@ -883,15 +838,13 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			# check that CODE1 and 2 are not missing
 			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 			# remove duplicates
-			Data.drop_duplicates(keep="first", inplace=True)
+			Data = Data.drop_duplicates(keep="first")
+			Data = Data.reset_index(drop=True)
 			# if negative hospital days than missing value
 			Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
 			# select desired columns 
 			Data = Data[ COLUMNS_2_KEEP ]
-
-			# sort data
-			Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 			# WRITE TO DETAILED LONGITUDINAL
 			if test: 	
@@ -950,11 +903,6 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 
 			# add date of birth
 			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-			Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-			# format date columns (birth and death date)
-			Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-			Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
 			# format date columns (patient in and out dates)
 			Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 			Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
@@ -1068,15 +1016,13 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			# check that CODE1 and 2 are not missing
 			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 			# remove duplicates
-			Data.drop_duplicates(keep="first", inplace=True)
+			Data = Data.drop_duplicates(keep="first")
+			Data = Data.reset_index(drop=True)
 			# if negative hospital days than missing value
 			Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
 			# select desired columns 
 			Data = Data[ COLUMNS_2_KEEP ]
-
-			# sort data
-			Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 			# WRITE TO DETAILED LONGITUDINAL
 			if test: 	
@@ -1490,15 +1436,10 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
     	for Data in reader:
 
-			# add date of birth
+			# add date of birth/death
 			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-			Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
 			# format date columns 
 			Data["EVENT_DATE"] 		= pd.to_datetime( Data["KAYNTI_ALKOI"].str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
-			# format date columns (birth and death date)
-			Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-			Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce" )
 
 			# check if event is after death
 			Data.loc[Data.EVENT_DATE > Data.DEATH_DATE,"EVENT_DATE"] = Data.DEATH_DATE
@@ -1551,13 +1492,11 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			# check that CODE1 and 2 are not missing
 			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
 			# remove duplicates
-			Data.drop_duplicates(keep="first", inplace=True)
+			Data = Data.drop_duplicates(keep="first")
+			Data = Data.reset_index(drop=True)
 
 			# select desired columns 
 			Data = Data[ COLUMNS_2_KEEP ]
-
-			# sort data
-			Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 			# WRITE TO DETAILED LONGITUDINAL
 			if test: 	Write2TestFile(Data)
@@ -1607,9 +1546,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "TNRO",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
 	# format date columns (birth date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE.str.slice(stop=10), format="%Y-%m-%d" )
 	Data["EVENT_DATE"]		= pd.to_datetime( Data.KPV.str.slice(stop=10), format="%d.%m.%Y" )
 
 	# define columns for detailed longitudinal
@@ -1677,15 +1614,13 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data.dropna(subset=["EVENT_AGE"], inplace=True)
 	Data.reset_index(drop=True,inplace=True)
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 
 	# NOT performing code check in this registry
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	
@@ -1734,11 +1669,6 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map, on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d",errors="coerce" )
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d",errors="coerce" )
 	# format date columns (diagnosis date)
 	Data["EVENT_DATE"]		= pd.to_datetime( Data.dg_date, format="%Y-%m-%d", errors="coerce" )
 
@@ -1778,13 +1708,11 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	
@@ -1833,11 +1761,6 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce")
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce")
 	# format date columns (reimbursement date)
 	Data["REIMB_START"]		= pd.to_datetime( Data.ALPV, format="%Y-%m-%d", errors="coerce")
 	Data["REIMB_END"]		= pd.to_datetime( Data.LOPV, format="%Y-%m-%d", errors="coerce")
@@ -1878,16 +1801,14 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 
 	# remove ICD code dots
 	Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	
@@ -1928,11 +1849,6 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 	# add date of birth
 	Data.columns = ["HETU"] + list(Data.columns[1:])
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce")
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce")
 	# format date columns (reimbursement date)
 	Data["REIMB_START"]		= pd.to_datetime( Data.korvausoikeus_alpv, format="%Y-%m-%d", errors="coerce")
 	Data["REIMB_END"]		= pd.to_datetime( Data.korvausoikeus_lopv, format="%Y-%m-%d", errors="coerce")
@@ -1973,16 +1889,14 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 
 	# remove ICD code dots
 	Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
 
 	# select desired columns 
-	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
+	Data = Data[ COLUMNS_2_KEEP ]	
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	Write2TestFile(Data)
@@ -2033,10 +1947,6 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
-	Data.rename( columns = {"date_of_birth":"BIRTH_DATE"}, inplace = True )
-	# format date columns (birth and death date)
-	Data["BIRTH_DATE"] 		= pd.to_datetime( Data.BIRTH_DATE, format="%Y-%m-%d", errors="coerce")
-	Data["DEATH_DATE"] 		= pd.to_datetime( Data.death_date, format="%Y-%m-%d", errors="coerce")
 	# format date columns (purchase date)
 	Data["EVENT_DATE"] 		= pd.to_datetime( Data.OSTOPV, format="%Y-%m-%d", errors="coerce") 	
 
@@ -2076,7 +1986,7 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True) 
 	# remove duplicates
-	Data.drop_duplicates(keep="first", inplace=True)
+	Data = Data.drop_duplicates(keep="first")
 
 	# remove dot in VNRO code
 	Data["CODE3"] = Data.CODE3.astype("string").str.split(".",expand=True)[0]
@@ -2087,9 +1997,6 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
-
-	# sort data
-	Data.sort_values(by = ["FINREGISTRYID","EVENT_AGE"], inplace=True)	
 
 	# WRITE TO DETAILED LONGITUDINAL
 	if test: 	
