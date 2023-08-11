@@ -380,14 +380,11 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
 	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"])
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
 	Data = Data.reset_index(drop=True) 
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
-	Data = Data.reset_index(drop=True)
 	# if negative hospital days than missing value
 	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
@@ -535,13 +532,10 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
 	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
 	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"])
-	Data.reset_index(drop=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
 	# if negative hospital days than missing value
 	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
@@ -696,13 +690,10 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
 	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
 	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"])
-	Data.reset_index(drop=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
 	# if negative hospital days than missing value
 	Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
@@ -866,9 +857,6 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
 			Data = Data.reset_index(drop=True)
 			# check that CODE1 and 2 are not missing
 			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-			Data = Data.reset_index(drop=True)
-			# remove duplicates
-			Data = Data.drop_duplicates(keep="first")
 			Data = Data.reset_index(drop=True)
 			# if negative hospital days than missing value
 			Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
@@ -1045,9 +1033,6 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
 			Data = Data.reset_index(drop=True)
 			# check that CODE1 and 2 are not missing
 			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-			Data = Data.reset_index(drop=True)
-			# remove duplicates
-			Data = Data.drop_duplicates(keep="first")
 			Data = Data.reset_index(drop=True)
 			# if negative hospital days than missing value
 			Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
@@ -1373,9 +1358,6 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			# check that CODE1 and 2 are not missing
 			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
 			Data = Data.reset_index(drop=True) 
-			# remove duplicates
-			Data = Data.drop_duplicates(keep="first")
-			Data = Data.reset_index(drop=True)
 
 			# select desired columns 
 			Data = Data[ COLUMNS_2_KEEP ]
@@ -1489,9 +1471,6 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check that EVENT_AGE is not missing
 	Data = Data.dropna(subset=["EVENT_AGE"])
 	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
-	Data = Data.reset_index(drop=True)
 
 	# NOT performing code check in this registry
 
@@ -1578,9 +1557,6 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
 	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
-	Data = Data.reset_index(drop=True)
 
 	# select desired columns 
 	Data = Data[ COLUMNS_2_KEEP ]
@@ -1665,9 +1641,6 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
 
 	# remove ICD code dots
@@ -1759,9 +1732,6 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
 	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
-	Data = Data.reset_index(drop=True)
 
 	# remove ICD code dots
 	Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
@@ -1852,9 +1822,6 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
 	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-	Data = Data.reset_index(drop=True)
-	# remove duplicates
-	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
 
 	# remove dot in VNRO code
