@@ -14,7 +14,7 @@ from func import *
 # import all file paths
 from config import *
 
-# import info to be later added : date of birth, date of death and hospital code map
+# fetch info to add later: 
 DOB_map = DOB_map_preparation('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv', sep=',')
 paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 

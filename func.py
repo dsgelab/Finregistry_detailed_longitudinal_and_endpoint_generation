@@ -45,6 +45,28 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
+def read_in(file_path:str, file_sep:str, test = False, dtypes:dict):
+    """Read into a pandas dataframe 
+
+    Args:
+        filepath: path of the file to be processed.
+        file_sep: separator used in the file.
+        test (Bool): set to True if the script is ran in the testing phase
+        dtypes (optional): type of the columns to fetch
+
+    Returns:
+        Fetched data  
+    """
+
+	if test: 	
+		Data = pd.read_csv(file_path, sep = file_sep, nrows=5_000)		
+	else: 		
+		Data = pd.read_csv(file_path, sep = file_sep, dtype=dtypes, usecols=dtypes.keys())
+
+	return Data
+
+
+
 def write_out(Data: pd.DataFrame, header = False, test = False):
     """Writes pandas dataframe to detailed_longitudinal or test file
 
@@ -56,23 +78,17 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
                               Defaults to DETAILED_LONGITUDINAL_PATH.
 
     Returns:
-        None
-
-    Raises:
-        TypeError: If the provided test parameter is not a boolean.    
+        None 
     """
 
-    if test==True: 
+    if test: 
     	path = TEST_FOLDER_PATH
     	today = dt.today().strftime("%Y_%m_%d")
     	filename = "test_detailed_longitudinal" + "_" + today + ".csv"
 
-    elif test==False:
+    else:
     	path = DETAILED_LONGITUDINAL_PATH
     	filename = "detailed_longitudinal_new.csv"
-
-    else:
-    	raise TypeError("only Bool are allowed")
 
     #remove header if file is already existing
 	Data.to_csv(
@@ -100,11 +116,13 @@ def DOB_map_preparation(filepath:str, sep=';'):
 		sep = sep, 
 		encoding = 'latin-1', 
 		dtype = dtypes, 
-		usecols = dtypes.keys(), 
-		parse_dates = ['date_of_birth','death_date'], 
-		date_format = "%Y-%m-%d")
+		usecols = dtypes.keys())
 
 	birth_death_map.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
+	# format date columns (birth and death date)
+	birth_death_map["BIRTH_DATE"] = pd.to_datetime( birth_death_map.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+	birth_death_map["DEATH_DATE"] = pd.to_datetime( birth_death_map.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
+
 	return birth_death_map
 
 
@@ -261,11 +279,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -405,11 +419,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -563,11 +573,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -1048,11 +1054,7 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 
 	# keep only the main ICD diagnosis code and 3 extra ones 
 	Data = Data.loc[Data.KENTTA.isin(["PDGO","SDGO"])]
@@ -1101,10 +1103,7 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=";", test=Fals
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 
 	# keep only the main ICD diagnosis code and 3 extra ones 
 	Data = Data.loc[Data.N<=3]
@@ -1151,11 +1150,7 @@ def Hilmo_heart_preparation(file_path:str,file_sep=";", test=False):
 	dtypes = dict(zip(keys, values))
 	
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 
 	#-------------------------------------------
 	# CATEGORY RESHAPE:
@@ -1226,11 +1221,7 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-	
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)	
 	Data.rename( columns = {"ICD10":"CODE1"}, inplace=True )
 
 	# define the category column 
@@ -1276,11 +1267,7 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	Data.rename( columns = {"ICPC2":"CODE1"}, inplace=True )
 
 	# define the category column 
@@ -1322,11 +1309,7 @@ def AvoHilmo_dental_measures_preparation(file_path:str,file_sep=";", test=False)
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	Data.rename( columns = {"TOIMENPIDE":"CODE1"}, inplace=True )
 
 	# define the category column 
@@ -1368,11 +1351,7 @@ def AvoHilmo_interventions_preparation(file_path:str,file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	Data.rename( columns = {"TOIMENPIDE":"CODE1"},inplace=True )
 
 	# define the category column 
@@ -1525,11 +1504,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (birth date)
@@ -1645,11 +1620,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth
 	Data = Data.merge(DOB_map, on = "FINREGISTRYID")
 	# format date columns (diagnosis date)
@@ -1734,11 +1705,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (reimbursement date)
@@ -1818,11 +1785,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     """	
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1")
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth
 	Data.columns = ["HETU"] + list(Data.columns[1:])
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
@@ -1916,11 +1879,7 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	if test: 	
-		Data = pd.read_csv(file_path, nrows=5000, sep = file_sep, encoding="latin-1")		
-	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys())
-
+	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (purchase date)
