@@ -413,7 +413,8 @@ def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        paltu_map (pd.dataframe): dataframe for mapping PALTU codes to hospital name
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -567,7 +568,9 @@ def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        paltu_map (pd.dataframe): dataframe for mapping PALTU codes to hospital name
+		extra_to_merge (pd.dataframe): dataframe with diagnosis codes to be added
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -725,8 +728,10 @@ def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
-        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        paltu_map (pd.dataframe): dataframe for mapping PALTU codes to hospital name
+		extra_to_merge (pd.dataframe): dataframe with diagnosis codes to be added
+		test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
         None
@@ -889,8 +894,10 @@ def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, ext
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
-        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        paltu_map (pd.dataframe): dataframe for mapping PALTU codes to hospital name
+		extra_to_merge (pd.dataframe): dataframe with diagnosis codes to be added
+		test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
         None
@@ -1285,8 +1292,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
     Args:
         file_path (str): The path to the AvoHilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
-        extra_to_merge (pd.dataframe, optional): dataframe to map CODE1 and CATEGORY inside the AvoHilmo file
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        extra_to_merge (pd.dataframe): dataframe to map CODE1 and CATEGORY inside the AvoHilmo file
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -1392,7 +1399,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -1511,7 +1518,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -1598,7 +1605,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -1688,7 +1695,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
@@ -1772,7 +1779,7 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Args:
         file_path (str): The path to the Hilmo file.
         file_sep (str, optional): The separator used in the file. Defaults to ";".
-        DOB_map (pd.dataframe, optional): dataframe mapping DOB codes to their corresponding dates
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
