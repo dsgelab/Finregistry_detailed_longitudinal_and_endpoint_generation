@@ -33,7 +33,7 @@ CATEGORY, INDEX, SOURCE, ICDVER.
 **PROCESSING RULES**:
 
 EVENT_AGE is going to be round up to 2 decimal positions<br>
-Check that EVENT_DATE is not after DEATH_DATE
+Check that EVENT_DATE is not after DEATH_DATE, in case it is set EVENT_DATE=DEATH_DATE
 
 **QUALITY CONTROL RULES**:
 
@@ -63,6 +63,7 @@ In addition to the hilmo inpatient and outpatient files we have information abou
 - diagnostic ICD codes (hilmo diagnosis) to be joined to hilmo after 1995, before that year the codes where already present in the main hilmo dataset.
 - heart surgery codes (hilmo heart, recorded from 1994)
 - other surgical codes (hilmo operations) referring to day hospital operations. 
+NB: only 3 extra codes are going to be considered
 
 For a period up to 2019 a small correction is made inside hilmo heart to the 'CATEGORY' variable which records a source of a code.
 

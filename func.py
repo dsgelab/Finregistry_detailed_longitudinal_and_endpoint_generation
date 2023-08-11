@@ -45,6 +45,31 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
+def DOB_map_preparation(filepath:str, sep=';'):
+	"""
+	Prepare death and birth date information to be mapped into to the processed files for each patient
+    """
+
+	dtypes = {
+	'FINREGISTRYID':str,
+	'date_of_birth':str,
+	'death_date':str
+	}
+
+	birth_death_map = pd.read_csv(
+		filepath_or_buffer = filepath,
+		sep = sep, 
+		encoding = 'latin-1', 
+		dtype = dtypes, 
+		usecols = dtypes.keys())
+
+	birth_death_map.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
+	# format date columns (birth and death date)
+	birth_death_map["BIRTH_DATE"] = pd.to_datetime( birth_death_map.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+	birth_death_map["DEATH_DATE"] = pd.to_datetime( birth_death_map.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
+
+	return birth_death_map
+
 def read_in(file_path:str, file_sep:str, test = False, dtypes:dict):
     """Read into a pandas dataframe 
 
@@ -98,33 +123,6 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
 		encoding="utf-8", #same for every Finregistry file
 		index=False,
 		header=header)
-
-
-def DOB_map_preparation(filepath:str, sep=';'):
-	"""
-	Prepare death and birth date information to be mapped into to the processed files for each patient
-    """
-
-	dtypes = {
-	'FINREGISTRYID':str,
-	'date_of_birth':str,
-	'death_date':str
-	}
-
-	birth_death_map = pd.read_csv(
-		filepath_or_buffer = filepath,
-		sep = sep, 
-		encoding = 'latin-1', 
-		dtype = dtypes, 
-		usecols = dtypes.keys())
-
-	birth_death_map.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
-	# format date columns (birth and death date)
-	birth_death_map["BIRTH_DATE"] = pd.to_datetime( birth_death_map.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-	birth_death_map["DEATH_DATE"] = pd.to_datetime( birth_death_map.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
-
-	return birth_death_map
-
 
 
 def combination_codes_split(Data):
@@ -286,8 +284,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TULOPV.str.slice(stop=10),  format="%d.%m.%Y",errors="coerce" )
 	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LAHTOPV.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
-	# check if event is after death
-	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,"ADMISSION_DATE"] = Data.DEATH_DATE
+	# check if discharge is after death
+	Data.loc[Data.DISCHARGE_DATE > Data.DEATH_DATE,"DISCHARGE_DATE"] = Data.DEATH_DATE
 
 	#-------------------------------------------
 	# define columns for detailed longitudinal
@@ -305,7 +303,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["CODE7"]			= np.NaN
 
 	# rename columns
-	Data.rename( columns = {"ADMISSION_DATE":"PVM",}, inplace=True)
+	Data.rename( columns = {"ADMISSION_DATE":"PVM"}, inplace=True)
 
 	#-------------------------------------------
 	# CATEGORY RESHAPE:
@@ -339,8 +337,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# remove missing CODE1
-	Data.dropna(subset=["CODE1"], inplace=True)
-	Data.reset_index(drop=True, inplace=True)
+	Data = Data.dropna(subset=["CODE1"])
+	Data = Data.reset_index(drop=True)
 
 	# SOURCE definitions
 	Data["PALA"] = np.NaN
@@ -360,12 +358,14 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
+	Data.dropna(subset=["EVENT_AGE"])
 	Data.reset_index(drop=True,inplace=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
+	Data = Data.reset_index(drop=True) 
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -380,7 +380,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 
 
-def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
+def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test=False):
 	"""Process the Hilmo information from 1987 to 1993.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -427,7 +427,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
 	# check if event is after death
-	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,"ADMISSION_DATE"] = Data.DEATH_DATE
+	Data.loc[Data.DISCHARGE_DATE > Data.DEATH_DATE,"DISCHARGE_DATE"] = Data.DEATH_DATE
 
 	#-------------------------------------------
 	# define columns for detailed longitudinal
@@ -440,7 +440,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["CODE2"]			= np.NaN
 	Data["CODE3"]			= np.NaN
 	Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-	# CODE5 should be PALA but is not in columns ..
+	# CODE5 should be PALA but is not available
 	Data["CODE5"]			= np.NaN
 
 	#rename columns
@@ -486,8 +486,8 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# remove missing CODE1
-	Data.dropna(subset=["CODE1"], inplace=True)
-	Data.reset_index(drop=True, inplace=True)
+	Data = Data.dropna(subset=["CODE1"])
+	Data = Data.reset_index(drop=True)
 
 	# SOURCE definitions
 	Data["PALA"] = np.NaN
@@ -502,7 +502,6 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = combination_codes_split(Data)
 
 	# PALTU mapping
-	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
 	Data["CODE7"] = pd.to_numeric(Data.CODE7)
 	Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
 	# correct missing PALTU
@@ -513,12 +512,14 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"])
+	Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -533,7 +534,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 
 
-def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", test=False):
+def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extra_to_merge, test=False):
 	"""Process the Hilmo information from 1994 to 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -581,7 +582,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 	
 	# check if event is after death
-	Data.loc[Data.ADMISSION_DATE > Data.DEATH_DATE,"ADMISSION_DATE"] = Data.DEATH_DATE
+	Data.loc[Data.DISCHARGE_DATE > Data.DEATH_DATE,"DISCHARGE_DATE"] = Data.DEATH_DATE
 
 	#-------------------------------------------
 	# define columns for detailed longitudinal
@@ -637,8 +638,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# remove missing CODE1
-	Data.dropna(subset=["CODE1"], inplace=True)
-	Data.reset_index(drop=True, inplace=True)	
+	Data = Data.dropna(subset=["CODE1"])
+	Data = Data.reset_index(drop=True)
 
 	# merge CODE1 and CATEGORY from extra file
 	Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
@@ -660,7 +661,6 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	Data = combination_codes_split(Data)
 
 	# PALTU mapping
-	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
 	Data["CODE7"] = pd.to_numeric(Data.CODE7)
 	Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
 	# correct missing PALTU
@@ -671,12 +671,14 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data.dropna(subset=["EVENT_AGE"])
+	Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -691,7 +693,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 
 
 
-def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", test=False):
+def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extra_to_merge, test=False):
 	"""Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -734,7 +736,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 
 			# remove wrong codes
 			wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
-			Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
+			Data = Data.loc[~Data.PALA.isin(wrong_codes)]
+			Data = Data.reset_index(drop=True)
 
 			# add date of birth/death
 			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -795,8 +798,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 			# remove missing CODE1
-			Data.dropna(subset=["CODE1"], inplace=True)
-			Data.reset_index(drop=True, inplace=True)
+			Data = Data.dropna(subset=["CODE1"])
+			Data = Data.reset_index(drop=True)
 
 			#-------------------------------------------
 
@@ -832,12 +835,14 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			# QUALITY CONTROL:
 
 			# check that EVENT_AGE is in predefined range 
-			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
+			Data = Data.reset_index(drop=True)
 			# check that EVENT_AGE is not missing
-			Data.dropna(subset=["EVENT_AGE"], inplace=True)
-			Data.reset_index(drop=True,inplace=True)
+			Data.dropna(subset=["EVENT_AGE"])
+			Data = Data.reset_index(drop=True)
 			# check that CODE1 and 2 are not missing
-			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
+			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
+			Data = Data.reset_index(drop=True)
 			# remove duplicates
 			Data = Data.drop_duplicates(keep="first")
 			Data = Data.reset_index(drop=True)
@@ -852,7 +857,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 
 
 
-def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", test=False):
+def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extra_to_merge, test=False):
 	"""Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -897,7 +902,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			
 			# remove wrong codes
 			wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
-			Data.loc[~Data.PALA.isin(wrong_codes),].reset_index(drop=True,inplace=True)
+			Data = Data.loc[~Data.PALA.isin(wrong_codes)]
+			Data = Data.reset_index(drop=True)
 
 			# add date of birth
 			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -958,8 +964,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 			# remove missing CODE1
-			Data.dropna(subset=["CODE1"], inplace=True)
-			Data.reset_index(drop=True, inplace=True)	
+			Data = Data.dropna(subset=["CODE1"])
+			Data = Data.reset_index(drop=True)	
 
 			# merge CODE1 and CATEGORY from extra file
 			Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
@@ -996,7 +1002,6 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			Data = combination_codes_split(Data)
 
 			# PALTU mapping
-			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
 			Data["CODE7"] = pd.to_numeric(Data.CODE7)
 			Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
 			# correct missing PALTU
@@ -1007,12 +1012,14 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			# QUALITY CONTROL:
 
 			# check that EVENT_AGE is in predefined range 
-			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
+			Data = Data.reset_index(drop=True)
 			# check that EVENT_AGE is not missing
-			Data.dropna(subset=["EVENT_AGE"], inplace=True)
-			Data.reset_index(drop=True,inplace=True)
+			Data = Data.dropna(subset=["EVENT_AGE"])
+			Data = Data.reset_index(drop=True)
 			# check that CODE1 and 2 are not missing
-			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
+			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
+			Data = Data.reset_index(drop=True)
 			# remove duplicates
 			Data = Data.drop_duplicates(keep="first")
 			Data = Data.reset_index(drop=True)
@@ -1026,7 +1033,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			write_out(Data, header=True, test=test)
 
 
-def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
+def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
 	"""Process Hilmo diagnosis.
 
     This function reads and processes an Hilmo diagnosis codes that need to be joined to hilmo starting from 1996.
@@ -1057,10 +1064,8 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
 	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
 
 	# keep only the main ICD diagnosis code and 3 extra ones 
-	Data = Data.loc[Data.KENTTA.isin(["PDGO","SDGO"])]
-	Data.reset_index(drop=True,inplace=True)
-	Data = Data.loc[Data.N<=3]
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.loc[ (Data.KENTTA.isin(["PDGO","SDGO"])) & (Data.N<=3)]
+	Data = Data.reset_index(drop=True)
 
 	# rename columns
 	Data.rename( 
@@ -1077,7 +1082,7 @@ def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
 
 
 
-def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=";", test=False):
+def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
 	"""Process Hilmo surgical operations.
 
     This function reads and processes an Hilmo file located at the specified file_path.  
@@ -1107,7 +1112,7 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=";", test=Fals
 
 	# keep only the main ICD diagnosis code and 3 extra ones 
 	Data = Data.loc[Data.N<=3]
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.reset_index(drop=True)
 
 	# rename columns
 	Data.rename( 
@@ -1118,7 +1123,6 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=";", test=Fals
 		inplace=True )
 
 	# keep only columns of interest
-	Data.reset_index(drop=True,inplace=True)
 	Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
 
 	return Data
@@ -1126,7 +1130,7 @@ def Hilmo_operations_preparation(file_path:str, DOB_map, file_sep=";", test=Fals
 
 
 
-def Hilmo_heart_preparation(file_path:str,file_sep=";", test=False):
+def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 	"""Process Hilmo heart surgeries.
 
     This function reads and processes an Hilmo file located at the specified file_path.  
@@ -1186,7 +1190,7 @@ def Hilmo_heart_preparation(file_path:str,file_sep=";", test=False):
 	Data["CATEGORY"]	= np.where(Data.CODE1.str.isnumeric(), Data.CATEGORY.replace("N", "O"), Data.CATEGORY)
 
 	# keep only columns of interest
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.reset_index(drop=True)
 	Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
 
 	return Data
@@ -1230,7 +1234,8 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
 	Data.loc[rows_to_change,"CATEGORY"] = "ICD" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
+	Data = Data.reset_index(drop=True)
 
 	# remove ICD code dots
 	Data["CODE1"] = Data["CODE1"].str.replace(".","",regex=False)
@@ -1276,7 +1281,8 @@ def AvoHilmo_icpc2_preparation(file_path:str,file_sep=";", test=False):
 	Data.loc[rows_to_change,"CATEGORY"] = "ICP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
+	Data = Data.reset_index(drop=True)
 
 	return Data
 
@@ -1318,7 +1324,8 @@ def AvoHilmo_dental_measures_preparation(file_path:str,file_sep=";", test=False)
 	Data.loc[rows_to_change,"CATEGORY"] = "MOP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
+	Data = Data.reset_index(drop=True)
 
 	return Data
 
@@ -1360,7 +1367,8 @@ def AvoHilmo_interventions_preparation(file_path:str,file_sep=";", test=False):
 	Data.loc[rows_to_change,"CATEGORY"] = "OP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
 
 	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
+	Data = Data.reset_index(drop=True)
 
 	return Data
 
@@ -1453,12 +1461,14 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			# QUALITY CONTROL:
 
 			# check that EVENT_AGE is in predefined range 
-			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+			Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
+			Data = Data.reset_index(drop=True)
 			# check that EVENT_AGE is not missing
-			Data.dropna(subset=["EVENT_AGE"], inplace=True)
-			Data.reset_index(drop=True,inplace=True)
+			Data = Data.dropna(subset=["EVENT_AGE"])
+			Data = Data.reset_index(drop=True)
 			# check that CODE1 and 2 are not missing
-			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True) 
+			Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
+			Data = Data.reset_index(drop=True) 
 			# remove duplicates
 			Data = Data.drop_duplicates(keep="first")
 			Data = Data.reset_index(drop=True)
@@ -1563,17 +1573,18 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# remove missing CODE1
-	Data.dropna(subset=["CODE1"], inplace=True)
-	Data.reset_index(drop=True, inplace=True)
+	Data = Data.dropna(subset=["CODE1"])
+	Data = Data.reset_index(drop=True)
 
 	#-------------------------------------------
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -1655,12 +1666,14 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -1741,12 +1754,14 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -1822,12 +1837,14 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
 	Data = Data.reset_index(drop=True)
@@ -1914,14 +1931,17 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# QUALITY CONTROL:
 
 	# check that EVENT_AGE is in predefined range 
-	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+	Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
+	Data = Data.reset_index(drop=True)
 	# check that EVENT_AGE is not missing
-	Data.dropna(subset=["EVENT_AGE"], inplace=True)
-	Data.reset_index(drop=True,inplace=True)
+	Data = Data.dropna(subset=["EVENT_AGE"])
+	Data = Data.reset_index(drop=True)
 	# check that CODE1 and 2 are not missing
-	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True) 
+	Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
+	Data = Data.reset_index(drop=True)
 	# remove duplicates
 	Data = Data.drop_duplicates(keep="first")
+	Data = Data.reset_index(drop=True)
 
 	# remove dot in VNRO code
 	Data["CODE3"] = Data.CODE3.astype("string").str.split(".",expand=True)[0]

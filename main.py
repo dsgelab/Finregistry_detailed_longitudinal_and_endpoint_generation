@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
 
 	START = datetime.now()
-	Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=DOB_map)
+	Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=DOB_map, paltu_map=paltu_map)
 	END = datetime.now()
 	print(f'hilmo_1987_1993 processing took {(END-START)} hour:min:sec')
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
 	START = datetime.now()
 	heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
-	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, extra_to_merge=heart_94_95)
+	Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_94_95)
 	END = datetime.now()
 	print(f'hilmo_1994_1995 + heart processing took {(END-START)} hour:min:sec')
 	del heart_94_95
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
 	START = datetime.now()
 	heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018)
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, extra_to_merge=heart_96_18)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_96_18)
 	END = datetime.now()
 	print(f'hilmo_1996_2018 + heart processing took {(END-START)} hour:min:sec')	
 	del heart_96_18
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
 	START = datetime.now()
 	heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, extra_to_merge=heart_19_21)
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_19_21)
 	END = datetime.now()
 	print(f'hilmo_2019_2021 + heart processing took {(END-START)} hour:min:sec')
 	del heart_19_21
@@ -71,8 +71,8 @@ if __name__ == '__main__':
 # ---
 
 	START = datetime.now()
-	oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018, DOB_map=DOB_map)
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, extra_to_merge=oper_96_18)
+	oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_96_18)
 	END = datetime.now()
 	print(f'hilmo_1996_2018 + oper processing took {(END-START)} hour:min:sec')
 	del oper_96_18
@@ -80,8 +80,8 @@ if __name__ == '__main__':
 
 
 	START = datetime.now()
-	oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021, DOB_map=DOB_map)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, extra_to_merge=oper_19_21) 
+	oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021)
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_19_21) 
 	END = datetime.now()
 	print(f'hilmo_2019_2021 + oper processing took {(END-START)} hour:min:sec')
 	del oper_19_21
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
 	START = datetime.now()
 	diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
-	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, extra_to_merge=diag_96_18)
+	Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_96_18)
 	END = datetime.now()
 	print(f'hilmo_1996_2018 + diag processing took {(END-START)} hour:min:sec')
 	del diag_96_18
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
 	START = datetime.now()
 	diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
-	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, extra_to_merge=diag_19_21) 
+	Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_19_21) 
 	END = datetime.now()
 	print(f'hilmo_2019_2021 + diag processing took {(END-START)} hour:min:sec')
 	del diag_19_21
