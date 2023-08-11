@@ -45,11 +45,10 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
-def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_PATH ,header = False):
-    """Writes pandas dataframe to detailed_longitudianl
+def write_out(Data: pd.DataFrame, header = False, test = False):
+    """Writes pandas dataframe to detailed_longitudinal or test file
 
     append if already exist and also insert date in the filename
-
 
     Args:
         Data (pd.DataFrame): the dataframe to be written.
@@ -60,52 +59,57 @@ def Write2DetailedLongitudinal(Data: pd.DataFrame, path = DETAILED_LONGITUDINAL_
         None
 
     Raises:
-        ValueError: If the provided Data is not a pandas DataFrame.
-        IOError: If there is an error writing the data to the specified path.
+        TypeError: If the provided test parameter is not a boolean.    
     """
 
-    filename = "detailed_longitudinal_new.csv"
+    if test==True: 
+    	path = TEST_FOLDER_PATH
+    	today = dt.today().strftime("%Y_%m_%d")
+    	filename = "test_detailed_longitudinal" + "_" + today + ".csv"
+
+    elif test==False:
+    	path = DETAILED_LONGITUDINAL_PATH
+    	filename = "detailed_longitudinal_new.csv"
+
+    else:
+    	raise TypeError("only Bool are allowed")
+
     #remove header if file is already existing
 	Data.to_csv(
 		path_or_buf= Path(path)/filename, 
 		mode="a", 
 		sep=",", 
-		encoding="latin-1", 
+		encoding="utf-8", #same for every Finregistry file
 		index=False,
 		header=header)
 
 
-
-def Write2TestFile(Data:pd.DataFrame, path = TEST_FOLDER_PATH, header = False):
-	"""Writes pandas dataframe to the test file
-	
-	overwrite if already exist and also insert date in the filename
-
-    Args:
-        Data (pd.DataFrame): the dataframe to be written.
-        path (str, optional): The file path to write the data to. 
-                              Defaults to TEST_FILE_PATH.
-
-    Returns:
-        None
-
-    Raises:
-        ValueError: If the provided Data is not a pandas DataFrame.
-        IOError: If there is an error writing the data to the specified path.
+def DOB_map_preparation(filepath:str, sep=';'):
+	"""
+	Prepare death and birth date information to be mapped into to the processed files for each patient
     """
 
-    today = dt.today().strftime("%Y_%m_%d")
-    filename = "test_detailed_longitudinal" + "_" + today + ".csv"
-    #remove header if file is already existing
-	Data.to_csv(
-		path_or_buf= Path(path)/filename, 
-		mode="a", 
-		sep=",", 
-		encoding="latin-1", 
-		index=False,
-		header=header)
+	dtypes = {
+	'FINREGISTRYID':str,
+	'date_of_birth':str,
+	'death_date':str
+	}
 
-def CombinationCodesSplit(Data):
+	birth_death_map = pd.read_csv(
+		filepath_or_buffer = filepath,
+		sep = sep, 
+		encoding = 'latin-1', 
+		dtype = dtypes, 
+		usecols = dtypes.keys(), 
+		parse_dates = ['date_of_birth','death_date'], 
+		date_format = "%Y-%m-%d")
+
+	birth_death_map.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
+	return birth_death_map
+
+
+
+def combination_codes_split(Data):
     """
     Splits combination codes in the input dataframe CODE1 based on special characters.
 	NB: check FinnGen Analyst Handbook for more info.
@@ -334,7 +338,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
 	# special character split
-	Data = CombinationCodesSplit(Data)
+	Data = combination_codes_split(Data)
 
 	# no PALTU info to add
 
@@ -358,10 +362,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 
-		Write2TestFile(Data,header=True)
-	else: 		
-		Write2DetailedLongitudinal(Data,header=True)
+	write_out(Data, header=True, test=test)
 
 
 
@@ -488,7 +489,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
 	# special character split
-	Data = CombinationCodesSplit(Data)
+	Data = combination_codes_split(Data)
 
 	# PALTU mapping
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
@@ -518,10 +519,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+	write_out(Data, header=True, test=test)
 
 
 
@@ -653,7 +651,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	# check special characters
 	Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
 	# special character split
-	Data = CombinationCodesSplit(Data)
+	Data = combination_codes_split(Data)
 
 	# PALTU mapping
 	paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
@@ -683,10 +681,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+	write_out(Data, header=True, test=test)
 
 
 
@@ -817,7 +812,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			# check special characters
 			Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
 			# special character split
-			Data = CombinationCodesSplit(Data)
+			Data = combination_codes_split(Data)
 
 			# PALTU mapping
 			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
@@ -847,10 +842,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";",
 			Data = Data[ COLUMNS_2_KEEP ]
 
 			# WRITE TO DETAILED LONGITUDINAL
-			if test: 	
-				Write2TestFile(Data)
-			else: 		
-				Write2DetailedLongitudinal(Data)
+			write_out(Data, header=True, test=test)
 
 
 
@@ -995,7 +987,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			# check special characters
 			Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
 			# special character split
-			Data = CombinationCodesSplit(Data)
+			Data = combination_codes_split(Data)
 
 			# PALTU mapping
 			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
@@ -1025,10 +1017,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";"
 			Data = Data[ COLUMNS_2_KEEP ]
 
 			# WRITE TO DETAILED LONGITUDINAL
-			if test: 	
-				Write2TestFile(Data)
-			else: 		
-				Write2DetailedLongitudinal(Data)
+			write_out(Data, header=True, test=test)
 
 
 def Hilmo_diagnosis_preparation(file_path:str,file_sep=";", test=False):
@@ -1471,7 +1460,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			Data = Data.merge(extra_to_merge, on = "AVOHILMO_ID", how="left")
 
 			# special character split
-			Data = CombinationCodesSplit(Data)
+			Data = combination_codes_split(Data)
 
 			# PALTU mapping
 			paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
@@ -1499,10 +1488,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 			Data = Data[ COLUMNS_2_KEEP ]
 
 			# WRITE TO DETAILED LONGITUDINAL
-			if test: 	Write2TestFile(Data)
-			else: 		Write2DetailedLongitudinal(Data)
-
-
+			write_out(Data, header=True, test=test) 
 
 
 def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
