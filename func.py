@@ -1703,10 +1703,20 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
         ValueError: If the provided DOB_map is not a pandas DataFrame.
     """	
 
+    dtypes = {
+	"HETU": str,
+	"korvausoikeus_alpv": str,
+	"korvausoikeus_lopv": str,
+	"KORVAUSOIKEUS_KOODI":  str,
+	"DIAGNOOSI_KOODI": str
+    }
+
 	# fetch Data
 	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
+	# NB: fix header error <U+FEFF>HETU 
+	Data.columns = ['HETU'] + Data.columns[1:].tolist()
+
 	# add date of birth
-	Data.columns = ["HETU"] + list(Data.columns[1:])
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (reimbursement date)
 	Data["REIMB_START"]		= pd.to_datetime( Data.korvausoikeus_alpv, format="%Y-%m-%d", errors="coerce")
