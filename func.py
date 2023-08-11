@@ -92,7 +92,7 @@ def read_in(file_path:str, file_sep:str, dtype:dict, test = False):
 
 
 def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = 10**6, test = False):
-    """Read into a pandas dataframe 
+    """Read into a pandas dataframe in chunks (if test=True)
 
     Args:
         filepath: path of the file to be processed.
@@ -101,16 +101,13 @@ def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = 10**6,
         dtypes (optional): type of the columns to fetch
 
     Returns:
-        Fetched data  
+        reader function
     """
 
 	if test: 	
-		Data = pd.read_csv(file_path, sep=file_sep, nrows=5_000)		
+		return pd.read_csv(file_path, sep=file_sep, nrows=5_000)		
 	else: 		
-		Data = pd.read_csv(file_path, chunksize=chunck_size, sep=file_sep, dtype=dtype, usecols=dtype.keys()) as reader:
-
-	return Data
-
+		return pd.read_csv(file_path, chunksize=chunck_size, sep=file_sep, dtype=dtype, usecols=dtype.keys()) 
 
 
 
@@ -402,7 +399,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
 
 
-def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test=False):
+def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test=False):
 	"""Process the Hilmo information from 1987 to 1993.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -442,7 +439,7 @@ def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -557,7 +554,7 @@ def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test
 
 
 
-def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extra_to_merge, test=False):
+def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
 	"""Process the Hilmo information from 1994 to 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -599,7 +596,7 @@ def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -718,7 +715,7 @@ def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
 
 
 
-def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extra_to_merge, test=False):
+def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
 	"""Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -758,7 +755,7 @@ def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
     }
 	
 
-	with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
+	with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
     	for Data in reader:
 
 			# remove wrong codes
@@ -884,7 +881,7 @@ def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
 
 
 
-def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extra_to_merge, test=False):
+def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
 	"""Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -926,7 +923,7 @@ def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, ext
 
 	# fetch Data
 	chunksize = 10 ** 6
-	with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
+	with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
     	for Data in reader:
 			
 			# remove wrong codes
@@ -1421,7 +1418,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (birth date)
@@ -1538,7 +1535,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map, on = "FINREGISTRYID")
 	# format date columns (diagnosis date)
@@ -1625,7 +1622,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (reimbursement date)
@@ -1707,7 +1704,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     """	
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data.columns = ["HETU"] + list(Data.columns[1:])
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
@@ -1803,7 +1800,7 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+	Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (purchase date)
