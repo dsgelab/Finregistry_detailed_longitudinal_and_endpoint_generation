@@ -45,21 +45,21 @@ COLUMNS_2_KEEP = [
 ##########################################################
 # UTILITY FUNCTIONS
 
-def DOB_map_preparation(filepath:str, sep=';'):
+def DOB_map_preparation(filepath:str, sep=";"):
 	"""
 	Prepare death and birth date information to be mapped into to the processed files for each patient
     """
 
 	dtypes = {
-	'FINREGISTRYID':str,
-	'date_of_birth':str,
-	'death_date':str
+	"FINREGISTRYID":str,
+	"date_of_birth":str,
+	"death_date":str
 	}
 
 	birth_death_map = pd.read_csv(
 		filepath_or_buffer = filepath,
 		sep = sep, 
-		encoding = 'latin-1', 
+		encoding = "latin-1", 
 		dtype = dtypes, 
 		usecols = dtypes.keys())
 
@@ -991,7 +991,7 @@ def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, ext
 				"CODE1":"CODE1_y",
 				},
 				inplace=True)
-			ToAdd.drop(columns=['CATEGORY_x','CODE1_x'])
+			ToAdd.drop(columns=["CATEGORY_x","CODE1_x"])
 			Data = pd.concat([Data,ToAdd])
 
 			#-------------------------------------------
@@ -1149,7 +1149,7 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
         ValueError: If the provided file_sep is not a valid separator.
     """
 
-	keys  = ['HILMO_ID'] + ['TMPC'+str(n) for n in range(1,12)] + ['TMPTYP'+str(n) for n in range(1,4)]
+	keys  = ["HILMO_ID"] + ["TMPC"+str(n) for n in range(1,12)] + ["TMPTYP"+str(n) for n in range(1,4)]
 	values = [str for n in range(1,15)]
 	dtypes = dict(zip(keys, values))
 	
@@ -1196,16 +1196,15 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 	return Data
 
 
-
-
-def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
-	"""Process AvoHilmo ICD10 diagnosis.
+def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=False):
+	"""Process AvoHilmo diagnosis codes.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
     The processed data can be read/saved in a test setting if specified.
 
     Args:
         file_path (str): The path to the AvoHilmo file.
+        source (str): descriptor of the file containing the codes
         file_sep (str, optional): The separator used in the file. Defaults to ";".
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
@@ -1217,21 +1216,31 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
         ValueError: If the provided file_sep is not a valid separator.
     """
 
+    CATEGORY_DICTIONARY = {
+    "icd10":	["ICD10","ICD"],
+    "icpc2":	["ICPC2","ICP"],
+    "oral":		["TOIMENPIDE","MOP"],
+    "oper":		["TOIMENPIDE","OP"]
+    }
+
+    assert(source in CATEGORY_DICTIONARY.keys)
+    source_col_name = CATEGORY_DICTIONARY[source][0]
+    category_prefix = CATEGORY_DICTIONARY[source][1]
+
     dtypes = {
 	"TNRO": str,
 	"AVOHILMO_ID": int,
 	"JARJESTYS": int,
-	"ICD10": str
+	source_col_name: str
     }
 
 	# fetch Data
 	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)	
-	Data.rename( columns = {"ICD10":"CODE1"}, inplace=True )
+	Data.rename( columns = {source_col_name:"CODE1"}, inplace=True )
 
 	# define the category column 
 	Data["CATEGORY"] = np.NaN
-	rows_to_change = Data.CODE1.notna()
-	Data.loc[rows_to_change,"CATEGORY"] = "ICD" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
+	Data.loc[Data.CODE1.notna(),"CATEGORY"] = category_prefix + Data.loc[Data.CODE1.notna(),"JARJESTYS"].astype("string")
 
 	# filter data
 	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
@@ -1241,137 +1250,6 @@ def AvoHilmo_icd10_preparation(file_path:str,file_sep=";", test=False):
 	Data["CODE1"] = Data["CODE1"].str.replace(".","",regex=False)
 
 	return Data
-	
-
-
-
-def AvoHilmo_icpc2_preparation(file_path:str,file_sep=";", test=False):
-	"""Process AvoHilmo ICPC2 diagnosis.
-
-    This function reads and processes an AvoHilmo file located at the specified file_path.  
-    The processed data can be read/saved in a test setting if specified.
-
-    Args:
-        file_path (str): The path to the AvoHilmo file.
-        file_sep (str, optional): The separator used in the file. Defaults to ";".
-        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
-
-    Returns:
-        None
-
-    Raises:
-        FileNotFoundError: If the specified file_path does not exist.
-        ValueError: If the provided file_sep is not a valid separator.
-    """
-
-    dtypes = {
-	"TNRO": str,
-	"AVOHILMO_ID": int,
-	"JARJESTYS": int,
-	"ICPC2": str
-    }
-
-	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
-	Data.rename( columns = {"ICPC2":"CODE1"}, inplace=True )
-
-	# define the category column 
-	Data["CATEGORY"] = np.NaN
-	rows_to_change = Data.CODE1.notna()
-	Data.loc[rows_to_change,"CATEGORY"] = "ICP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
-
-	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
-	Data = Data.reset_index(drop=True)
-
-	return Data
-
-
-
-def AvoHilmo_dental_measures_preparation(file_path:str,file_sep=";", test=False):
-	"""Process AvoHilmo oral operation.
-
-    This function reads and processes an AvoHilmo file located at the specified file_path.  
-    The processed data can be read/saved in a test setting if specified.
-
-    Args:
-        file_path (str): The path to the AvoHilmo file.
-        file_sep (str, optional): The separator used in the file. Defaults to ";".
-        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
-
-    Returns:
-        None
-
-    Raises:
-        FileNotFoundError: If the specified file_path does not exist.
-        ValueError: If the provided file_sep is not a valid separator.
-    """
-
-    dtypes = {
-	"TNRO": str,
-	"AVOHILMO_ID": int,
-	"JARJESTYS": int,
-	"TOIMENPIDE": str
-    }
-
-	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
-	Data.rename( columns = {"TOIMENPIDE":"CODE1"}, inplace=True )
-
-	# define the category column 
-	Data["CATEGORY"] = np.NaN
-	rows_to_change = Data.CODE1.notna()
-	Data.loc[rows_to_change,"CATEGORY"] = "MOP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
-
-	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
-	Data = Data.reset_index(drop=True)
-
-	return Data
-
-
-
-def AvoHilmo_interventions_preparation(file_path:str,file_sep=";", test=False):
-	"""Process AvoHilmo surgery operations.
-
-    This function reads and processes an AvoHilmo file located at the specified file_path.  
-    The processed data can be read/saved in a test setting if specified.
-
-    Args:
-        file_path (str): The path to the AvoHilmo file.
-        file_sep (str, optional): The separator used in the file. Defaults to ";".
-        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
-
-    Returns:
-        None
-
-    Raises:
-        FileNotFoundError: If the specified file_path does not exist.
-        ValueError: If the provided file_sep is not a valid separator.
-    """
-
-    dtypes = {
-	"TNRO": str,
-	"AVOHILMO_ID": int,
-	"JARJESTYS": int,
-	"TOIMENPIDE": str
-    }
-
-	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
-	Data.rename( columns = {"TOIMENPIDE":"CODE1"},inplace=True )
-
-	# define the category column 
-	Data["CATEGORY"] = np.NaN
-	rows_to_change = Data.CODE1.notna()
-	Data.loc[rows_to_change,"CATEGORY"] = "OP" + Data.loc[rows_to_change,"JARJESTYS"].astype("string")
-
-	# filter data
-	Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
-	Data = Data.reset_index(drop=True)
-
-	return Data
-
 
 
 def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", test=False):
