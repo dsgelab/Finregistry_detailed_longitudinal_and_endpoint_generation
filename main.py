@@ -138,17 +138,17 @@ if __name__ == '__main__':
 
 	START = datetime.now()		
 
-	icpc2_11_16 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2011_2016, source='icpc2')
+	icpc2_11_16 = AvoHilmo_codes_preparation(avohilmo_icpc2_2011_2016, source='icpc2')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_11_16)
 	del icpc2_11_16
 	gc.collect() 
-	icpc2_17_19 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2017_2019, source='icpc2')
+	icpc2_17_19 = AvoHilmo_codes_preparation(avohilmo_icpc2_2017_2019, source='icpc2')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_17_19)	
 	del icpc2_17_19
 	gc.collect() 
-	icpc2_20_21 = AvoHilmo_icpc2_preparation(avohilmo_icpc2_2020_2021, source='icpc2')
+	icpc2_20_21 = AvoHilmo_codes_preparation(avohilmo_icpc2_2020_2021, source='icpc2')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_20_21)	
 	del icpc2_20_21
@@ -161,17 +161,17 @@ if __name__ == '__main__':
 
 	START = datetime.now()	
 
-	oral_11_16 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2011_2016, source='oral')
+	oral_11_16 = AvoHilmo_codes_preparation(avohilmo_oral_2011_2016, source='oral')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_11_16)
 	del oral_11_16
 	gc.collect() 
-	oral_17_19 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2017_2019, source='oral')
+	oral_17_19 = AvoHilmo_codes_preparation(avohilmo_oral_2017_2019, source='oral')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_17_19)
 	del oral_17_19
 	gc.collect() 
-	oral_20_21 = AvoHilmo_dental_measures_preparation(avohilmo_oral_2020_2021, source='oral')
+	oral_20_21 = AvoHilmo_codes_preparation(avohilmo_oral_2020_2021, source='oral')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_20_21)
 	del oral_20_21
@@ -184,17 +184,17 @@ if __name__ == '__main__':
 
 	START = datetime.now()	
 
-	oper_11_16 = AvoHilmo_interventions_preparation(avohilmo_oper_2011_2016, source='oper')
+	oper_11_16 = AvoHilmo_codes_preparation(avohilmo_oper_2011_2016, source='oper')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_11_16)	
 	del oper_11_16
 	gc.collect() 
-	oper_17_19 = AvoHilmo_interventions_preparation(avohilmo_oper_2017_2019, source='oper')
+	oper_17_19 = AvoHilmo_codes_preparation(avohilmo_oper_2017_2019, source='oper')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_17_19)	
 	del oper_17_19
 	gc.collect() 
-	oper_20_21 = AvoHilmo_interventions_preparation(avohilmo_oper_2020_2021, source='oper')
+	oper_20_21 = AvoHilmo_codes_preparation(avohilmo_oper_2020_2021, source='oper')
 	for avohilmo in avohilmo_to_process:
 		AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_20_21)
 	del oper_20_21

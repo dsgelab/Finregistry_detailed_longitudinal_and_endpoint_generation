@@ -129,13 +129,13 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
     """
 
     if test: 
-    	path = TEST_FOLDER_PATH
-    	today = dt.today().strftime("%Y_%m_%d")
-    	filename = "test_detailed_longitudinal" + "_" + today + ".csv"
+		path = TEST_FOLDER_PATH
+		today = dt.today().strftime("%Y_%m_%d")
+		filename = "test_detailed_longitudinal" + "_" + today + ".csv"
 
     else:
-    	path = DETAILED_LONGITUDINAL_PATH
-    	filename = "detailed_longitudinal_new.csv"
+		path = DETAILED_LONGITUDINAL_PATH
+		filename = "detailed_longitudinal_new.csv"
 
     #remove header if file is already existing
 	Data.to_csv(
@@ -502,10 +502,10 @@ def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 
 	Data = pd.melt(Data,
-	    id_vars 	= VAR_NOT_FOR_RESHAPE,
-	    value_vars 	= VAR_FOR_RESHAPE,
-	    var_name 	= "CATEGORY",
-	    value_name	= "CODE1")
+		id_vars 	= VAR_NOT_FOR_RESHAPE,
+		value_vars 	= VAR_FOR_RESHAPE,
+		var_name 	= "CATEGORY",
+		value_name	= "CODE1")
 	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# remove missing CODE1
@@ -583,10 +583,10 @@ def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
     """
 
     dtypes = {
-    "TNRO": str,
+	"TNRO": str,
 	"HILMO_ID": str,
-    "TUPVA":str, 
-    "LPVM": str,
+	"TUPVA":str, 
+	"LPVM": str,
 	"PDG":  str,
 	"SDG1": str,
 	"SDG2": str,
@@ -744,9 +744,9 @@ def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
 
     dtypes = {
 	"HILMO_ID": str,
-    "TNRO": str,
-    "TUPVA":str, 
-    "LPVM": str,
+	"TNRO": str,
+	"TUPVA":str, 
+	"LPVM": str,
 	"PTMPK1":str,
 	"PTMPK2":str,
 	"PTMPK3":str,
@@ -910,9 +910,9 @@ def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, ext
 
     dtypes = {
 	"HILMO_ID": str,
-    "TNRO": str,
-    "TUPVA":str, 
-    "LPVM": str,
+	"TNRO": str,
+	"TUPVA":str, 
+	"LPVM": str,
 	"PTMPK1":str,
 	"PTMPK2":str,
 	"PTMPK3":str,
@@ -1082,12 +1082,12 @@ def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
 
     """
 
-    dtypes = {
-    "HILMO_ID": str,
-    "KENTTA": str,
-    "N": int,
-    "KOODI": str
-    }
+	dtypes = {
+	"HILMO_ID": str,
+	"KENTTA": str,
+	"N": int,
+	"KOODI": str
+	}
 
 	# fetch Data
 	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
@@ -1130,11 +1130,11 @@ def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
         ValueError: If the provided file_sep is not a valid separator.
     """
 
-    dtypes = {
-    "HILMO_ID": str,
-    "N": int,
-    "TOIMP": str
-    }
+	dtypes = {
+	"HILMO_ID": str,
+	"N": int,
+	"TOIMP": str
+	}
 
 	# fetch Data
 	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
@@ -1201,7 +1201,7 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 
 	new_names = Data.columns
 	for name in CATEGORY_DICTIONARY.keys():
-    	new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+		new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
 
 	# perform the reshape
 	VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -1246,23 +1246,22 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
         ValueError: If the provided file_sep is not a valid separator.
     """
 
-    CATEGORY_DICTIONARY = {
-    "icd10":	["ICD10","ICD"],
-    "icpc2":	["ICPC2","ICP"],
-    "oral":		["TOIMENPIDE","MOP"],
-    "oper":		["TOIMENPIDE","OP"]
-    }
+	CATEGORY_DICTIONARY = {
+		"icd10":	["ICD10","ICD"],
+		"icpc2":	["ICPC2","ICP"],
+		"oral":		["TOIMENPIDE","MOP"],
+		"oper":		["TOIMENPIDE","OP"]
+	}
 
-    assert(source in CATEGORY_DICTIONARY.keys)
-    source_col_name = CATEGORY_DICTIONARY[source][0]
-    category_prefix = CATEGORY_DICTIONARY[source][1]
+	source_col_name = CATEGORY_DICTIONARY[source][0]
+	category_prefix = CATEGORY_DICTIONARY[source][1]
 
-    dtypes = {
-	"TNRO": str,
-	"AVOHILMO_ID": int,
-	"JARJESTYS": int,
-	source_col_name: str
-    }
+	dtypes = {
+		"TNRO": str,
+		"AVOHILMO_ID": int,
+		"JARJESTYS": int,
+		source_col_name: str
+	}
 
 	# fetch Data
 	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)	
@@ -1318,7 +1317,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 	# fetch Data
 	chunksize = 10 ** 6
 	with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
-    	for Data in reader:
+		for Data in reader:
 
 			# add date of birth/death
 			Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -1474,10 +1473,10 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 
 	Data = pd.melt(Data,
-	    id_vars 	= VAR_NOT_FOR_RESHAPE,
-	    value_vars 	= VAR_FOR_RESHAPE,
-	    var_name 	= "CATEGORY",
-	    value_name	= "CODE1")
+		id_vars 	= VAR_NOT_FOR_RESHAPE,
+		value_vars 	= VAR_FOR_RESHAPE,
+		var_name 	= "CATEGORY",
+		value_name	= "CODE1")
 	Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
 	# remove missing CODE1
