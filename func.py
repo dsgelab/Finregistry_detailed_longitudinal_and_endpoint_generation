@@ -70,7 +70,7 @@ def DOB_map_preparation(filepath:str, sep=";"):
 
 	return birth_death_map
 
-def read_in(file_path:str, file_sep:str, test = False, dtypes:dict):
+def read_in(file_path:str, file_sep:str, dtype:dict, test = False):
     """Read into a pandas dataframe 
 
     Args:
@@ -84,11 +84,33 @@ def read_in(file_path:str, file_sep:str, test = False, dtypes:dict):
     """
 
 	if test: 	
-		Data = pd.read_csv(file_path, sep = file_sep, nrows=5_000)		
+		Data = pd.read_csv(file_path, sep=file_sep, nrows=5_000)		
 	else: 		
-		Data = pd.read_csv(file_path, sep = file_sep, dtype=dtypes, usecols=dtypes.keys())
+		Data = pd.read_csv(file_path, sep=file_sep, dtype=dtype, usecols=dtype.keys())
 
 	return Data
+
+
+def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = 10**6, test = False):
+    """Read into a pandas dataframe 
+
+    Args:
+        filepath: path of the file to be processed.
+        file_sep: separator used in the file.
+        test (Bool): set to True if the script is ran in the testing phase
+        dtypes (optional): type of the columns to fetch
+
+    Returns:
+        Fetched data  
+    """
+
+	if test: 	
+		Data = pd.read_csv(file_path, sep=file_sep, nrows=5_000)		
+	else: 		
+		Data = pd.read_csv(file_path, chunksize=chunck_size, sep=file_sep, dtype=dtype, usecols=dtype.keys()) as reader:
+
+	return Data
+
 
 
 
@@ -277,7 +299,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -419,7 +441,7 @@ def Hilmo_87_93_processing(file_path:str, file_sep=";", DOB_map, paltu_map, test
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -574,7 +596,7 @@ def Hilmo_94_95_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth/death
 	Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (patient in and out dates)
@@ -730,8 +752,8 @@ def Hilmo_96_18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, extr
 	"PALTU":str
     }
 	
-	chunksize = 10 ** 6
-	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
+
+	with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
     	for Data in reader:
 
 			# remove wrong codes
@@ -897,7 +919,7 @@ def Hilmo_POST18_processing(file_path:str, file_sep=";", DOB_map, paltu_map, ext
 
 	# fetch Data
 	chunksize = 10 ** 6
-	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
+	with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
     	for Data in reader:
 			
 			# remove wrong codes
@@ -1061,7 +1083,7 @@ def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 
 	# keep only the main ICD diagnosis code and 3 extra ones 
 	Data = Data.loc[ (Data.KENTTA.isin(["PDGO","SDGO"])) & (Data.N<=3)]
@@ -1108,7 +1130,7 @@ def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 
 	# keep only the main ICD diagnosis code and 3 extra ones 
 	Data = Data.loc[Data.N<=3]
@@ -1144,6 +1166,7 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
     Returns:
         None
 
+
     Raises:
         FileNotFoundError: If the specified file_path does not exist.
         ValueError: If the provided file_sep is not a valid separator.
@@ -1154,7 +1177,7 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 	dtypes = dict(zip(keys, values))
 	
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 
 	#-------------------------------------------
 	# CATEGORY RESHAPE:
@@ -1235,7 +1258,7 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)	
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)	
 	Data.rename( columns = {source_col_name:"CODE1"}, inplace=True )
 
 	# define the category column 
@@ -1287,7 +1310,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 
 	# fetch Data
 	chunksize = 10 ** 6
-	with pd.read_csv(file_path, chunksize=chunksize, sep = file_sep, encoding="latin-1", dtype=dtypes, usecols=dtypes.keys()) as reader:
+	with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
     	for Data in reader:
 
 			# add date of birth/death
@@ -1392,7 +1415,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "TNRO",right_on = "FINREGISTRYID")
 	# format date columns (birth date)
@@ -1509,7 +1532,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map, on = "FINREGISTRYID")
 	# format date columns (diagnosis date)
@@ -1596,7 +1619,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (reimbursement date)
@@ -1678,7 +1701,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     """	
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data.columns = ["HETU"] + list(Data.columns[1:])
 	Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
@@ -1774,7 +1797,7 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
 	# fetch Data
-	Data = read_in(file_path, file_sep, test=test, dtypes=dtypes)
+	Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 	# add date of birth
 	Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
 	# format date columns (purchase date)
