@@ -40,7 +40,8 @@ Check that EVENT_DATE is not after DEATH_DATE, in case it is set EVENT_DATE=DEAT
 If EVENT_AGE is less than 0 or more than 110 then row is deleted<br>
 If EVENT_AGE is missing the row is deleted<br>
 If CODE1 or CODE2 is missing then row is deleted<br>
-If duplicate row then remove row<br>
+If duplicate row then remove row<br> 
+NB: performed one time at the end of detailed longitudinal creation <br>
 If CODE4 is negative then set to missing
 
 In Kela dataframes check that the ATC / VNRO code are formatted the correct way

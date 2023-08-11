@@ -6,7 +6,9 @@
 
 
 from datetime import datetime
+import pandas as pd
 import gc
+
 
 # import all processing functions
 from func import *
@@ -206,36 +208,44 @@ if __name__ == '__main__':
 	#--------------------------------------
 	# OTHER REGISTRIES
 
-	print('start processing death registry')
-	START = datetime.now()
 
+	START = datetime.now()
 	DeathRegistry_processing(death,DOB_map=DOB_map)
-
 	END = datetime.now()
-	print(f'the processing took {(END-START)} hour:min:sec')
-	print('start processing cancer registry')
-	START = datetime.now()
+	print(f'death registry processing took {(END-START)} hour:min:sec')
 
+	START = datetime.now()
 	CancerRegistry_processing(cancer,DOB_map=DOB_map)
-
 	END = datetime.now()
-	print(f'the processing took {(END-START)} hour:min:sec')
-	print('start processing kela reimbursement')
-	START = datetime.now()
+	print(f'cancer registry processing took {(END-START)} hour:min:sec')
 
+	START = datetime.now()
 	KelaReimbursement_PRE20_processing(kela_reimbursement_pre2020, DOB_map=DOB_map)
 	KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021, DOB_map=DOB_map)
-
 	END = datetime.now()
-	print(f'the processing took {(END-START)} hour:min:sec')
-	print('start processing kela purchase')
-	START = datetime.now()
+	print(f'kela reimbursement processing took {(END-START)} hour:min:sec')
 
+	START = datetime.now()
 	for purchase_file in kela_purchase_filelist:
 		print(purchase_file)
 		KelaPurchase_processing(purchase_file,DOB_map=DOB_map)
-
 	END = datetime.now()
-	print(f'the processing took {(END-START)} hour:min:sec')
+	print(f'kela purchases processing took {(END-START)} hour:min:sec')
+
+# ---
+
+	# DROP DUPLICATES:
+
+	START = datetime.now()
+	det_long = pd.read_csv(DETAILED_LONGITUDINAL_PATH+'detailed_longitudinal_new.csv', sep=",", encoding='utf-8')
+	det_long = det_long.drop_duplicates(keep='first')
+	det_long.to_csv(DETAILED_LONGITUDINAL_PATH+'detailed_longitudinal_new.csv', sep=",", encoding='utf-8', index=False)
+	del det_long
+	gc.collect()
+	END = datetime.now()
+	print(f'duplicate removal took {(END-START)} hour:min:sec')
+	print(f'DETAILED LONGITUDINAL CREATION COMPLETE')
+
+# ---
 
 
