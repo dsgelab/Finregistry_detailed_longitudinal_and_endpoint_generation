@@ -1609,10 +1609,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+	write_out(Data, header=True, test=test)
 
 
 
@@ -1701,10 +1698,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+	write_out(Data, header=True, test=test)
 
 
 
@@ -1797,10 +1791,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+	write_out(Data, header=True, test=test)
 
 
 def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1885,8 +1876,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 	Data = Data[ COLUMNS_2_KEEP ]	
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	Write2TestFile(Data)
-	else: 		Write2DetailedLongitudinal(Data)	
+	write_out(Data, header=True, test=test)	
 
 
 
@@ -1985,8 +1975,5 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
 	Data = Data[ COLUMNS_2_KEEP ]
 
 	# WRITE TO DETAILED LONGITUDINAL
-	if test: 	
-		Write2TestFile(Data)
-	else: 		
-		Write2DetailedLongitudinal(Data)
+	write_out(Data, header=True, test=test)
 
