@@ -816,6 +816,12 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
 			Data = Data.dropna(subset=["CODE1"])
 			Data = Data.reset_index(drop=True)
 
+			# merge CODE1 and CATEGORY from extra file
+			Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
+			Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
+			Data["CATEGORY"] = np.where(Data.CATEGORY_orig=="" , Data.CATEGORY, Data.CATEGORY_orig)
+			Data["CODE1"]	 = np.where(Data.CODE1_orig=="" , Data.CODE1, Data.CODE1_orig)
+
 			#-------------------------------------------
 
 			# SOURCE definitions
@@ -824,14 +830,6 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
 			Data = Define_INPAT(Data)
 			Data = Define_OPERIN(Data)
 			Data = Define_OPEROUT(Data)
-
-			# merge CODE1 and CATEGORY from extra file
-			Data.rename( columns = {"CATEGORY":"CATEGORY_orig","CODE1":"CODE1_orig"}, inplace=True)
-			Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="left")
-			Data["CATEGORY"] = np.where(Data.CATEGORY_orig=="" , Data.CATEGORY, Data.CATEGORY_orig)
-			Data["CODE1"]	 = np.where(Data.CODE1_orig=="" , Data.CODE1, Data.CODE1_orig)
-
-			#-------------------------------------------
 
 			# check special characters
 			Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
@@ -995,20 +993,6 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
 			Data = Define_INPAT(Data)
 			Data = Define_OPERIN(Data)
 			Data = Define_OPEROUT(Data)
-
-			# merge CODE1 and CATEGORY from extra file
-			ToAdd = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner")
-			#rename columns
-			ToAdd.rename( 
-				columns = {
-				"CATEGORY":"CATEGORY_y",
-				"CODE1":"CODE1_y",
-				},
-				inplace=True)
-			ToAdd.drop(columns=["CATEGORY_x","CODE1_x"])
-			Data = pd.concat([Data,ToAdd])
-
-			#-------------------------------------------
 
 			# check special characters
 			Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
