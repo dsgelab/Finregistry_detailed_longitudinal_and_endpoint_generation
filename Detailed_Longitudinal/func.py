@@ -144,13 +144,15 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
 		header=header)
 
 
-def combination_codes_split(Data):
+def CombinationsCodeSplit(Data):
     """
-    Splits combination codes in the input dataframe CODE1 based on special characters.
+    Splits combinatino codes in the input dataframe CODE1 based on special characters.
 	NB: check FinnGen Analyst Handbook for more info.
     
     The `special_chars` dictionary specifies to which column the first and second part of the split cell goes.
     For example, code "111#111" is split by a hash so the first part goes into CODE1 and the second part to CODE3, according to the dictionary.
+
+    Codes with multiple special characters are dropped.
 
     Args:
         Data (pd.DataFrame): Dataframe to be split
@@ -158,23 +160,33 @@ def combination_codes_split(Data):
     Returns:
         Data (pd.DataFrame): Dataframe with combination codes split into their respective columns
 
-    TODO: handle codes with multiple special characters (now only working with 1 special char)
-
     """
     # Specify special characters and their respective column positions
-    split_dict = {
-        "*": ["CODE1", "CODE2"],
-        "&": ["CODE1", "CODE2"],
-        "#": ["CODE1", "CODE3"],
-        "+": ["CODE2", "CODE1"]
+    special_chars = {
+        "\*": ["CODE1", "CODE2"],
+        "\&": ["CODE1", "CODE2"],
+        "\#": ["CODE1", "CODE3"],
+        "\+": ["CODE2", "CODE1"]
     }
+
+    # Drop rows with NA as CODE1 or multiple special characters
+    Data = Data.loc[
+        (~Data["CODE1"].isna()) & 
+        (Data["CODE1"].str.count("|".join(special_chars.keys())) < 2)]
+    Data = Data.reset_index(drop=True)
+
+    # Store the original CODE1 into a variable to avoid overwriting CODE1
     original_code = Data["CODE1"]
 
     # Loop through special characters and split codes into variables according to the dictionary
-    for split_key in split_dict.keys():
-        indx = original_code.str.contains(pat=split_key, regex=False)
+    for s in special_chars.keys():
+        indx = original_code.str.contains(pat=s, regex=True)
         if sum(indx) > 0:
-            Data.loc[indx, split_dict[split_key]] = original_code[indx].str.split(pat=split_key).tolist()[0]
+            split_codes = original_code[indx].str.split(pat=s, regex=True)
+            Data.loc[split_codes.index, special_chars[s]] = split_codes.tolist()
+
+    # Replace empty strings with NA
+    Data = Data.replace(r"^\s*$", pd.NA, regex=True)
 
     return Data
 
