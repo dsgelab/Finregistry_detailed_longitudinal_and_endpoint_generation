@@ -182,7 +182,7 @@ def combination_codes_split(Data):
     for s in special_chars.keys():
         indx = original_code.str.contains(pat=s, regex=True)
         if sum(indx) > 0:
-            split_codes = original_code[indx].str.split(pat=s, regex=True)
+            split_codes = original_code[indx].str.split(pat=s)
             Data.loc[split_codes.index, special_chars[s]] = split_codes.tolist()
 
     # Replace empty strings with NA
