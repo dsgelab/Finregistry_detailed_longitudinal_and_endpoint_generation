@@ -144,7 +144,7 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
 		header=header)
 
 
-def CombinationsCodeSplit(Data):
+def combination_codes_split(Data):
     """
     Splits combinatino codes in the input dataframe CODE1 based on special characters.
 	NB: check FinnGen Analyst Handbook for more info.
