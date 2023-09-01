@@ -74,6 +74,9 @@ Some HPO (old) fully numeric codes were mixed in with HPN (new) codes always sta
 Although nearly all ICD10 codes were recorded without a dot after the initial letter and two first digits, a small portion contained dots which were removed. A small portion of codes contained a special characters {+,\*,#,@} which were also processed.
 For more info check the function *CombinationCodesSplit()* in **func.py** 
 
+NB: for quality control reasons, the CATEGORY value for ICD codes will be limited between 0 and 3, where 0 is going to represent the main diagnosis and 1,2,3 are going to be side diagnosis
+
+
 ## AvoHilmo
 
 Register codes given in the primary health care visits are not as confirmed as codes given in hospital (inpatient data) or codes coming from the specialized outpatient visits (outpatient data). Finnish doctors are legally responsible for ICD codes in Hilmo, but Avohilmo codes do not carry the same responsibility. Avohilmo data includes also codes that are given by nurse (ICPC2), these codes include procedures as well.
