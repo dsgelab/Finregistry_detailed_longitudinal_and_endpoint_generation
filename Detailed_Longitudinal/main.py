@@ -232,8 +232,7 @@ if __name__ == '__main__':
 
 # ---
 
-	# DROP DUPLICATES: to do with awk script
-	# 
+	# DROP DUPLICATES: to be performed with awk script
 
 # ---
 
