@@ -232,20 +232,8 @@ if __name__ == '__main__':
 
 # ---
 
-	# DROP DUPLICATES:
-
-	START = datetime.now()
-	det_long = pd.read_csv(DETAILED_LONGITUDINAL_PATH+'detailed_longitudinal_new.csv', sep=",", encoding='utf-8')
-	N0 = det_long.shape[0]
-	det_long = det_long.drop_duplicates(keep='first')
-	N1 = det_long.shape[0]
-	print(f'duplicates found: {(N1-N0)}')
-	det_long.to_csv(DETAILED_LONGITUDINAL_PATH+'detailed_longitudinal_new.csv', sep=",", encoding='utf-8', index=False)
-	del det_long
-	gc.collect()
-	END = datetime.now()
-	print(f'duplicate removal took {(END-START)} hour:min:sec')
-	print(f'DETAILED LONGITUDINAL CREATION COMPLETE')
+	# DROP DUPLICATES: to do with awk script
+	# 
 
 # ---
 
