@@ -21,6 +21,17 @@ This repository contains the script for creating the detailed longitudinal file 
 - age randomization is only performed in FinnGen not in Finregistry
 - armonize INDEX definition to the one of every other registry
 
+# REGISTRIES TIMELINE
+
+| REGISTRY        | START DATE | END DATE |
+|-----------------|------------|----------|
+| Hilmo           | jan 1969   | dec 2021 |
+| AvoHilmo		  | jan 2011   | dec 2021 |
+| Cancer          | jan 1953   | dec 2020 |
+| Death           | jan 1971   | dec 2019 |
+| Purchases       | jan 1995   | dec 2020 |
+| Reimbursements  | jan 1964   | dec 2019 |
+
 # PROCESSING SUMMARY
 
 Each register is transformed into a detailed longitudinal file structure containing the following variables: <br>
