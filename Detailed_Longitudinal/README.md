@@ -29,8 +29,8 @@ This repository contains the script for creating the detailed longitudinal file 
 | AvoHilmo		  | jan 2011   | dec 2021 |
 | Cancer          | jan 1953   | dec 2020 |
 | Death           | jan 1971   | dec 2019 |
-| Purchases       | jan 1995   | dec 2020 |
-| Reimbursements  | jan 1964   | dec 2019 |
+| Purchases       | jan 1995   | dec 2019 |
+| Reimbursements  | jan 1964   | dec 2021 |
 
 # PROCESSING SUMMARY
 
