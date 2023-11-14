@@ -12,7 +12,7 @@ import numpy as np
 from datetime import datetime as dt
 from pathlib import Path
 
-from config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
+from config import DETAILED_LONGITUDINAL_PATH, DETAILED_LONGITUDINAL_NAME, TEST_FOLDER_PATH
 
 
 ##########################################################
@@ -132,7 +132,7 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
 
     else:
         path = DETAILED_LONGITUDINAL_PATH
-        filename = "detailed_longitudinal_new.csv"
+        filename = DETAILED_LONGITUDINAL_NAME
 
     #remove header if file is already existing
     Data.to_csv(
@@ -1237,6 +1237,10 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     Data = read_in(file_path, file_sep, dtype=dtypes, test=test)	
     Data.rename( columns = {source_col_name:"CODE1"}, inplace=True )
 
+    # keep only the main ICD diagnosis code and 3 extra ones  
+    Data = Data.loc[ Data.JARJESTYS <= 3 ]
+    Data = Data.reset_index(drop=True)
+
     # define the category column 
     Data["CATEGORY"] = np.NaN
     Data.loc[Data.CODE1.notna(),"CATEGORY"] = category_prefix + Data.loc[Data.CODE1.notna(),"JARJESTYS"].astype("string")
@@ -1731,8 +1735,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     write_out(Data, header=True, test=test)	
 
 
-
-def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
+def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=False):
     """Process the information from kela purchases registry.
 
     This function reads and processes file located at the specified file_path. 
@@ -1823,4 +1826,98 @@ def KelaPurchase_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, header=True, test=test)    
+
+
+def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
+    """Process the information from kela purchases registry.
+
+    This function reads and processes file located at the specified file_path. 
+    information about birth and death dates is provided via DOB_map. 
+    The processed data can be read/saved in a test setting if specified.
+    If not in testing setting the processed dataframe will be appended to the detailed longitudinal file.
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ";".
+        DOB_map (pd.dataframe): dataframe mapping DOB codes to their corresponding dates
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        None
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+        ValueError: If the provided DOB_map is not a pandas DataFrame.
+    """	
+
+    dtypes = {
+    "HETU": str,
+    "ostopv": str,
+    "ATC":  str,
+    "SAIR": str,
+    "VNRO": str,
+    "PLKM": str,
+    "koev_eur": str,
+    "kakorv_eur": str,
+    "LAJI": str,
+    }
+
+    # fetch Data
+    Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
+    # add date of birth
+    Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
+    # format date columns (purchase date)
+    Data["EVENT_DATE"] 		= pd.to_datetime( Data.ostopv, format="%Y-%m-%d", errors="coerce") 	
+
+    #-------------------------------------------	
+    # define columns for detailed longitudinal
+
+    Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
+    Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
+    Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
+    Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
+    Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
+    Data["SOURCE"] 			= "PURCH"
+    Data["CATEGORY"] 		= np.NaN
+
+    #rename columns
+    Data.rename(
+        columns = {
+        "ATC":"CODE1",
+        "SAIR":"CODE2",
+        "VNRO":"CODE3",
+        "PLKM":"CODE4",
+        "koev_eur":"CODE5",
+        "kakorv_eur":"CODE6",
+        "LAJI":"CODE7",
+        "EVENT_DATE":"PVM"
+        },
+        inplace = True )
+
+    #-------------------------------------------
+    # QUALITY CONTROL:
+
+    # check that EVENT_AGE is in predefined range 
+    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
+    Data = Data.reset_index(drop=True)
+    # check that EVENT_AGE is not missing
+    Data = Data.dropna(subset=["EVENT_AGE"])
+    Data = Data.reset_index(drop=True)
+    # check that CODE1 and 2 are not missing
+    Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
+    Data = Data.reset_index(drop=True)
+
+    # remove dot in VNRO code
+    Data["CODE3"] = Data.CODE3.astype("string").str.split(".",expand=True)[0]
+    # complete VNR code if shorter than 6 digits
+    MISSING_DIGITS = 6 - Data.CODE3.str.len()
+    ZERO = pd.Series( ["0"] * Data.shape[0] ).astype("string")
+    Data["CODE3"] = Data.CODE3 + ZERO*MISSING_DIGITS
+
+    # select desired columns 
+    Data = Data[ COLUMNS_2_KEEP ]
+
+    # WRITE TO DETAILED LONGITUDINAL
+    write_out(Data, header=True, test=test)    

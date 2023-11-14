@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import os
 
 # DEFINE PATHS (in Finregistry):
 
@@ -47,14 +48,19 @@ avohilmo_2019_2020 			= THL_AVOHILMO_PATH/'thl2019_1776_avohilmo_19_20.csv.finre
 avohilmo_2020  				= THL_AVOHILMO_PATH/'THL2021_2196_AVOHILMO_2020.csv.finreg_IDs'
 avohilmo_2021  				= THL_AVOHILMO_PATH/'THL2021_2196_AVOHILMO_2021.csv.finreg_IDs'
 
-death 						= '/data/original_data/sf_death/thl2019_1776_ksyy_tutkimus.csv.finreg_IDs'
+death_pre2020 				= '/data/original_data/sf_death/thl2019_1776_ksyy_tutkimus.csv.finreg_IDs'
+death_2020_2021 			= '/data/original_data/sf_death/thl2021_1776_ksyy_tutkimus.csv.finreg_IDs'
 
 cancer 						= '/data/original_data/thl_cancer/fcr_data.csv.finreg_IDs'
 
 kela_reimbursement_pre2020 	= '/data/original_data/kela_reimbursement/175_522_2020_LAAKEKORVAUSOIKEUDET.csv.finreg_IDs'
 kela_reimbursement_2020_2021= '/data/original_data/kela_reimbursement/81_522_2022_KORVAUSOIKEUDET.csv.finreg_IDs'
 
-kela_purchase_filelist		= ['/data/original_data/kela_purchase/175_522_2020_LAAKEOSTOT_'+str(n)+'.csv.finreg_IDs' for n in range(1995,2020)]
+KELA_PURCH_PATH = Path('/data/original_data/kela_purchase/')
+complete_filelist           = [name for name in sorted(os.listdir(KELA_PURCH_PATH)) if not name.endswith("c4gh")]
+kela_purchase_pre2020       = [name for name in complete_filelist if not name.startswith("175_522_2020")]
+kela_purchase_2020_2021     = [name for name in complete_filelist if not name.startswith("81_522_2022")]
 
 DETAILED_LONGITUDINAL_PATH 	= '/data/processed_data/detailed_longitudinal/R10/service_sector/'
+DETAILED_LONGITUDINAL_NAME  = 'detailed_longitudinal_new'
 TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/test_results/'

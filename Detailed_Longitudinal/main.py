@@ -209,7 +209,8 @@ if __name__ == '__main__':
 
 
 	START = datetime.now()
-	DeathRegistry_processing(death,DOB_map=DOB_map)
+	DeathRegistry_processing(death_pre2020,DOB_map=DOB_map)
+	DeathRegistry_processing(death_2020_2021,DOB_map=DOB_map)
 	END = datetime.now()
 	print(f'death registry processing took {(END-START)} hour:min:sec')
 
@@ -225,8 +226,10 @@ if __name__ == '__main__':
 	print(f'kela reimbursement processing took {(END-START)} hour:min:sec')
 
 	START = datetime.now()
-	for purchase_file in kela_purchase_filelist:
-		KelaPurchase_processing(purchase_file,DOB_map=DOB_map)
+	for purchase_file in kela_purchase_pre2020:
+		KelaPurchase_PRE20_processing(purchase_file,DOB_map=DOB_map)
+	for purchase_file in kela_purchase_2020_2021:
+		KelaPurchase_20_21_processing(purchase_file,DOB_map=DOB_map)
 	END = datetime.now()
 	print(f'kela purchases processing took {(END-START)} hour:min:sec')
 
