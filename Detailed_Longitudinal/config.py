@@ -62,5 +62,5 @@ kela_purchase_pre2020       = [name for name in complete_filelist if not name.st
 kela_purchase_2020_2021     = [name for name in complete_filelist if not name.startswith("81_522_2022")]
 
 DETAILED_LONGITUDINAL_PATH 	= '/data/processed_data/detailed_longitudinal/R10/service_sector/'
-DETAILED_LONGITUDINAL_NAME  = 'detailed_longitudinal_new'
+DETAILED_LONGITUDINAL_NAME  = 'detailed_longitudinal_new.csv'
 TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/test_results/'
