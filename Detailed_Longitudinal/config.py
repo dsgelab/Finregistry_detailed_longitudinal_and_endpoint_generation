@@ -49,7 +49,7 @@ avohilmo_2020  				= THL_AVOHILMO_PATH/'THL2021_2196_AVOHILMO_2020.csv.finreg_ID
 avohilmo_2021  				= THL_AVOHILMO_PATH/'THL2021_2196_AVOHILMO_2021.csv.finreg_IDs'
 
 death_pre2020 				= '/data/original_data/sf_death/thl2019_1776_ksyy_tutkimus.csv.finreg_IDs'
-death_2020_2021 			= '/data/original_data/sf_death/thl2021_1776_ksyy_tutkimus.csv.finreg_IDs'
+death_2020_2021 			= '/data/original_data/sf_death/thl2021_2196_ksyy_tutkimus.csv.finreg_IDs'
 
 cancer 						= '/data/original_data/thl_cancer/fcr_data.csv.finreg_IDs'
 

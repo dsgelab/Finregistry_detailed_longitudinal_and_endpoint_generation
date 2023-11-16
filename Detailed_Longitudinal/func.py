@@ -1332,7 +1332,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
                 "KAYNTI_YHTEYSTAPA":"CODE5",
                 "KAYNTI_PALVELUMUOTO":"CODE6",
                 "KAYNTI_AMMATTI":"CODE7",
-                "EVENT_DATE":"PVM"},
+                "EVENT_DATE":"PVM"
+                },
                 inplace=True )
 
             #-------------------------------------------
