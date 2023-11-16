@@ -332,6 +332,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data["CODE5"]			= np.NaN
     Data["CODE6"]			= np.NaN
     Data["CODE7"]			= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     # rename columns
     Data.rename( columns = {"ADMISSION_DATE":"PVM"}, inplace=True)
@@ -471,6 +473,8 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
     # CODE5 should be PALA but is not available
     Data["CODE5"]			= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     #rename columns
     Data.rename( 
@@ -623,6 +627,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
     Data["CODE2"]			= np.NaN
     Data["CODE3"]			= np.NaN
     Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     #rename columns
     Data.rename( 
@@ -777,10 +783,12 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
             Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
             Data["SOURCE"] 			= "OUTPAT"
+            Data["ICDVER"] 			= 10
             Data["CODE2"]			= np.NaN
             Data["CODE3"]			= np.NaN
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-            Data["ICDVER"] 			= 10
+            Data["CODE8"]			= np.NaN
+            Data["CODE9"]			= np.NaN
 
             #rename columns
             Data.rename( 
@@ -911,7 +919,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
     "PALA": str,
     "EA":   str,
     "PALTU":str,
-    "YHTEYSTAPA": str
+    "YHTEYSTAPA": str,
+    "KIIREELLISYYS":str
     }
 
     # fetch Data
@@ -937,10 +946,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
             Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
             Data["SOURCE"] 			= "OUTPAT"
+            Data["ICDVER"] 			= 10
             Data["CODE2"]			= np.NaN
             Data["CODE3"]			= np.NaN
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-            Data["ICDVER"] 			= 10
 
             #rename columns
             Data.rename( 
@@ -948,7 +957,9 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
                 "ADMISSION_DATE":"PVM",
                 "PALA":"CODE5",
                 "EA":"CODE6",
-                "PALTU":"CODE7"
+                "PALTU":"CODE7",
+                "YHTEYSTAPA":"CODE8",
+                "KIIREELLISYYS":"CODE9"
                 },
                 inplace=True)
 
@@ -993,7 +1004,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
 
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
-            Data["YHTEYSTAPA"] = np.NaN
+            Data["YHTEYSTAPA"] = Data["CODE8"]
             Data = Define_INPAT(Data)
             Data = Define_OPERIN(Data)
             Data = Define_OPEROUT(Data)
@@ -1312,6 +1323,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
             Data["CODE2"]			= np.NaN
             Data["CODE3"]			= np.NaN
             Data["CODE4"]			= np.NaN
+            Data["CODE8"]			= np.NaN
+            Data["CODE9"]			= np.NaN
 
             # rename columns
             Data.rename( 
@@ -1411,6 +1424,8 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data["CODE5"]			= np.NaN
     Data["CODE6"]			= np.NaN
     Data["CODE7"]			= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     # rename columns
     Data.rename( 
@@ -1526,6 +1541,8 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data["CODE5"]			= np.NaN
     Data["CODE6"]			= np.NaN
     Data["CODE7"]			= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     # rename columns
     Data.rename( 
@@ -1612,6 +1629,8 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     Data["CODE5"]			= np.NaN
     Data["CODE6"]			= np.NaN
     Data["CODE7"]			= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN    
 
     #rename columns
     Data.rename(
@@ -1702,6 +1721,8 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     Data["CODE5"]			= np.NaN
     Data["CODE6"]			= np.NaN
     Data["CODE7"]			= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     #rename columns
     Data.rename(
@@ -1787,6 +1808,8 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "PURCH"
     Data["CATEGORY"] 		= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     #rename columns
     Data.rename(
@@ -1881,6 +1904,8 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "PURCH"
     Data["CATEGORY"] 		= np.NaN
+    Data["CODE8"]			= np.NaN
+    Data["CODE9"]			= np.NaN
 
     #rename columns
     Data.rename(
