@@ -852,7 +852,6 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data = combination_codes_split(Data)
 
             # PALTU mapping
-            paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
             Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
             # correct missing PALTU
@@ -1269,7 +1268,7 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     return Data
 
 
-def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", test=False):
+def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
     """Process AvoHilmo general file.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
@@ -1349,7 +1348,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
 
             # PALTU mapping
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
+            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
             Data["CODE7"] = Data["hospital_type"]
