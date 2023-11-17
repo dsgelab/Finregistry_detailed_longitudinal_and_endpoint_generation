@@ -560,7 +560,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, header=False, test=test)
 
 
 
@@ -718,7 +718,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, header=False, test=test)
 
 
 
@@ -878,7 +878,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, header=True, test=test)
+            write_out(Data, header=False, test=test)
 
 
 
@@ -1040,7 +1040,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, header=True, test=test)
+            write_out(Data, header=False, test=test)
 
 
 def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
@@ -1234,6 +1234,9 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
         "oper":		["TOIMENPIDE","OP"]
     }
 
+    # check thta source is correct
+    assert source in CATEGORY_DICTIONARY.keys(), f"ERROR: {source} needs to be one of following: icd10, icpc2, oral, oper"
+
     source_col_name = CATEGORY_DICTIONARY[source][0]
     category_prefix = CATEGORY_DICTIONARY[source][1]
 
@@ -1345,7 +1348,6 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
             Data = combination_codes_split(Data)
 
             # PALTU mapping
-            paltu_map = pd.read_csv("PALTU_mapping.csv",sep=",")
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
             Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
@@ -1369,7 +1371,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, file_sep=";", te
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, header=True, test=test) 
+            write_out(Data, header=False, test=test) 
 
 
 def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1486,7 +1488,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, header=False, test=test)
 
 
 
@@ -1572,7 +1574,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, header=False, test=test)
 
 
 
@@ -1609,6 +1611,9 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 
     # fetch Data
     Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
+    # NB: fix header error <U+FEFF>HETU 
+    Data.columns = ['HETU'] + Data.columns[1:].tolist()
+
     # add date of birth
     Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
     # format date columns (reimbursement date)
@@ -1662,7 +1667,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, header=False, test=test)
 
 
 def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1754,7 +1759,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     Data = Data[ COLUMNS_2_KEEP ]	
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)	
+    write_out(Data, header=False, test=test)	
 
 
 def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1850,7 +1855,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)    
+    write_out(Data, header=False, test=test)    
 
 
 def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1946,4 +1951,4 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)    
+    write_out(Data, header=False, test=test)    
