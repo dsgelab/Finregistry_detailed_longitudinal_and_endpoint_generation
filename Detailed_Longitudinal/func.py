@@ -1922,7 +1922,7 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
         "SAIR":"CODE2",
         "VNRO":"CODE3",
         "PLKM":"CODE4",
-        "koev_eur":"CODE5",
+        "korv_eur":"CODE5",
         "kakorv_eur":"CODE6",
         "LAJI":"CODE7",
         "EVENT_DATE":"PVM"
