@@ -58,8 +58,8 @@ kela_reimbursement_2020_2021= '/data/original_data/kela_reimbursement/81_522_202
 
 KELA_PURCH_PATH = Path('/data/original_data/kela_purchase/')
 complete_filelist           = [name for name in sorted(os.listdir(KELA_PURCH_PATH)) if not name.endswith("c4gh")]
-kela_purchase_pre2020       = [KELA_PURCH_PATH/name for name in complete_filelist if not name.startswith("175_522_2020")]
-kela_purchase_2020_2021     = [KELA_PURCH_PATH/name for name in complete_filelist if not name.startswith("81_522_2022")]
+kela_purchase_pre2020       = [KELA_PURCH_PATH/name for name in complete_filelist if name.startswith("175_522_2020")]
+kela_purchase_2020_2021     = [KELA_PURCH_PATH/name for name in complete_filelist if name.startswith("81_522_2022")]
 
 DETAILED_LONGITUDINAL_PATH 	= '/data/processed_data/detailed_longitudinal/R10/service_sector/'
 DETAILED_LONGITUDINAL_NAME  = 'detailed_longitudinal_new.csv'

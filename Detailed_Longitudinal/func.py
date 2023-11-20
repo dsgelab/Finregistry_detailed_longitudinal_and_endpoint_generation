@@ -1887,13 +1887,16 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     "SAIR": str,
     "VNRO": str,
     "PLKM": str,
-    "koev_eur": str,
+    "korv_eur": str,
     "kakorv_eur": str,
     "LAJI": str,
     }
 
-    # fetch Data
-    Data = read_in(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test)
+    # fetch Data (manually)
+    Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1')
+    # NB: fix header error <U+FEFF>HETU 
+    Data.columns = ['HETU'] + Data.columns[1:].tolist()
+    Data = Data[ dtypes.keys() ]
     # add date of birth
     Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
     # format date columns (purchase date)
