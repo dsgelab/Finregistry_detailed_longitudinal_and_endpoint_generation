@@ -17,9 +17,9 @@ This repository contains the script for creating the detailed longitudinal file 
 - no removing of ID denials             --> don't have those in Finregistry
 - birth date is not created using the htun2date() function but is imported from a sample of minimal_phenotype file (Finregistry dataset) 
 - death date is also imported from minimal_phenotype file (Finregistry dataset)
-- in Kela datasets the column names are alreay in uppercase
 - age randomization is only performed in FinnGen not in Finregistry
 - armonize INDEX definition to the one of every other registry
+- maximum of 3 extra diagnosis codes    --> all extra codes in finngen instead
 
 # REGISTRIES TIMELINE
 
