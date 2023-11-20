@@ -1699,7 +1699,10 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     }
 
     # fetch Data (manually)
-    Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1')
+    if test==False:
+        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1')
+    else:
+        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1',nrows=5000)    
     # NB: fix header error <U+FEFF>HETU 
     Data.columns = ['HETU'] + Data.columns[1:].tolist()
     Data = Data[ dtypes.keys() ]
@@ -1893,7 +1896,10 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     }
 
     # fetch Data (manually)
-    Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1')
+    if test==False:
+        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1')
+    else:
+        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1',nrows=5000)   
     # NB: fix header error <U+FEFF>HETU 
     Data.columns = ['HETU'] + Data.columns[1:].tolist()
     Data = Data[ dtypes.keys() ]
