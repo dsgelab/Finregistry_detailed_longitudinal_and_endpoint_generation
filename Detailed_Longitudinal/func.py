@@ -25,20 +25,21 @@ PALA_INPAT_LIST = [1,3,4,5,6,7,8,31]
 
 COLUMNS_2_KEEP = [
     "FINREGISTRYID",
-    "PVM", 
-    "EVENT_YRMNTH", 
-    "EVENT_AGE", 
-    "INDEX",
     "SOURCE",
-    "ICDVER",
-    "CATEGORY",
+    "EVENT_AGE", 
+    "EVENT_DAY", 
     "CODE1", 
     "CODE2", 
     "CODE3", 
     "CODE4", 
     "CODE5",
     "CODE6", 
-    "CODE7"]
+    "CODE7",
+    "CODE8",
+    "CODE9",
+    "ICDVER",
+    "CATEGORY",
+    "INDEX"]
 
 
 
@@ -208,16 +209,16 @@ def Define_INPAT(Data:pd.DataFrame):
     """
 
     # RULE 1969-1997: all is INPAT
-    YEAR_TO_KEEP = (Data.PVM.dt.year<1998)
+    YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year<1998)
     Data.loc[ YEAR_TO_KEEP ,"SOURCE"] = "INPAT"
 
     # RULE 1998-2018: OUTPAT depends on PALA variable
-    YEAR_TO_KEEP = (Data.PVM.dt.year>=1998) & (Data.PVM.dt.year<=2018)
+    YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year>=1998) & (Data.EVENT_DAY.dt.year<=2018)
     Data.loc[ YEAR_TO_KEEP & Data.PALA.isna(),"SOURCE"] = "INPAT"
     Data.loc[ YEAR_TO_KEEP & Data.PALA.isin(PALA_INPAT_LIST),"SOURCE"] = "INPAT"
 
     # RULE 2019-NOW: OUTPAT depends on PALA and YHTEYSTAPA variable
-    YEAR_TO_KEEP = (Data.PVM.dt.year>2018)
+    YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year>2018)
     Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
     Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R10") & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
     Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA==""   ) & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
@@ -322,7 +323,6 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     # define columns for detailed longitudinal
 
     Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-    Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "OUTPAT"
     Data["ICDVER"] 			= 8
@@ -336,7 +336,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data["CODE9"]			= np.NaN
 
     # rename columns
-    Data.rename( columns = {"ADMISSION_DATE":"PVM"}, inplace=True)
+    Data.rename( columns = {"ADMISSION_DATE":"EVENT_DAY"}, inplace=True)
 
     #-------------------------------------------
     # CATEGORY RESHAPE:
@@ -464,7 +464,6 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     # define columns for detailed longitudinal
 
     Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-    Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "OUTPAT"
     Data["ICDVER"] 			= 9
@@ -479,7 +478,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     #rename columns
     Data.rename( 
         columns = {
-        "ADMISSION_DATE":"PVM",
+        "ADMISSION_DATE":"EVENT_DAY",
         #"PALA":"CODE5",
         "EA":"CODE6",
         "PALTU":"CODE7"
@@ -620,7 +619,6 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
     # define columns for detailed longitudinal
 
     Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-    Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
     Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
     Data["SOURCE"] 			= "OUTPAT"
     Data["ICDVER"] 			= 9
@@ -633,7 +631,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
     #rename columns
     Data.rename( 
         columns = {
-        "ADMISSION_DATE":"PVM",
+        "ADMISSION_DATE":"EVENT_DAY",
         "PALA":"CODE5",
         "EA":"CODE6",
         "PALTU":"CODE7"
@@ -780,7 +778,6 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
             Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 10
@@ -793,7 +790,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             #rename columns
             Data.rename( 
                 columns = {
-                "ADMISSION_DATE":"PVM",
+                "ADMISSION_DATE":"EVENT_DAY",
                 "PALA":"CODE5",
                 "EA":"CODE6",
                 "PALTU":"CODE7"
@@ -942,7 +939,6 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["EVENT_YRMNTH"]	= Data.ADMISSION_DATE.dt.strftime("%Y-%m")
             Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 10
@@ -953,7 +949,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             #rename columns
             Data.rename( 
                 columns = {
-                "ADMISSION_DATE":"PVM",
+                "ADMISSION_DATE":"EVENT_DAY",
                 "PALA":"CODE5",
                 "EA":"CODE6",
                 "PALTU":"CODE7",
@@ -1317,7 +1313,6 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             #-------------------------------------------
             # define columns for detailed longitudinal
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
             Data["EVENT_YEAR"]		= Data.EVENT_DATE.dt.year
             Data["ICDVER"]			= 10
             Data["SOURCE"]			= "PRIM_OUT"
@@ -1334,7 +1329,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
                 "KAYNTI_YHTEYSTAPA":"CODE5",
                 "KAYNTI_PALVELUMUOTO":"CODE6",
                 "KAYNTI_AMMATTI":"CODE7",
-                "EVENT_DATE":"PVM"
+                "EVENT_DATE":"EVENT_DAY"
                 },
                 inplace=True )
 
@@ -1416,7 +1411,6 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     # define columns for detailed longitudinal
     Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
     Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year	
-    Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
     Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
     Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
     Data["SOURCE"] 			= "DEATH"
@@ -1432,7 +1426,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     # rename columns
     Data.rename( 
         columns = {
-        "EVENT_DATE":"PVM"
+        "EVENT_DATE":"EVENT_DAY"
         },
         inplace=True)
 
@@ -1534,7 +1528,6 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
     Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year	
-    Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
     Data["ICDVER"] 			= "O3"
     Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
     Data["SOURCE"] 			= "CANC"
@@ -1552,7 +1545,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
         "topo":"CODE1",
         "morpho":"CODE2",
         "beh":"CODE3",
-        "EVENT_DATE":"PVM"
+        "EVENT_DATE":"EVENT_DAY"
         },
         inplace=True)
 
@@ -1622,7 +1615,6 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
 
     Data["EVENT_AGE"] 		= round( (Data.REIMB_START - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
     Data["EVENT_YEAR"] 		= Data.REIMB_START.dt.year
-    Data["EVENT_YRMNTH"]	= Data.REIMB_START.dt.strftime("%Y-%m")
     Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "REIMB"
@@ -1640,7 +1632,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
         columns = {
         "SK1":"CODE1",
         "DIAG":"CODE2",
-        "REIMB_START":"PVM"
+        "REIMB_START":"EVENT_DAY"
         }, 
         inplace = True )
 
@@ -1719,7 +1711,6 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
 
     Data["EVENT_AGE"] 		= round( (Data.REIMB_START - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
     Data["EVENT_YEAR"] 		= Data.REIMB_START.dt.year
-    Data["EVENT_YRMNTH"]	= Data.REIMB_START.dt.strftime("%Y-%m")
     Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "REIMB"
@@ -1737,7 +1728,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
         columns = {
         "KORVAUSOIKEUS_KOODI":"CODE1",
         "DIAGNOOSI_KOODI":"CODE2",
-        "REIMB_START":"PVM"
+        "REIMB_START":"EVENT_DAY"
         }, 
         inplace = True )
 
@@ -1811,7 +1802,6 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
 
     Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
     Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
-    Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
     Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "PURCH"
@@ -1829,7 +1819,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
         "KORV_EUR":"CODE5",
         "KAKORV_EUR":"CODE6",
         "LAJI":"CODE7",
-        "EVENT_DATE":"PVM"
+        "EVENT_DATE":"EVENT_DAY"
         },
         inplace = True )
 
@@ -1913,7 +1903,6 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
 
     Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
     Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
-    Data["EVENT_YRMNTH"]	= Data.EVENT_DATE.dt.strftime("%Y-%m")
     Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "PURCH"
@@ -1931,7 +1920,7 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
         "korv_eur":"CODE5",
         "kakorv_eur":"CODE6",
         "LAJI":"CODE7",
-        "EVENT_DATE":"PVM"
+        "EVENT_DATE":"EVENT_DAY"
         },
         inplace = True )
 
