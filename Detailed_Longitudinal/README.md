@@ -35,9 +35,22 @@ This repository contains the script for creating the detailed longitudinal file 
 # PROCESSING SUMMARY
 
 Each register is transformed into a detailed longitudinal file structure containing the following variables: <br>
-FINREGISTRYID, PVM, EVENT_YRMNTH, EVENT_AGE,  
-CODE1, CODE2, CODE3, CODE4, CODE5, CODE6, CODE7, 
-CATEGORY, INDEX, SOURCE, ICDVER. 
+FINREGISTRYID,
+SOURCE,
+EVENT_AGE, 
+EVENT_DAY, 
+CODE1, 
+CODE2, 
+CODE3, 
+CODE4, 
+CODE5,
+CODE6, 
+CODE7,
+CODE8,
+CODE9,
+ICDVER,
+CATEGORY,
+INDEX
 
 ## General Rules
 
