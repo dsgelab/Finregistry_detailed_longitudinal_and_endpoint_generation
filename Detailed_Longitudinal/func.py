@@ -356,7 +356,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     new_names = Data.columns
     for name in CATEGORY_DICTIONARY.keys():
-        new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+        new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
     # perform the reshape
     VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -504,7 +504,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
 
     new_names = Data.columns
     for name in CATEGORY_DICTIONARY.keys():
-        new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+        new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
     # perform the reshape
     VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -656,7 +656,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
 
     new_names = Data.columns
     for name in CATEGORY_DICTIONARY.keys():
-        new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+        new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
     # perform the reshape
     VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -814,7 +814,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
 
             new_names = Data.columns
             for name in CATEGORY_DICTIONARY.keys():
-                new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+                new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
+
 
             # perform the reshape
             VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -975,7 +976,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
 
             new_names = Data.columns
             for name in CATEGORY_DICTIONARY.keys():
-                new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+                new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
             # perform the reshape
             VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -1177,7 +1178,7 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 
     new_names = Data.columns
     for name in CATEGORY_DICTIONARY.keys():
-        new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+        new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
     # perform the reshape
     VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
@@ -1444,7 +1445,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     new_names = Data.columns
     for name in CATEGORY_DICTIONARY.keys():
-        new_names = [s.replace(name, CATEGORY_DICTIONARY[name]) for s in new_names]
+        new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
     # perform the reshape
     VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
