@@ -1338,15 +1338,13 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             # merge CODE1 and CATEGORY from extra file
             Data = Data.merge(extra_to_merge, on = "AVOHILMO_ID", how="left")
 
+            # remove missing CODE1
+            Data = Data.dropna(subset=["CODE1"])
+            Data = Data.reset_index(drop=True)
+
             # special character split
             Data = combination_codes_split(Data)
-
-            # PALTU mapping
-            Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
-            # correct missing PALTU
-            Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
-            Data["CODE7"] = Data["hospital_type"]
+            # no PALTU mapping required
 
             #-------------------------------------------
             # QUALITY CONTROL:
@@ -1357,9 +1355,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"])
             Data = Data.reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-            Data = Data.reset_index(drop=True) 
+
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
