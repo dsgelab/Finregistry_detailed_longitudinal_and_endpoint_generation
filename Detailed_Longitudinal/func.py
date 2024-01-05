@@ -1360,7 +1360,9 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"])
             Data = Data.reset_index(drop=True)
-
+            # if contact or service type is -1 than is missing value
+            Data.loc[Data.CODE5==-1,"CODE5"] = np.NaN
+            Data.loc[Data.CODE6==-1,"CODE6"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
