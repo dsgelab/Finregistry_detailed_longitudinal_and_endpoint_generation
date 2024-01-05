@@ -187,7 +187,7 @@ def combination_codes_split(Data):
             Data.loc[split_codes.index, special_chars[s]] = split_codes.tolist()
 
     # Replace empty strings with NA
-    Data = Data.replace(r"^\s*$", pd.NA, regex=True)
+    Data = Data.replace(r"^\s*$", np.NaN, regex=True)
 
     return Data
 
@@ -208,6 +208,10 @@ def Define_INPAT(Data:pd.DataFrame):
     ValueError: If the provided Data is not a pandas DataFrame.
     """
 
+    # adjust possible errors
+    Data.loc[Data.PALA=="", "PALA"] = np.NaN
+    Data.loc[Data.YHTEYSTAPA=="", "YHTEYSTAPA"] = np.NaN
+    
     # RULE 1969-1997: all is INPAT
     YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year<1998)
     Data.loc[ YEAR_TO_KEEP ,"SOURCE"] = "INPAT"
@@ -220,8 +224,8 @@ def Define_INPAT(Data:pd.DataFrame):
     # RULE 2019-NOW: OUTPAT depends on PALA and YHTEYSTAPA variable
     YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year>2018)
     Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
-    Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R10") & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
-    Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA==""   ) & (Data.PALA.isin(PALA_INPAT_LIST)), "SOURCE"] = "INPAT"
+    Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R10") & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
+    Data.loc[ YEAR_TO_KEEP & Data.YHTEYSTAPA.isna() & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
 
     return Data
 
