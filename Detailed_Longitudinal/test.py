@@ -49,6 +49,7 @@ class TestBaseFunctions(unittest.TestCase):
             ['OUTPAT','2020-04-01',1,'R80'],
             ['OUTPAT','2020-04-01',1,'R10'],
             ['OUTPAT','2020-04-01',2,'R10'],
+            ['OUTPAT','2020-04-01',np.NaN,'R10'],
             ['OUTPAT','2020-04-01',1,''],
             ['OUTPAT','2020-04-01',1,np.NaN],
             ['OUTPAT','2020-04-01',2,np.NaN]
@@ -66,6 +67,7 @@ class TestBaseFunctions(unittest.TestCase):
             ['INPAT','2020-04-01',1,'R80'],
             ['INPAT','2020-04-01',1,'R10'],
             ['OUTPAT','2020-04-01',2,'R10'],
+            ['OUTPAT','2020-04-01',np.NaN,'R10'],
             ['INPAT','2020-04-01',1,''],
             ['INPAT','2020-04-01',1,np.NaN],
             ['OUTPAT','2020-04-01',2,np.NaN]
