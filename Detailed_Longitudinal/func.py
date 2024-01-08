@@ -21,7 +21,7 @@ from config import DETAILED_LONGITUDINAL_PATH, DETAILED_LONGITUDINAL_NAME, TEST_
 DAYS_TO_YEARS = 365.24
 #NB: copied from FinnGen
 
-PALA_INPAT_LIST = [1,3,4,5,6,7,8,31]
+PALA_INPAT_LIST= [1,3,4,5,6,7,8,31]
 
 COLUMNS_2_KEEP = [
     "FINREGISTRYID",
@@ -213,19 +213,15 @@ def Define_INPAT(Data:pd.DataFrame):
     Data.loc[Data.YHTEYSTAPA=="", "YHTEYSTAPA"] = np.NaN
     
     # RULE 1969-1997: all is INPAT
-    YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year<1998)
-    Data.loc[ YEAR_TO_KEEP ,"SOURCE"] = "INPAT"
+    Data.loc[ (Data.EVENT_DAY.dt.year<1998) ,"SOURCE"] = "INPAT"
 
     # RULE 1998-2018: OUTPAT depends on PALA variable
-    YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year>=1998) & (Data.EVENT_DAY.dt.year<=2018)
-    Data.loc[ YEAR_TO_KEEP & Data.PALA.isna(),"SOURCE"] = "INPAT"
-    Data.loc[ YEAR_TO_KEEP & Data.PALA.isin(PALA_INPAT_LIST),"SOURCE"] = "INPAT"
+    Data.loc[ (Data.EVENT_DAY.dt.year>=1998) & (Data.EVENT_DAY.dt.year<=2018) & Data.PALA.isin(PALA_INPAT_LIST),"SOURCE"] = "INPAT"
 
     # RULE 2019-NOW: OUTPAT depends on PALA and YHTEYSTAPA variable
-    YEAR_TO_KEEP = (Data.EVENT_DAY.dt.year>2018)
-    Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
-    Data.loc[ YEAR_TO_KEEP & (Data.YHTEYSTAPA=="R10") & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
-    Data.loc[ YEAR_TO_KEEP & Data.YHTEYSTAPA.isna() & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
+    Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
+    Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="R10") & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
+    Data.loc[ (Data.EVENT_DAY.dt.year>2018) & Data.YHTEYSTAPA.isna() & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
 
     return Data
 
@@ -1361,8 +1357,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             Data = Data.dropna(subset=["EVENT_AGE"])
             Data = Data.reset_index(drop=True)
             # if contact or service type is -1 than is missing value
-            Data.loc[Data.CODE5==-1,"CODE5"] = np.NaN
-            Data.loc[Data.CODE6==-1,"CODE6"] = np.NaN
+            Data.loc[Data.CODE5=="-1","CODE5"] = np.NaN
+            Data.loc[Data.CODE6=="-1","CODE6"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
