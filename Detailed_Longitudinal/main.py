@@ -101,116 +101,148 @@ def preprocess_hilmo():
     gc.collect()  
 
 
-def preprocess_avohilmo_icd10():
+def preprocess_avohilmo_icd10_year_11_16():
     START = datetime.now()  
-
     icd10_11_16 = AvoHilmo_codes_preparation(avohilmo_icd10_2011_2016, source='icd10')
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_11_16, source='icd10')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_11_16, source='icd10', year='11_16')
     del icd10_11_16
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + icd10 + year 2011-2016 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_icd10_year_17_19():
+    START = datetime.now()  
     icd10_17_19 = AvoHilmo_codes_preparation(avohilmo_icd10_2017_2019, source='icd10')
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_17_19, source='icd10')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_17_19, source='icd10', year='17_19')
     del icd10_17_19
     gc.collect() 
-       
+    END = datetime.now()
+    print(f'avohilmo + icd10 + year 2017-2019 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_icd10_year_20_21():
+    START = datetime.now()  
     icd10_20_21 = AvoHilmo_codes_preparation(avohilmo_icd10_2020_2021, source='icd10')
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_20_21, source='icd10')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_20_21, source='icd10', year='20_21')
     del icd10_20_21
     gc.collect() 
-
     END = datetime.now()
-    print(f'avohilmo + icd10 processing took {(END-START)} hour:min:sec')
+    print(f'avohilmo + icd10 + year 2020-2021 processing took {(END-START)} hour:min:sec')
 
 
-def preprocess_avohilmo_icpc2():
+def preprocess_avohilmo_icpc2_year_11_16():
     START = datetime.now()		
-
     icpc2_11_16 = AvoHilmo_codes_preparation(avohilmo_icpc2_2011_2016, source='icpc2')
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_11_16, source='icpc2')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_11_16, source='icpc2', year='11_16')
     del icpc2_11_16
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + icpc2 + year 2011-2016 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_icpc2_year_17_19():
+    START = datetime.now()	
     icpc2_17_19 = AvoHilmo_codes_preparation(avohilmo_icpc2_2017_2019, source='icpc2')
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_17_19, source='icpc2')	
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_17_19, source='icpc2', year='17_19')	
     del icpc2_17_19
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + icpc2 + year 2017-2019 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_icpc2_year_20_21():
+    START = datetime.now()	
     icpc2_20_21 = AvoHilmo_codes_preparation(avohilmo_icpc2_2020_2021, source='icpc2')
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_20_21, source='icpc2')	
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_20_21, source='icpc2', year='20_21')	
     del icpc2_20_21
     gc.collect() 
-
     END = datetime.now()
-    print(f'avohilmo + icpc2 processing took {(END-START)} hour:min:sec')
+    print(f'avohilmo + icpc2 + year 2020-2021 processing took {(END-START)} hour:min:sec')
 
 
-def preprocess_avohilmo_oral():
+def preprocess_avohilmo_oral_year_11_16():
     START = datetime.now()	
-
     oral_11_16 = AvoHilmo_codes_preparation(avohilmo_oral_2011_2016, source='oral')
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]    
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_11_16, source='oral')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_11_16, source='oral', year='11_16')
     del oral_11_16
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + oral + year 2011-2016 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_oral_year_17_19():
+    START = datetime.now()    
     oral_17_19 = AvoHilmo_codes_preparation(avohilmo_oral_2017_2019, source='oral')
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_17_19, source='oral')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_17_19, source='oral', year='17_19')
     del oral_17_19
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + oral + year 2017-2019 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_oral_year_20_21():
+    START = datetime.now()    
     oral_20_21 = AvoHilmo_codes_preparation(avohilmo_oral_2020_2021, source='oral')
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_20_21, source='oral')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_20_21, source='oral', year='20_21')
     del oral_20_21
     gc.collect() 
-
     END = datetime.now()
-    print(f'avohilmo + oral processing took {(END-START)} hour:min:sec')
+    print(f'avohilmo + oral + year 2020-2021 processing took {(END-START)} hour:min:sec')
 
 
-def preprocess_avohilmo_oper():
+def preprocess_avohilmo_oper_year_11_16():
     START = datetime.now()	
-
     oper_11_16 = AvoHilmo_codes_preparation(avohilmo_oper_2011_2016, source='oper')
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_11_16, source='oper')	
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_11_16, source='oper', year='11_16')	
     del oper_11_16
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + oper + year 201-2016 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_oper_year_17_19():
+    START = datetime.now()	    
     oper_17_19 = AvoHilmo_codes_preparation(avohilmo_oper_2017_2019, source='oper')
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_17_19, source='oper')	
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_17_19, source='oper', year='17_19')	
     del oper_17_19
     gc.collect() 
-    
+    END = datetime.now()
+    print(f'avohilmo + oper + year 2017-2019 processing took {(END-START)} hour:min:sec')
+
+
+def preprocess_avohilmo_oper_year_20_21():
+    START = datetime.now()	
     oper_20_21 = AvoHilmo_codes_preparation(avohilmo_oper_2020_2021, source='oper')
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_20_21, source='oper')
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_20_21, source='oper', year='20_21')
     del oper_20_21
     gc.collect() 	
-
     END = datetime.now()
-    print(f'avohilmo + oper processing took {(END-START)} hour:min:sec')
+    print(f'avohilmo + oper + year 2020-2021processing took {(END-START)} hour:min:sec')
 
 
 def preprocess_death():
@@ -248,11 +280,21 @@ def preprocess_kela_purchases():
 
 if __name__ == '__main__':
 
+    # define processes, total number of CPUs required: 17
+    # NB: Avohilmo separated in 12 unique processes for maximum speed
     p_hilmo = multiprocessing.Process(target=preprocess_hilmo)
-    p_avohilmo_icd10 = multiprocessing.Process(target=preprocess_avohilmo_icd10)
-    p_avohilmo_icpc2 = multiprocessing.Process(target=preprocess_avohilmo_icpc2)
-    p_avohilmo_oral = multiprocessing.Process(target=preprocess_avohilmo_oral)
-    p_avohilmo_oper = multiprocessing.Process(target=preprocess_avohilmo_oper)
+    p_avohilmo_icd10_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_11_16)
+    p_avohilmo_icd10_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_17_19)
+    p_avohilmo_icd10_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_20_21)
+    p_avohilmo_icpc2_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_11_16)
+    p_avohilmo_icpc2_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_17_19)
+    p_avohilmo_icpc2_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_20_21)
+    p_avohilmo_oral_11_16 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_11_16)
+    p_avohilmo_oral_17_19 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_17_19)
+    p_avohilmo_oral_20_21 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_20_21)
+    p_avohilmo_oper_11_16 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_11_16)
+    p_avohilmo_oper_17_19 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_17_19)
+    p_avohilmo_oper_20_21 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_20_21)
     p_death = multiprocessing.Process(target=preprocess_death)
     p_cancer = multiprocessing.Process(target=preprocess_cancer)
     p_kela_reimbursement = multiprocessing.Process(target=preprocess_kela_reimbursement)
@@ -260,10 +302,18 @@ if __name__ == '__main__':
 
     # Start multiprocessing
     p_hilmo.start()
-    p_avohilmo_icd10.start()
-    p_avohilmo_icpc2.start()
-    p_avohilmo_oral.start()
-    p_avohilmo_oper.start()
+    p_avohilmo_icd10_11_16.start()
+    p_avohilmo_icd10_17_19.start()
+    p_avohilmo_icd10_20_21.start()
+    p_avohilmo_icpc2_11_16.start()
+    p_avohilmo_icpc2_17_19.start()
+    p_avohilmo_icpc2_20_21.start()
+    p_avohilmo_oral_11_16.start()
+    p_avohilmo_oral_17_19.start()
+    p_avohilmo_oral_20_21.start()
+    p_avohilmo_oper_11_16.start()
+    p_avohilmo_oper_17_19.start()
+    p_avohilmo_oper_20_21.start()
     p_death.start()
     p_cancer.start()
     p_kela_reimbursement.start()
@@ -271,10 +321,18 @@ if __name__ == '__main__':
 
     # Wait for all the processes to end
     p_hilmo.join()
-    p_avohilmo_icd10.join()
-    p_avohilmo_icpc2.join()
-    p_avohilmo_oral.join()
-    p_avohilmo_oper.join()
+    p_avohilmo_icd10_11_16.join()
+    p_avohilmo_icd10_17_19.join()
+    p_avohilmo_icd10_11_16.join()
+    p_avohilmo_icpc2_11_16.join()
+    p_avohilmo_icpc2_17_19.join()
+    p_avohilmo_icpc2_20_21.join()
+    p_avohilmo_oral_11_16.join()
+    p_avohilmo_oral_17_19.join()
+    p_avohilmo_oral_20_21.join()
+    p_avohilmo_oper_11_16.join()
+    p_avohilmo_oper_17_19.join()
+    p_avohilmo_oper_20_21.join()
     p_death.join()
     p_cancer.join()
     p_kela_reimbursement.join()
