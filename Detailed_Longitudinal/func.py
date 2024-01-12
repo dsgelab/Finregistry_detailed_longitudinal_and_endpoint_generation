@@ -1371,7 +1371,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, file_sep
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            outpath = "Avohilmo" + source
+            outpath = "Avohilmo_" + source
             write_out(Data, outpath=outpath, test=test) 
 
 
