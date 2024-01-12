@@ -13,7 +13,7 @@ import numpy as np
 from datetime import datetime as dt
 from pathlib import Path
 
-from config import DETAILED_LONGITUDINAL_PATH, DETAILED_LONGITUDINAL_NAME, TEST_FOLDER_PATH
+from config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
 
 
 ##########################################################
@@ -882,7 +882,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, header=False, test=test)
+            write_out(Data, outpath="Hilmo", test=test)
 
 
 
