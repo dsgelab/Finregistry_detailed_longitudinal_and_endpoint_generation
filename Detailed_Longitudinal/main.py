@@ -1,6 +1,6 @@
 
 ##########################################################
-# COOPYRIGHT:  	THL/FIMM/Finregistry 2023  
+# COPYRIGHT:  	THL/FIMM/Finregistry 2023  
 # AUTHORS:     	Matteo Ferro, Essi Vippola
 ##########################################################
 
