@@ -280,4 +280,4 @@ if __name__ == '__main__':
     p_kela_reimbursement.join()
     p_kela_purchases.join()
 
-    print("Detailed Longitudinal file have been created!") 
+    print("Detailed Longitudinal file has been created!") 
