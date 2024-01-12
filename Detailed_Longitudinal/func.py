@@ -138,10 +138,10 @@ def write_out(Data: pd.DataFrame, outpath: str, header = False, test = False):
 
     #remove header if file is already existing
     final_path = Path(path)/filename
-    if os.path.isfile(final_path): 
-        header=True
-    else: 
+    if os.path.exists(final_path): 
         header=False
+    else: 
+        header=True
 
     Data.to_csv(
         path_or_buf = final_path, 
