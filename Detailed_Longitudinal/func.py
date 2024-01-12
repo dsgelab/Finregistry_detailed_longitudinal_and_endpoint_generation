@@ -7,6 +7,7 @@
 # LIBRARIES
 
 import re
+import os
 import pandas as pd
 import numpy as np
 from datetime import datetime as dt
@@ -112,7 +113,7 @@ def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = 10**6,
 
 
 
-def write_out(Data: pd.DataFrame, header = False, test = False):
+def write_out(Data: pd.DataFrame, outpath: str, header = False, test = False):
     """Writes pandas dataframe to detailed_longitudinal or test file
 
     append if already exist and also insert date in the filename
@@ -129,15 +130,21 @@ def write_out(Data: pd.DataFrame, header = False, test = False):
     if test: 
         path = TEST_FOLDER_PATH
         today = dt.today().strftime("%Y_%m_%d")
-        filename = "test_detailed_longitudinal" + "_" + today + ".csv"
+        filename = outpath + "_test_" + today + ".csv"
 
     else:
         path = DETAILED_LONGITUDINAL_PATH
-        filename = DETAILED_LONGITUDINAL_NAME
+        filename = outpath + ".csv"
 
     #remove header if file is already existing
+    final_path = Path(path)/filename
+    if os.path.isfile(final_path): 
+        header=True
+    else: 
+        header=False
+
     Data.to_csv(
-        path_or_buf= Path(path)/filename, 
+        path_or_buf = final_path, 
         mode="a", 
         sep=",", 
         encoding="utf-8", #same for every Finregistry file
@@ -406,7 +413,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=True, test=test)
+    write_out(Data, outpath="Hilmo", test=test)
 
 
 
@@ -559,7 +566,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)
+    write_out(Data, outpath="Hilmo", test=test)
 
 
 
@@ -716,7 +723,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)
+    write_out(Data, outpath="Hilmo", test=test)
 
 
 
@@ -1036,7 +1043,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, header=False, test=test)
+            write_out(Data, outpath="Hilmo", test=test)
 
 
 def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
@@ -1364,7 +1371,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, header=False, test=test) 
+            write_out(Data, outpath="AvoHilmo", test=test) 
 
 
 def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1480,7 +1487,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)
+    write_out(Data, outpath="Death", test=test)
 
 
 
@@ -1565,7 +1572,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)
+    write_out(Data, outpath="Cancer", test=test)
 
 
 
@@ -1655,7 +1662,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)
+    write_out(Data, outpath="KelaReimbursement", test=test)
 
 
 def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1751,7 +1758,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     Data = Data[ COLUMNS_2_KEEP ]	
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)	
+    write_out(Data, outpath="KelaReimbursement", test=test)	
 
 
 def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1846,7 +1853,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)    
+    write_out(Data, outpath="KelaPurchase", test=test)   
 
 
 def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=False):
@@ -1947,4 +1954,4 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     Data = Data[ COLUMNS_2_KEEP ]
 
     # WRITE TO DETAILED LONGITUDINAL
-    write_out(Data, header=False, test=test)    
+    write_out(Data, outpath="KelaPurchase", test=test)      
