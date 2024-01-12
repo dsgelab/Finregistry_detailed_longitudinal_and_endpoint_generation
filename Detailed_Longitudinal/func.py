@@ -199,6 +199,27 @@ def combination_codes_split(Data):
     return Data
 
 
+def fix_missing_value(Data:pd.DataFrame):
+    """replace -1 with missing value
+
+    checks all the columns starting with CODE and replace -1 with np.NaN
+
+    Args:
+        Data (pd.DataFrame): hilmo or avohilmo dataframe to work on.
+
+    Returns:
+        Data (pd.DataFrame): hilmo or avohilmo dataframe with correct CODEs.
+
+    Raises:
+    ValueError: If the provided Data is not a pandas DataFrame.
+    """
+
+    code_list = ["CODE"+str(n) for n in range(1,10)]
+    for code in code_list:
+        Data.loc[Data[code].isin(['-1',-1]), code] = np.NaN
+
+    return Data
+
 
 def Define_INPAT(Data:pd.DataFrame):
     """Define SOURCE outpat for hilmo dataframes
@@ -408,6 +429,8 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     Data = Data.reset_index(drop=True)
     # if negative hospital days than missing value
     Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+    # if -1 in a CODE column replace with missing
+    Data = fix_missing_value(Data)
 
     # select desired columns 
     Data = Data[ COLUMNS_2_KEEP ]
@@ -561,6 +584,8 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     Data = Data.reset_index(drop=True)
     # if negative hospital days than missing value
     Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+    # if -1 in a CODE column replace with missing
+    Data = fix_missing_value(Data)
 
     # select desired columns 
     Data = Data[ COLUMNS_2_KEEP ]
@@ -718,6 +743,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
     Data = Data.reset_index(drop=True)
     # if negative hospital days than missing value
     Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+    # if -1 in a CODE column replace with missing
+    Data = fix_missing_value(Data)
 
     # select desired columns 
     Data = Data[ COLUMNS_2_KEEP ]
@@ -877,6 +904,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            # if -1 in a CODE column replace with missing
+            Data = fix_missing_value(Data)
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1038,6 +1067,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            # if -1 in a CODE column replace with missing
+            Data = fix_missing_value(Data)
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1363,9 +1394,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"])
             Data = Data.reset_index(drop=True)
-            # if contact or service type is -1 than is missing value
-            Data.loc[Data.CODE5=="-1","CODE5"] = np.NaN
-            Data.loc[Data.CODE6=="-1","CODE6"] = np.NaN
+            # if -1 in a CODE column replace with missing
+            Data = fix_missing_value(Data)
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
