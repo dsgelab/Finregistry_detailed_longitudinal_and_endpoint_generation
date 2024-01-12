@@ -300,7 +300,10 @@ if __name__ == '__main__':
     p_kela_reimbursement = multiprocessing.Process(target=preprocess_kela_reimbursement)
     p_kela_purchases = multiprocessing.Process(target=preprocess_kela_purchases)
 
+
     # Start multiprocessing
+    START = datetime.now() 
+
     p_hilmo.start()
     p_avohilmo_icd10_11_16.start()
     p_avohilmo_icd10_17_19.start()
@@ -338,4 +341,6 @@ if __name__ == '__main__':
     p_kela_reimbursement.join()
     p_kela_purchases.join()
 
+    END = datetime.now()
     print("Detailed Longitudinal file has been created!") 
+    print(f'total run time is: {(END-START)} hour:min:sec')
