@@ -24,25 +24,26 @@ DAYS_TO_YEARS = 365.24
 
 PALA_INPAT_LIST= [1,3,4,5,6,7,8,31]
 
-COLUMNS_2_KEEP = [
-    "FINREGISTRYID",
-    "SOURCE",
-    "EVENT_AGE", 
-    "EVENT_DAY", 
-    "CODE1", 
-    "CODE2", 
-    "CODE3", 
-    "CODE4", 
-    "CODE5",
-    "CODE6", 
-    "CODE7",
-    "CODE8",
-    "CODE9",
-    "ICDVER",
-    "CATEGORY",
-    "INDEX"]
+OUTPUT_COLUMNS = {
+    "FINREGISTRYID":str,
+    "SOURCE":str,
+    "EVENT_AGE":float,
+    "EVENT_DAY":str,
+    "CODE1":str,
+    "CODE2":str, 
+    "CODE3":str, 
+    "CODE4":str, 
+    "CODE5":str,
+    "CODE6":str, 
+    "CODE7":str,
+    "CODE8":str,
+    "CODE9":str,
+    "ICDVER":str,
+    "CATEGORY":str,
+    "INDEX":int}
 
-
+COLUMNS_2_KEEP = list(OUTPUT_COLUMNS.keys())
+COLUMNS_DTYPES = list(OUTPUT_COLUMNS.values())
 
 ##########################################################
 # UTILITY FUNCTIONS
@@ -143,13 +144,17 @@ def write_out(Data: pd.DataFrame, output_name: str, header = False, test = False
     else: 
         header=True
 
+    # Convert all columns to desired data types before exporting
+    for i,col in enumerate(Data.columns):
+        Data[col] = Data[col].astype(COLUMNS_DTYPES[i])
     Data.to_csv(
         path_or_buf = final_path, 
         mode="a", 
         sep=",", 
         encoding="utf-8", #same for every Finregistry file
         index=False,
-        header=header)
+        header=header
+        )
 
 
 def combination_codes_split(Data):
