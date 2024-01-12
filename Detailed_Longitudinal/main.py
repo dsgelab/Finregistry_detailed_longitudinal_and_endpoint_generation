@@ -6,6 +6,7 @@
 
 
 from datetime import datetime
+import multiprocessing
 import pandas as pd
 import gc
 
@@ -19,16 +20,11 @@ from config import *
 DOB_map = DOB_map_preparation('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv', sep=',')
 paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 
+# TODO: 
+# - each of the functions here needs to write to a different output file
+# - separate hilmo and avohilmo further into more processes 
 
-##########################################################
-# CREATE DETAILED LONGITUDINAL 
-
-if __name__ == '__main__':
-
-    #--------------------------------------
-    # HILMO
-
-# ---
+def preprocess_hilmo():
 
     START = datetime.now()
     Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=DOB_map)
@@ -105,17 +101,13 @@ if __name__ == '__main__':
     END = datetime.now()
     print(f'hilmo_2019_2021 + diag processing took {(END-START)} hour:min:sec')
     del diag_19_21
-    gc.collect() 
+    gc.collect()  
 
 
-    #--------------------------------------
-    # AVOHILMO
-    
-# ---
+def preprocess_avohilmo():
 
-    START = datetime.now()
+    START = datetime.now()  
 
-    
     icd10_11_16 = AvoHilmo_codes_preparation(avohilmo_icd10_2011_2016, source='icd10')
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
@@ -129,8 +121,7 @@ if __name__ == '__main__':
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=icd10_17_19)
     del icd10_17_19
     gc.collect() 
-    
-    
+       
     icd10_20_21 = AvoHilmo_codes_preparation(avohilmo_icd10_2020_2021, source='icd10')
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
@@ -225,27 +216,31 @@ if __name__ == '__main__':
     END = datetime.now()
     print(f'avohilmo + oper processing took {(END-START)} hour:min:sec')
 
-    #--------------------------------------
-    # OTHER REGISTRIES
 
-
+def preprocess_death():
     START = datetime.now()
     DeathRegistry_processing(death_pre2020,DOB_map=DOB_map)
     DeathRegistry_processing(death_2020_2021,DOB_map=DOB_map)
     END = datetime.now()
     print(f'death registry processing took {(END-START)} hour:min:sec')
 
+
+def preprocess_cancer():
     START = datetime.now()
     CancerRegistry_processing(cancer,DOB_map=DOB_map)
     END = datetime.now()
     print(f'cancer registry processing took {(END-START)} hour:min:sec')
 
+
+def preprocess_kela_reimbursement():
     START = datetime.now()
     KelaReimbursement_PRE20_processing(kela_reimbursement_pre2020, DOB_map=DOB_map)
     KelaReimbursement_20_21_processing(kela_reimbursement_2020_2021, DOB_map=DOB_map)
     END = datetime.now()
     print(f'kela reimbursement processing took {(END-START)} hour:min:sec')
 
+
+def preprocess_kela_purchases():
     START = datetime.now()
     for purchase_file in kela_purchase_pre2020:
         KelaPurchase_PRE20_processing(purchase_file,DOB_map=DOB_map)
@@ -254,9 +249,30 @@ if __name__ == '__main__':
     END = datetime.now()
     print(f'kela purchases processing took {(END-START)} hour:min:sec')
 
-# ---
 
-    # DROP DUPLICATES: to be performed with awk script
+if __name__ == '__main__':
 
-# ---
+    p_hilmo = multiprocessing.Process(target=preprocess_hilmo)
+    p_avohilmo = multiprocessing.Process(target=preprocess_avohilmo)
+    p_death = multiprocessing.Process(target=preprocess_death)
+    p_cancer = multiprocessing.Process(target=preprocess_cancer)
+    p_kela_reimbursement = multiprocessing.Process(target=preprocess_kela_reimbursement)
+    p_kela_purchases = multiprocessing.Process(target=preprocess_kela_purchases)
 
+    # Start multiprocessing
+    p_hilmo.start()
+    p_avohilmo.start()
+    p_death.start()
+    p_cancer.start()
+    p_kela_reimbursement.start()
+    p_kela_purchases.start()
+
+    # Wait for all the processes to end
+    p_hilmo.join()
+    p_avohilmo.join()
+    p_death.join()
+    p_cancer.join()
+    p_kela_reimbursement.join()
+    p_kela_purchases.join()
+
+    print("Detailed Longitudinal file have been created!") 
