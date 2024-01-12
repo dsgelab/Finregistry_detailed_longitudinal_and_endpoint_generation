@@ -1,7 +1,7 @@
 
 ##########################################################
 # COPYRIGHT:  	THL/FIMM/Finregistry 2023  
-# AUTHORS:     	Matteo Ferro, Essi Vippola
+# AUTHORS:     	Matteo Ferro, Essi Viippola
 ##########################################################
 
 
