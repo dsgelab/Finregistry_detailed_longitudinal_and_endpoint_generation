@@ -1272,7 +1272,7 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     return Data
 
 
-def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
+def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, file_sep=";", test=False):
     """Process AvoHilmo general file.
 
     This function reads and processes an AvoHilmo file located at the specified file_path.  
@@ -1371,7 +1371,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, outpath="AvoHilmo", test=test) 
+            outpath = "Avohilmo" + source
+            write_out(Data, outpath=outpath, test=test) 
 
 
 def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
