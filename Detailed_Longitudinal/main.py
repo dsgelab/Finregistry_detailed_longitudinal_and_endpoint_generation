@@ -21,7 +21,6 @@ DOB_map = DOB_map_preparation('/data/processed_data/minimal_phenotype/minimal_ph
 paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 
 # TODO: 
-# - each of the functions here needs to write to a different output file
 # - separate hilmo and avohilmo further into more processes 
 
 def preprocess_hilmo():

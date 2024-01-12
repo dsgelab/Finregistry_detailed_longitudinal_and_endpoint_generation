@@ -62,4 +62,4 @@ kela_purchase_pre2020       = [KELA_PURCH_PATH/name for name in complete_filelis
 kela_purchase_2020_2021     = [KELA_PURCH_PATH/name for name in complete_filelist if name.startswith("81_522_2022")]
 
 DETAILED_LONGITUDINAL_PATH 	= '/data/processed_data/detailed_longitudinal/R10/service_sector/splits/'
-TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/test_results/'
+TEST_FOLDER_PATH 			= '/home/mferro/service_sector_update/test_results/splits/'
