@@ -87,7 +87,7 @@ def read_in(file_path:str, file_sep:str, dtype:dict, test = False):
     """
 
     if test: 	
-        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1', nrows=5_000)		
+        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1', dtype=dtype, usecols=dtype.keys(), nrows=5_000)		
     else: 		
         Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1', dtype=dtype, usecols=dtype.keys())
 
@@ -108,7 +108,7 @@ def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = 10**6,
     """
 
     if test: 	
-        return pd.read_csv(file_path, sep=file_sep, encoding='latin-1', chunksize=chunck_size, nrows=5_000)		
+        return pd.read_csv(file_path, sep=file_sep, encoding='latin-1', chunksize=chunck_size, dtype=dtype, usecols=dtype.keys(), nrows=5_000)		
     else: 		
         return pd.read_csv(file_path, sep=file_sep, encoding='latin-1', chunksize=chunck_size, dtype=dtype, usecols=dtype.keys()) 
 
