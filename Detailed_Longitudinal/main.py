@@ -16,10 +16,6 @@ from func import *
 # import all file paths
 from config import *
 
-# fetch info to add later: 
-DOB_map = DOB_map_preparation('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv', sep=',')
-paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
-
 
 def preprocess_hilmo():
 
@@ -279,6 +275,10 @@ def preprocess_kela_purchases():
 
 
 if __name__ == '__main__':
+
+    # prepare info to be added later: 
+    DOB_map = DOB_map_preparation(MINIMAL_PHENOTYPE_PATH, sep=',')
+    paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 
     # define processes, total number of CPUs required: 17
     # NB: Avohilmo separated in 12 unique processes for maximum speed
