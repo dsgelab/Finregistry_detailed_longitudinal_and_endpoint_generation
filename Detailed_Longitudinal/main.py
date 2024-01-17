@@ -17,80 +17,76 @@ from func import *
 from config import *
 
 
-def preprocess_hilmo():
-
+def preprocess_hilmo_69_86():
     START = datetime.now()
     Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=DOB_map)
     END = datetime.now()
     print(f'hilmo_1969_1986 processing took {(END-START)} hour:min:sec')
 
 
+def preprocess_hilmo_87_93():
     START = datetime.now()
     Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=DOB_map, paltu_map=paltu_map)
     END = datetime.now()
     print(f'hilmo_1987_1993 processing took {(END-START)} hour:min:sec')
 
-# ---
 
+def preprocess_hilmo_heart():
     START = datetime.now()
     heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
-    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_94_95)
+    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_94_95, source='heart')
     END = datetime.now()
     print(f'hilmo_1994_1995 + heart processing took {(END-START)} hour:min:sec')
     del heart_94_95
     gc.collect() 
 
-
     START = datetime.now()
     heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_96_18)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_96_18, source='heart')
     END = datetime.now()
     print(f'hilmo_1996_2018 + heart processing took {(END-START)} hour:min:sec')	
     del heart_96_18
     gc.collect() 
 
-
     START = datetime.now()
     heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_19_21)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_19_21, source='heart')
     END = datetime.now()
     print(f'hilmo_2019_2021 + heart processing took {(END-START)} hour:min:sec')
     del heart_19_21
     gc.collect() 
 
-# ---
 
+def preprocess_hilmo_operations():
     START = datetime.now()
     oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_96_18)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_96_18, source='oper')
     END = datetime.now()
     print(f'hilmo_1996_2018 + oper processing took {(END-START)} hour:min:sec')
     del oper_96_18
     gc.collect() 
 
-
     START = datetime.now()
     oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_19_21) 
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_19_21, source='oper') 
     END = datetime.now()
     print(f'hilmo_2019_2021 + oper processing took {(END-START)} hour:min:sec')
     del oper_19_21
     gc.collect() 
 
-# ---
 
+def preprocess_hilmo_diagnosis():
     START = datetime.now()
     diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_96_18)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_96_18, source='diag')
     END = datetime.now()
     print(f'hilmo_1996_2018 + diag processing took {(END-START)} hour:min:sec')
     del diag_96_18
     gc.collect() 
 
-
     START = datetime.now()
     diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_19_21) 
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_19_21, source='diag') 
     END = datetime.now()
     print(f'hilmo_2019_2021 + diag processing took {(END-START)} hour:min:sec')
     del diag_19_21
@@ -280,9 +276,13 @@ if __name__ == '__main__':
     DOB_map = DOB_map_preparation(MINIMAL_PHENOTYPE_PATH, sep=',')
     paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 
-    # define processes, total number of CPUs required: 17
-    # NB: Avohilmo separated in 12 unique processes for maximum speed
-    p_hilmo = multiprocessing.Process(target=preprocess_hilmo)
+    # define processes, total number of CPUs required: 21
+    # NB: Avohilmo and Hilmo separated in unique sub-processes for maximum speed
+    p_hilmo_69_86 = multiprocessing.Process(target=preprocess_hilmo_69_86)
+    p_hilmo_87_93 = multiprocessing.Process(target=preprocess_hilmo_87_93)
+    p_hilmo_heart = multiprocessing.Process(target=preprocess_hilmo_heart)
+    p_hilmo_operations = multiprocessing.Process(target=preprocess_hilmo_operations)
+    p_hilmo_diagnosis = multiprocessing.Process(target=preprocess_hilmo_diagnosis)
     p_avohilmo_icd10_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_11_16)
     p_avohilmo_icd10_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_17_19)
     p_avohilmo_icd10_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_20_21)
@@ -302,9 +302,11 @@ if __name__ == '__main__':
 
 
     # Start multiprocessing
-    START = datetime.now() 
-
-    p_hilmo.start()
+    p_hilmo_69_86.start()
+    p_hilmo_87_93.start()
+    p_hilmo_heart.start()
+    p_hilmo_operations.start()
+    p_hilmo_diagnosis.start()
     p_avohilmo_icd10_11_16.start()
     p_avohilmo_icd10_17_19.start()
     p_avohilmo_icd10_20_21.start()
@@ -323,7 +325,11 @@ if __name__ == '__main__':
     p_kela_purchases.start()
 
     # Wait for all the processes to end
-    p_hilmo.join()
+    p_hilmo_69_86.join()
+    p_hilmo_87_93.join()
+    p_hilmo_heart.join()
+    p_hilmo_operations.join()
+    p_hilmo_diagnosis.join()
     p_avohilmo_icd10_11_16.join()
     p_avohilmo_icd10_17_19.join()
     p_avohilmo_icd10_11_16.join()
@@ -341,6 +347,4 @@ if __name__ == '__main__':
     p_kela_reimbursement.join()
     p_kela_purchases.join()
 
-    END = datetime.now()
     print("Detailed Longitudinal file has been created!") 
-    print(f'total run time is: {(END-START)} hour:min:sec')

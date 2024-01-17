@@ -442,7 +442,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo", test=test)
+            write_out(Data, output_name="Hilmo_69_86", test=test)
 
 
 
@@ -598,11 +598,11 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo", test=test)
+            write_out(Data, output_name="Hilmo_87_93", test=test)
 
 
 
-def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
+def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, source, file_sep=";", test=False):
     """Process the Hilmo information from 1994 to 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -758,11 +758,12 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo", test=test)
+            output_name = "Hilmo_"+source
+            write_out(Data, output_name=output_name, test=test)
 
 
 
-def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
+def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, source, file_sep=";", test=False):
     """Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -919,11 +920,12 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, fi
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo", test=test)
+            output_name = "Hilmo_"+source
+            write_out(Data, output_name=output_name, test=test)
 
 
 
-def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, file_sep=";", test=False):
+def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, source, file_sep=";", test=False):
     """Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -1081,7 +1083,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, f
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo", test=test)
+            output_name = "Hilmo_"+source
+            write_out(Data, output_name=output_name, test=test)
 
 
 def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
