@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from func import *
+from func import combination_codes_split, Define_INPAT, Define_OPERIN, Define_OPEROUT, fix_missing_value
 import unittest
 
 
