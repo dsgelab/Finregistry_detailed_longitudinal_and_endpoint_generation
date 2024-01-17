@@ -288,7 +288,7 @@ if __name__ == '__main__':
     ]
 
     N_PROCESSES = len(processing_func_list)
-    with multiprocessing.get_context("spawn").Pool(processes=N_PROCESSES) as pool:
+    with multiprocessing.Pool(processes=N_PROCESSES) as pool:
         for func in processing_func_list:
             pool.apply_async(func)
         # Wait for all processes to finish
