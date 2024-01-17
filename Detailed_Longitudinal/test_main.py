@@ -16,85 +16,77 @@ from func import *
 # import all file paths
 from config import *
 
-# fetch info to add later: 
-DOB_map = DOB_map_preparation('/data/processed_data/minimal_phenotype/minimal_phenotype_2023-05-02.csv', sep=',')
-paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 
-
-def preprocess_hilmo():
-
+def preprocess_hilmo_69_86():
     START = datetime.now()
     Hilmo_69_86_processing(hilmo_1969_1986, DOB_map=DOB_map, test=True)
     END = datetime.now()
     print(f'hilmo_1969_1986 processing took {(END-START)} hour:min:sec')
 
 
+def preprocess_hilmo_87_93():
     START = datetime.now()
     Hilmo_87_93_processing(hilmo_1987_1993, DOB_map=DOB_map, paltu_map=paltu_map, test=True)
     END = datetime.now()
     print(f'hilmo_1987_1993 processing took {(END-START)} hour:min:sec')
 
-# ---
 
+def preprocess_hilmo_heart():
     START = datetime.now()
     heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995, test=True)
-    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_94_95, test=True)
+    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_94_95, source='heart', test=True)
     END = datetime.now()
     print(f'hilmo_1994_1995 + heart processing took {(END-START)} hour:min:sec')
     del heart_94_95
     gc.collect() 
 
-
     START = datetime.now()
     heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018, test=True)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_96_18, test=True)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_96_18, source='heart', test=True)
     END = datetime.now()
     print(f'hilmo_1996_2018 + heart processing took {(END-START)} hour:min:sec')	
     del heart_96_18
     gc.collect() 
 
-
     START = datetime.now()
     heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021, test=True)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_19_21, test=True)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_19_21, source='heart', test=True)
     END = datetime.now()
     print(f'hilmo_2019_2021 + heart processing took {(END-START)} hour:min:sec')
     del heart_19_21
     gc.collect() 
 
-# ---
 
+def preprocess_hilmo_operations():
     START = datetime.now()
     oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018, test=True)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_96_18, test=True)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_96_18, source='oper', test=True)
     END = datetime.now()
     print(f'hilmo_1996_2018 + oper processing took {(END-START)} hour:min:sec')
     del oper_96_18
     gc.collect() 
 
-
     START = datetime.now()
     oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021, test=True)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_19_21, test=True) 
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_19_21, source='oper', test=True) 
     END = datetime.now()
     print(f'hilmo_2019_2021 + oper processing took {(END-START)} hour:min:sec')
     del oper_19_21
     gc.collect() 
 
-# ---
 
+def preprocess_hilmo_diagnosis():
     START = datetime.now()
     diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018, test=True)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_96_18, test=True)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_96_18, source='diag', test=True)
     END = datetime.now()
     print(f'hilmo_1996_2018 + diag processing took {(END-START)} hour:min:sec')
     del diag_96_18
     gc.collect() 
 
-
     START = datetime.now()
     diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021, test=True)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_19_21, test=True) 
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_19_21, source='diag', test=True) 
     END = datetime.now()
     print(f'hilmo_2019_2021 + diag processing took {(END-START)} hour:min:sec')
     del diag_19_21
@@ -245,7 +237,6 @@ def preprocess_avohilmo_oper_year_20_21():
     print(f'avohilmo + oper + year 2020-2021processing took {(END-START)} hour:min:sec')
 
 
-
 def preprocess_death():
     START = datetime.now()
     DeathRegistry_processing(death_pre2020,DOB_map=DOB_map, test=True)
@@ -281,66 +272,42 @@ def preprocess_kela_purchases():
 
 if __name__ == '__main__':
 
-    # define processes, total number of CPUs required: 17
-    # NB: Avohilmo separated in 12 unique processes for maximum speed
-    p_hilmo = multiprocessing.Process(target=preprocess_hilmo)
-    p_avohilmo_icd10_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_11_16)
-    p_avohilmo_icd10_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_17_19)
-    p_avohilmo_icd10_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_20_21)
-    p_avohilmo_icpc2_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_11_16)
-    p_avohilmo_icpc2_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_17_19)
-    p_avohilmo_icpc2_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_20_21)
-    p_avohilmo_oral_11_16 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_11_16)
-    p_avohilmo_oral_17_19 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_17_19)
-    p_avohilmo_oral_20_21 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_20_21)
-    p_avohilmo_oper_11_16 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_11_16)
-    p_avohilmo_oper_17_19 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_17_19)
-    p_avohilmo_oper_20_21 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_20_21)
-    p_death = multiprocessing.Process(target=preprocess_death)
-    p_cancer = multiprocessing.Process(target=preprocess_cancer)
-    p_kela_reimbursement = multiprocessing.Process(target=preprocess_kela_reimbursement)
-    p_kela_purchases = multiprocessing.Process(target=preprocess_kela_purchases)
+    # prepare info to be added later: 
+    DOB_map = DOB_map_preparation(MINIMAL_PHENOTYPE_PATH, sep=',')
+    paltu_map = pd.read_csv("PALTU_mapping.csv", sep=",")
 
-    # Start multiprocessing
-    START = datetime.now() 
-    
-    p_hilmo.start()
-    p_avohilmo_icd10_11_16.start()
-    p_avohilmo_icd10_17_19.start()
-    p_avohilmo_icd10_20_21.start()
-    p_avohilmo_icpc2_11_16.start()
-    p_avohilmo_icpc2_17_19.start()
-    p_avohilmo_icpc2_20_21.start()
-    p_avohilmo_oral_11_16.start()
-    p_avohilmo_oral_17_19.start()
-    p_avohilmo_oral_20_21.start()
-    p_avohilmo_oper_11_16.start()
-    p_avohilmo_oper_17_19.start()
-    p_avohilmo_oper_20_21.start()
-    p_death.start()
-    p_cancer.start()
-    p_kela_reimbursement.start()
-    p_kela_purchases.start()
+    # define processes, total number of CPUs required: 21
+    # NB: Avohilmo and Hilmo separated in unique sub-processes for maximum speed
+    processing_func_list = [
+        preprocess_hilmo_69_86, 
+        preprocess_hilmo_87_93,
+        preprocess_hilmo_heart,
+        preprocess_hilmo_operations,
+        preprocess_hilmo_diagnosis,
+        preprocess_avohilmo_icd10_year_11_16,
+        preprocess_avohilmo_icd10_year_17_19,
+        preprocess_avohilmo_icd10_year_20_21,
+        preprocess_avohilmo_icpc2_year_11_16,
+        preprocess_avohilmo_icpc2_year_17_19,
+        preprocess_avohilmo_icpc2_year_20_21,
+        preprocess_avohilmo_oral_year_11_16,
+        preprocess_avohilmo_oral_year_17_19,
+        preprocess_avohilmo_oral_year_20_21,
+        preprocess_avohilmo_oper_year_11_16,
+        preprocess_avohilmo_oper_year_17_19,
+        preprocess_avohilmo_oper_year_20_21,
+        preprocess_death,
+        preprocess_cancer,
+        preprocess_kela_reimbursement,
+        preprocess_kela_purchases
+    ]
 
-    # Wait for all the processes to end
-    p_hilmo.join()
-    p_avohilmo_icd10_11_16.join()
-    p_avohilmo_icd10_17_19.join()
-    p_avohilmo_icd10_11_16.join()
-    p_avohilmo_icpc2_11_16.join()
-    p_avohilmo_icpc2_17_19.join()
-    p_avohilmo_icpc2_20_21.join()
-    p_avohilmo_oral_11_16.join()
-    p_avohilmo_oral_17_19.join()
-    p_avohilmo_oral_20_21.join()
-    p_avohilmo_oper_11_16.join()
-    p_avohilmo_oper_17_19.join()
-    p_avohilmo_oper_20_21.join()
-    p_death.join()
-    p_cancer.join()
-    p_kela_reimbursement.join()
-    p_kela_purchases.join()
+    N_PROCESSES = len(processing_func_list)
+    with multiprocessing.get_context("spawn").Pool(processes=N_PROCESSES) as pool:
+        for func in processing_func_list:
+            pool.apply_async(func)
+        # Wait for all processes to finish
+        pool.close()
+        pool.join()
 
-    END = datetime.now()
-    print("test hes been completed!") 
-    print(f'total run time is: {(END-START)} hour:min:sec')
+    print("Detailed Longitudinal file has been created!") 

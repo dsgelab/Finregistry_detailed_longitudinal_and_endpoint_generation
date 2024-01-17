@@ -278,73 +278,36 @@ if __name__ == '__main__':
 
     # define processes, total number of CPUs required: 21
     # NB: Avohilmo and Hilmo separated in unique sub-processes for maximum speed
-    p_hilmo_69_86 = multiprocessing.Process(target=preprocess_hilmo_69_86)
-    p_hilmo_87_93 = multiprocessing.Process(target=preprocess_hilmo_87_93)
-    p_hilmo_heart = multiprocessing.Process(target=preprocess_hilmo_heart)
-    p_hilmo_operations = multiprocessing.Process(target=preprocess_hilmo_operations)
-    p_hilmo_diagnosis = multiprocessing.Process(target=preprocess_hilmo_diagnosis)
-    p_avohilmo_icd10_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_11_16)
-    p_avohilmo_icd10_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_17_19)
-    p_avohilmo_icd10_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icd10_year_20_21)
-    p_avohilmo_icpc2_11_16 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_11_16)
-    p_avohilmo_icpc2_17_19 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_17_19)
-    p_avohilmo_icpc2_20_21 = multiprocessing.Process(target=preprocess_avohilmo_icpc2_year_20_21)
-    p_avohilmo_oral_11_16 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_11_16)
-    p_avohilmo_oral_17_19 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_17_19)
-    p_avohilmo_oral_20_21 = multiprocessing.Process(target=preprocess_avohilmo_oral_year_20_21)
-    p_avohilmo_oper_11_16 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_11_16)
-    p_avohilmo_oper_17_19 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_17_19)
-    p_avohilmo_oper_20_21 = multiprocessing.Process(target=preprocess_avohilmo_oper_year_20_21)
-    p_death = multiprocessing.Process(target=preprocess_death)
-    p_cancer = multiprocessing.Process(target=preprocess_cancer)
-    p_kela_reimbursement = multiprocessing.Process(target=preprocess_kela_reimbursement)
-    p_kela_purchases = multiprocessing.Process(target=preprocess_kela_purchases)
+    processing_func_list = [
+        preprocess_hilmo_69_86, 
+        preprocess_hilmo_87_93,
+        preprocess_hilmo_heart,
+        preprocess_hilmo_operations,
+        preprocess_hilmo_diagnosis,
+        preprocess_avohilmo_icd10_year_11_16,
+        preprocess_avohilmo_icd10_year_17_19,
+        preprocess_avohilmo_icd10_year_20_21,
+        preprocess_avohilmo_icpc2_year_11_16,
+        preprocess_avohilmo_icpc2_year_17_19,
+        preprocess_avohilmo_icpc2_year_20_21,
+        preprocess_avohilmo_oral_year_11_16,
+        preprocess_avohilmo_oral_year_17_19,
+        preprocess_avohilmo_oral_year_20_21,
+        preprocess_avohilmo_oper_year_11_16,
+        preprocess_avohilmo_oper_year_17_19,
+        preprocess_avohilmo_oper_year_20_21,
+        preprocess_death,
+        preprocess_cancer,
+        preprocess_kela_reimbursement,
+        preprocess_kela_purchases
+    ]
 
-
-    # Start multiprocessing
-    p_hilmo_69_86.start()
-    p_hilmo_87_93.start()
-    p_hilmo_heart.start()
-    p_hilmo_operations.start()
-    p_hilmo_diagnosis.start()
-    p_avohilmo_icd10_11_16.start()
-    p_avohilmo_icd10_17_19.start()
-    p_avohilmo_icd10_20_21.start()
-    p_avohilmo_icpc2_11_16.start()
-    p_avohilmo_icpc2_17_19.start()
-    p_avohilmo_icpc2_20_21.start()
-    p_avohilmo_oral_11_16.start()
-    p_avohilmo_oral_17_19.start()
-    p_avohilmo_oral_20_21.start()
-    p_avohilmo_oper_11_16.start()
-    p_avohilmo_oper_17_19.start()
-    p_avohilmo_oper_20_21.start()
-    p_death.start()
-    p_cancer.start()
-    p_kela_reimbursement.start()
-    p_kela_purchases.start()
-
-    # Wait for all the processes to end
-    p_hilmo_69_86.join()
-    p_hilmo_87_93.join()
-    p_hilmo_heart.join()
-    p_hilmo_operations.join()
-    p_hilmo_diagnosis.join()
-    p_avohilmo_icd10_11_16.join()
-    p_avohilmo_icd10_17_19.join()
-    p_avohilmo_icd10_11_16.join()
-    p_avohilmo_icpc2_11_16.join()
-    p_avohilmo_icpc2_17_19.join()
-    p_avohilmo_icpc2_20_21.join()
-    p_avohilmo_oral_11_16.join()
-    p_avohilmo_oral_17_19.join()
-    p_avohilmo_oral_20_21.join()
-    p_avohilmo_oper_11_16.join()
-    p_avohilmo_oper_17_19.join()
-    p_avohilmo_oper_20_21.join()
-    p_death.join()
-    p_cancer.join()
-    p_kela_reimbursement.join()
-    p_kela_purchases.join()
+    N_PROCESSES = len(processing_func_list)
+    with multiprocessing.get_context("spawn").Pool(processes=N_PROCESSES) as pool:
+        for func in processing_func_list:
+            pool.apply_async(func)
+        # Wait for all processes to finish
+        pool.close()
+        pool.join()
 
     print("Detailed Longitudinal file has been created!") 
