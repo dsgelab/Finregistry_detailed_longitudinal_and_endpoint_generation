@@ -442,7 +442,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo_69_86", test=test)
+            write_out(Data, output_name="Hilmo_1969_1986", test=test)
 
 
 
@@ -598,11 +598,11 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo_87_93", test=test)
+            write_out(Data, output_name="Hilmo_1987_1993", test=test)
 
 
 
-def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, source, file_sep=";", test=False):
+def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, file_sep=";", test=False):
     """Process the Hilmo information from 1994 to 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -714,8 +714,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, so
             Data = Data.reset_index(drop=True)
 
             # merge CODE1 and CATEGORY from extra file
-            to_append = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
-            Data = pd.concat([Data,to_append], ignore_index=True)
+            if extra_to_merge is not None:
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
 
             #------------------------------------------
             # SOURCE definitions
@@ -758,12 +758,11 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, so
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            output_name = "Hilmo_"+source
-            write_out(Data, output_name=output_name, test=test)
+            write_out(Data, output_name='Hilmo_1994_1995', test=test)
 
 
 
-def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, source, file_sep=";", test=False):
+def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, file_sep=";", test=False):
     """Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -876,10 +875,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, so
             Data = Data.reset_index(drop=True)
 
             # merge CODE1 and CATEGORY from extra file
-            to_append = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
-            Data = pd.concat([Data,to_append], ignore_index=True)
-            #-------------------------------------------
+            if extra_to_merge is not None:
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
 
+            #-------------------------------------------
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
             Data["YHTEYSTAPA"] = np.NaN
@@ -920,12 +919,11 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, so
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            output_name = "Hilmo_"+source
-            write_out(Data, output_name=output_name, test=test)
+            write_out(Data, output_name="Hilmo_1996_2018", test=test)
 
 
 
-def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, source, file_sep=";", test=False):
+def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, file_sep=";", test=False):
     """Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -1039,10 +1037,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, s
             Data = Data.reset_index(drop=True)	
 
             # merge CODE1 and CATEGORY from extra file
-            to_append = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
-            Data = pd.concat([Data,to_append], ignore_index=True)
-            #-------------------------------------------
+            if extra_to_merge is not None:
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
 
+            #-------------------------------------------
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
             Data["YHTEYSTAPA"] = Data["CODE8"]
@@ -1083,8 +1081,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge, s
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            output_name = "Hilmo_"+source
-            write_out(Data, output_name=output_name, test=test)
+            write_out(Data, output_name="Hilmo_2019_2021", test=test)
 
 
 def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):

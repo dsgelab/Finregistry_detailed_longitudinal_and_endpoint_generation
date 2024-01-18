@@ -31,51 +31,53 @@ def preprocess_hilmo_87_93():
     print(f'hilmo_1987_1993 processing took {(END-START)} hour:min:sec')
 
 
-def preprocess_hilmo_heart():
+def preprocess_hilmo_94_95():
     START = datetime.now()
-    heart_94_95 = Hilmo_heart_preparation(hilmo_heart_1994_1995)
-    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_94_95, source='heart')
-    del heart_94_95
+    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map)
+    extra_to_merge = Hilmo_heart_preparation(hilmo_heart_1994_1995)
+    Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
+    del extra_to_merge
     gc.collect() 
-    heart_96_18 = Hilmo_heart_preparation(hilmo_heart_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_96_18, source='heart')
-    del heart_96_18
+    END = datetime.now()
+    print(f'hilmo_1994_1995 processing took {(END-START)} hour:min:sec') 
+
+
+def preprocess_hilmo_96_18():
+    START = datetime.now()
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map)
+    extra_to_merge = Hilmo_heart_preparation(hilmo_heart_1996_2018)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
+    del extra_to_merge
     gc.collect() 
-    heart_19_21 = Hilmo_heart_preparation(hilmo_heart_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=heart_19_21, source='heart')   
-    del heart_19_21
+    extra_to_merge = Hilmo_operations_preparation(hilmo_oper_1996_2018)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
+    del extra_to_merge
+    gc.collect() 
+    extra_to_merge = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
+    del extra_to_merge
+    gc.collect() 
+    END = datetime.now()
+    print(f'hilmo_1996_2018 processing took {(END-START)} hour:min:sec') 
+
+
+def preprocess_hilmo_19_21():
+    START = datetime.now()
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map)
+    extra_to_merge = Hilmo_heart_preparation(hilmo_heart_2019_2021)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)   
+    del extra_to_merge
     gc.collect()
+    extra_to_merge = Hilmo_operations_preparation(hilmo_oper_2019_2021)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
+    del extra_to_merge
+    gc.collect()
+    extra_to_merge = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
+    del extra_to_merge
+    gc.collect()  
     END = datetime.now()
-    print(f'hilmo + heart processing took {(END-START)} hour:min:sec') 
-
-
-def preprocess_hilmo_operations():
-    START = datetime.now()
-    oper_96_18 = Hilmo_operations_preparation(hilmo_oper_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_96_18, source='oper')
-    del oper_96_18
-    gc.collect() 
-    oper_19_21 = Hilmo_operations_preparation(hilmo_oper_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=oper_19_21, source='oper') 
-    del oper_19_21
-    gc.collect() 
-    END = datetime.now()
-    print(f'hilmo + oper processing took {(END-START)} hour:min:sec')
-
-
-def preprocess_hilmo_diagnosis():
-    START = datetime.now()
-    diag_96_18 = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_96_18, source='diag')
-    del diag_96_18
-    gc.collect() 
-    diag_19_21 = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=diag_19_21, source='diag') 
-    del diag_19_21
-    gc.collect() 
-    END = datetime.now()
-    print(f'hilmo + diag processing took {(END-START)} hour:min:sec')
- 
+    print(f'hilmo_2018_2021 processing took {(END-START)} hour:min:sec') 
 
 
 def preprocess_avohilmo_icd10_year_11_16():
@@ -266,9 +268,9 @@ if __name__ == '__main__':
     processing_func_list = [
         preprocess_hilmo_69_86, 
         preprocess_hilmo_87_93,
-        preprocess_hilmo_heart,
-        preprocess_hilmo_operations,
-        preprocess_hilmo_diagnosis,
+        preprocess_hilmo_94_95,
+        preprocess_hilmo_96_18,
+        preprocess_hilmo_19_21,
         preprocess_avohilmo_icd10_year_11_16,
         preprocess_avohilmo_icd10_year_17_19,
         preprocess_avohilmo_icd10_year_20_21,
