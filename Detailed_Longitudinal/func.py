@@ -221,7 +221,7 @@ def fix_missing_value(Data:pd.DataFrame):
 
     code_list = ["CODE"+str(n) for n in range(1,10)]
     for code in code_list:
-        Data.loc[Data[code].isin(['-1',-1]), code] = np.NaN
+        Data.loc[Data[code].isin(['-1',-1,'____']), code] = np.NaN
 
     return Data
 
@@ -435,7 +435,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
-            # if -1 in a CODE column replace with missing
+            # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
 
             # select desired columns 
@@ -591,7 +591,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
-            # if -1 in a CODE column replace with missing
+            # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
 
             # select desired columns 
@@ -751,7 +751,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
-            # if -1 in a CODE column replace with missing
+            # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
 
             # select desired columns 
@@ -912,7 +912,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
-            # if -1 in a CODE column replace with missing
+            # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
 
             # select desired columns 
@@ -1074,7 +1074,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             Data = Data.reset_index(drop=True)
             # if negative hospital days than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
-            # if -1 in a CODE column replace with missing
+            # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
 
             # select desired columns 
@@ -1400,7 +1400,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"])
             Data = Data.reset_index(drop=True)
-            # if -1 in a CODE column replace with missing
+            # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
 
             # select desired columns 
