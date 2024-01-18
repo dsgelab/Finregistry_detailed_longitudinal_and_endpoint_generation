@@ -19,6 +19,7 @@ from config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
 ##########################################################
 # UTILITY VARIABLES
 
+CHUNKSIZE = 10**6
 DAYS_TO_YEARS = 365.24
 #NB: copied from FinnGen
 
@@ -94,7 +95,7 @@ def read_in(file_path:str, file_sep:str, dtype:dict, test = False):
     return Data
 
 
-def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = 10**6, test = False):
+def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = CHUNKSIZE, test = False):
     """Read into a pandas dataframe in chunks (if test=True)
 
     Args:
@@ -341,8 +342,10 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     "TP2": str
     }
 
+    chunk_counter=-1
     with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
         for Data in reader:
+            chunk_counter+=1 
 
             # add date of birth/death
             Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -357,7 +360,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
+            Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 8
             Data["CODE2"]			= np.NaN
@@ -485,8 +488,10 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     "PALTU":str
     }
 
+    chunk_counter=-1
     with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
         for Data in reader:
+            chunk_counter+=1
 
             # add date of birth
             Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -501,7 +506,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
+            Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 9
             Data["CODE2"]			= np.NaN
@@ -659,7 +664,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+            Data["INDEX"] 			= Data.HILMO_ID
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 9
             Data["CODE2"]			= np.NaN
@@ -820,7 +825,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+            Data["INDEX"] 			= Data.HILMO_ID
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 10
             Data["CODE2"]			= np.NaN
@@ -983,7 +988,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+            Data["INDEX"] 			= Data.HILMO_ID
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 10
             Data["CODE2"]			= np.NaN
@@ -1444,8 +1449,10 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     "M4": str
     }
 
+    chunk_counter=-1
     with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
         for Data in reader:
+            chunk_counter+=1
 
             # add date of birth
             Data = Data.merge(DOB_map, left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -1455,7 +1462,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # define columns for detailed longitudinal
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
             Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year	
-            Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+            Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
             Data["SOURCE"] 			= "DEATH"
             Data["CODE2"]			= np.NaN
@@ -1560,8 +1567,10 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     "beh": str
     }
 
+    chunk_counter=-1
     with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
         for Data in reader:
+            chunk_counter+=1
 
             # add date of birth
             Data = Data.merge(DOB_map, on = "FINREGISTRYID")
@@ -1574,7 +1583,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
             Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year	
             Data["ICDVER"] 			= "O3"
-            Data["INDEX"] 			= np.arange(Data.shape[0] ) + 1
+            Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "CANC"
             Data["CATEGORY"] 		= np.NaN
             Data["CODE4"]			= np.NaN
@@ -1646,8 +1655,10 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     "DIAG": str
     }
 
+    chunk_counter=-1
     with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
         for Data in reader:
+            chunk_counter+=1
 
             # add date of birth
             Data = Data.merge(DOB_map, left_on = "HETU",right_on = "FINREGISTRYID")
@@ -1661,7 +1672,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
             Data["EVENT_AGE"] 		= round( (Data.REIMB_START - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
             Data["EVENT_YEAR"] 		= Data.REIMB_START.dt.year
             Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
-            Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
+            Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "REIMB"
             Data["CATEGORY"] 		= np.NaN
             Data["CODE3"]			= np.NaN
@@ -1835,8 +1846,10 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     "LAJI": str,
     }
 
+    chunk_counter=-1
     with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
         for Data in reader:
+            chunk_counter+=1
 
             # add date of birth
             Data = Data.merge(DOB_map,left_on = "HETU",right_on = "FINREGISTRYID")
@@ -1849,7 +1862,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
             Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
             Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
-            Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
+            Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "PURCH"
             Data["CATEGORY"] 		= np.NaN
             Data["CODE8"]			= np.NaN
