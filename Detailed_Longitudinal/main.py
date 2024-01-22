@@ -77,7 +77,7 @@ def preprocess_hilmo_19_21():
     del extra_to_merge
     gc.collect()  
     END = datetime.now()
-    print(f'hilmo_2018_2021 processing took {(END-START)} hour:min:sec') 
+    print(f'hilmo_2019_2021 processing took {(END-START)} hour:min:sec') 
 
 
 def preprocess_avohilmo_icd10_year_11_16():
