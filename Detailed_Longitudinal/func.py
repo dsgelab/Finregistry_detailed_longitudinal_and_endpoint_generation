@@ -720,7 +720,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
             # merge CODE1 and CATEGORY from extra file
             if extra_to_merge is not None:
-                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
 
             #------------------------------------------
             # SOURCE definitions
@@ -881,7 +881,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
             # merge CODE1 and CATEGORY from extra file
             if extra_to_merge is not None:
-                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
 
             #-------------------------------------------
             # SOURCE definitions
@@ -1043,7 +1043,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
 
             # merge CODE1 and CATEGORY from extra file
             if extra_to_merge is not None:
-                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="left")
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
 
             #-------------------------------------------
             # SOURCE definitions
@@ -1132,6 +1132,7 @@ def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
         inplace=True)
 
     # keep only columns of interest
+    Data.CATEGORY = Data.CATEGORY.astype(str)
     Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
 
     return Data
@@ -1179,6 +1180,7 @@ def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
         inplace=True )
 
     # keep only columns of interest
+    Data.CATEGORY = Data.CATEGORY.astype(str)
     Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
 
     return Data
