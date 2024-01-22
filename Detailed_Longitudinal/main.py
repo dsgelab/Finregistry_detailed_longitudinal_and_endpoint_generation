@@ -36,8 +36,6 @@ def preprocess_hilmo_94_95():
     Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map)
     extra_to_merge = Hilmo_heart_preparation(hilmo_heart_1994_1995)
     Hilmo_94_95_processing(hilmo_1994_1995, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
-    del extra_to_merge
-    gc.collect() 
     END = datetime.now()
     print(f'hilmo_1994_1995 processing took {(END-START)} hour:min:sec') 
 
@@ -47,16 +45,10 @@ def preprocess_hilmo_96_18():
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map)
     extra_to_merge = Hilmo_heart_preparation(hilmo_heart_1996_2018)
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
-    del extra_to_merge
-    gc.collect() 
     extra_to_merge = Hilmo_operations_preparation(hilmo_oper_1996_2018)
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
-    del extra_to_merge
-    gc.collect() 
     extra_to_merge = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
-    del extra_to_merge
-    gc.collect() 
     END = datetime.now()
     print(f'hilmo_1996_2018 processing took {(END-START)} hour:min:sec') 
 
@@ -66,16 +58,10 @@ def preprocess_hilmo_19_21():
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map)
     extra_to_merge = Hilmo_heart_preparation(hilmo_heart_2019_2021)
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)   
-    del extra_to_merge
-    gc.collect()
     extra_to_merge = Hilmo_operations_preparation(hilmo_oper_2019_2021)
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
-    del extra_to_merge
-    gc.collect()
     extra_to_merge = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
-    del extra_to_merge
-    gc.collect()  
     END = datetime.now()
     print(f'hilmo_2019_2021 processing took {(END-START)} hour:min:sec') 
 
@@ -86,8 +72,6 @@ def preprocess_avohilmo_icd10_year_11_16():
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_11_16, source='icd10', year='11_16')
-    del icd10_11_16
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + icd10 + year 2011-2016 processing took {(END-START)} hour:min:sec')
 
@@ -98,8 +82,6 @@ def preprocess_avohilmo_icd10_year_17_19():
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_17_19, source='icd10', year='17_19')
-    del icd10_17_19
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + icd10 + year 2017-2019 processing took {(END-START)} hour:min:sec')
 
@@ -110,8 +92,6 @@ def preprocess_avohilmo_icd10_year_20_21():
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icd10_20_21, source='icd10', year='20_21')
-    del icd10_20_21
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + icd10 + year 2020-2021 processing took {(END-START)} hour:min:sec')
 
@@ -122,8 +102,6 @@ def preprocess_avohilmo_icpc2_year_11_16():
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_11_16, source='icpc2', year='11_16')
-    del icpc2_11_16
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + icpc2 + year 2011-2016 processing took {(END-START)} hour:min:sec')
 
@@ -134,8 +112,6 @@ def preprocess_avohilmo_icpc2_year_17_19():
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_17_19, source='icpc2', year='17_19')	
-    del icpc2_17_19
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + icpc2 + year 2017-2019 processing took {(END-START)} hour:min:sec')
 
@@ -146,8 +122,6 @@ def preprocess_avohilmo_icpc2_year_20_21():
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=icpc2_20_21, source='icpc2', year='20_21')	
-    del icpc2_20_21
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + icpc2 + year 2020-2021 processing took {(END-START)} hour:min:sec')
 
@@ -158,8 +132,6 @@ def preprocess_avohilmo_oral_year_11_16():
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]    
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_11_16, source='oral', year='11_16')
-    del oral_11_16
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + oral + year 2011-2016 processing took {(END-START)} hour:min:sec')
 
@@ -170,8 +142,6 @@ def preprocess_avohilmo_oral_year_17_19():
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_17_19, source='oral', year='17_19')
-    del oral_17_19
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + oral + year 2017-2019 processing took {(END-START)} hour:min:sec')
 
@@ -182,8 +152,6 @@ def preprocess_avohilmo_oral_year_20_21():
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oral_20_21, source='oral', year='20_21')
-    del oral_20_21
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + oral + year 2020-2021 processing took {(END-START)} hour:min:sec')
 
@@ -194,8 +162,6 @@ def preprocess_avohilmo_oper_year_11_16():
     avohilmo_to_process = [avohilmo_2011_2012,avohilmo_2013_2014,avohilmo_2015_2016]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_11_16, source='oper', year='11_16')	
-    del oper_11_16
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + oper + year 201-2016 processing took {(END-START)} hour:min:sec')
 
@@ -206,8 +172,6 @@ def preprocess_avohilmo_oper_year_17_19():
     avohilmo_to_process = [avohilmo_2017_2018,avohilmo_2019_2020]
     for avohilmo in avohilmo_to_process:
         AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_17_19, source='oper', year='17_19')	
-    del oper_17_19
-    gc.collect() 
     END = datetime.now()
     print(f'avohilmo + oper + year 2017-2019 processing took {(END-START)} hour:min:sec')
 
@@ -217,9 +181,7 @@ def preprocess_avohilmo_oper_year_20_21():
     oper_20_21 = AvoHilmo_codes_preparation(avohilmo_oper_2020_2021, source='oper')
     avohilmo_to_process = [avohilmo_2020,avohilmo_2021]
     for avohilmo in avohilmo_to_process:
-        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_20_21, source='oper', year='20_21')
-    del oper_20_21
-    gc.collect() 	
+        AvoHilmo_processing(avohilmo, DOB_map=DOB_map, extra_to_merge=oper_20_21, source='oper', year='20_21')	
     END = datetime.now()
     print(f'avohilmo + oper + year 2020-2021processing took {(END-START)} hour:min:sec')
 
