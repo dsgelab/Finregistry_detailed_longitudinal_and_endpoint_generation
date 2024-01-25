@@ -5,9 +5,13 @@ This repository contains the script for creating the detailed longitudinal file 
 
 *config.py* contains all data file paths to be used in the creation of the detailed longitudinal file
 
-*main.py* perform all the processing in order to then to create the deatiled longitudial file by concatenating the output files
+*main.py* performs all the processing required in order to create the detailed longitudial splits
+
+*join_splits.sh* is the bash script responsible for merging together all the splits and create the official version of detailed longitudinal file
 
 *func.py* contains all the function used to process the dataset in main.py, for more info see **PROCESSING SUMMARY** section of this file
+
+the *test/* folder finally contains all the extra scripts used for QC
 
 # CHANGES
 
@@ -18,7 +22,7 @@ This repository contains the script for creating the detailed longitudinal file 
 - birth date is not created using the htun2date() function but is imported from a sample of minimal_phenotype file (Finregistry dataset) 
 - death date is also imported from minimal_phenotype file (Finregistry dataset)
 - age randomization is only performed in FinnGen not in Finregistry
-- armonize INDEX definition to the one of every other registry
+- new INDEX definition
 - maximum of 3 extra diagnosis codes    --> all extra codes in finngen instead
 
 # REGISTRIES TIMELINE
