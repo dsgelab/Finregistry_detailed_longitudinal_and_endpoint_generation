@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from func import *
+from func import combination_codes_split, Define_INPAT, Define_OPERIN, Define_OPEROUT, fix_missing_value
 import unittest
 
 
@@ -119,9 +119,25 @@ class TestBaseFunctions(unittest.TestCase):
             # print(Data_IN)
             assert_series_equal(Define_OPEROUT(Data_IN).SOURCE,Data_OUT.SOURCE)
 
-class TestRegistryScripts(unittest.TestCase):
-    
-    pass
+
+    def test_fix_missing_value(self):
+        test_data = [
+            ['-1','3','3','3','3','3','3',-1,'3'],
+            [-1,'3','3','3','3','3','3','3','3'],
+            ['3','3','3','3','3','3','3','3','3'],
+            ['3','3','3','3','3','-1','3','3','3'],
+            ]
+        expected_output = [
+            [np.NaN,'3','3','3','3','3','3',np.NaN,'3'],
+            [np.NaN,'3','3','3','3','3','3','3','3'],
+            ['3','3','3','3','3','3','3','3','3'],
+            ['3','3','3','3','3',np.NaN,'3','3','3'],
+            ]  
+        for row in range(len(test_data)):
+            Data_IN = pd.DataFrame([test_data[row]], columns=['CODE1','CODE2','CODE3','CODE4','CODE5','CODE6','CODE7','CODE8','CODE9'])
+            Data_OUT = pd.DataFrame([expected_output[row]], columns=['CODE1','CODE2','CODE3','CODE4','CODE5','CODE6','CODE7','CODE8','CODE9'])
+            # print(Data_IN)
+            assert_frame_equal(fix_missing_value(Data_IN),Data_OUT, check_dtype=False)
 
 if __name__ == '__main__':
     unittest.main()
