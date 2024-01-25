@@ -139,9 +139,5 @@ class TestBaseFunctions(unittest.TestCase):
             # print(Data_IN)
             assert_frame_equal(fix_missing_value(Data_IN),Data_OUT, check_dtype=False)
 
-class TestRegistryScripts(unittest.TestCase):
-    
-    pass
-
 if __name__ == '__main__':
     unittest.main()
