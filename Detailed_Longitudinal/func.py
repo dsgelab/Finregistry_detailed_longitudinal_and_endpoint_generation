@@ -147,7 +147,7 @@ def write_out(Data: pd.DataFrame, output_name: str, header = False, test = False
 
     # Convert all columns to desired data types before exporting
     for i,col in enumerate(Data.columns):
-        Data.fillna('')
+        Data = Data.fillna('')
         Data[col] = Data[col].astype(COLUMNS_DTYPES[i])
 
     Data.to_csv(
@@ -222,9 +222,15 @@ def fix_missing_value(Data:pd.DataFrame):
     ValueError: If the provided Data is not a pandas DataFrame.
     """
 
+    SPECIAL_CODES = [
+        '-1',-1,
+        '-2',-2,
+        '____'
+    ]
+
     code_list = ["CODE"+str(n) for n in range(1,10)]
     for code in code_list:
-        Data.loc[Data[code].isin(['-1',-1,'____']), code] = np.NaN
+        Data.loc[Data[code].isin(SPECIAL_CODES), code] = np.NaN
 
     return Data
 
@@ -429,19 +435,16 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             #-------------------------------------------
             # QUALITY CONTROL:
 
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
-            Data = Data.reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-            Data = Data.reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # check that EVENT_AGE is in predefined range 
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            # check that EVENT_AGE is not missing
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+            # check that CODE1 and 2 are not missing
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+            # if negative hospital days than missing value
+            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -587,19 +590,16 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             #-------------------------------------------
             # QUALITY CONTROL:
 
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
-            Data = Data.reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-            Data = Data.reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # check that EVENT_AGE is in predefined range 
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            # check that EVENT_AGE is not missing
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+            # check that CODE1 and 2 are not missing
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+            # if negative hospital days than missing value
+            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -747,19 +747,16 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             #-------------------------------------------
             # QUALITY CONTROL:
 
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
-            Data = Data.reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-            Data = Data.reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # check that EVENT_AGE is in predefined range 
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            # check that EVENT_AGE is not missing
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+            # check that CODE1 and 2 are not missing
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+            # if negative hospital days than missing value
+            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -911,19 +908,16 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             #-------------------------------------------
             # QUALITY CONTROL:
 
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
-            Data = Data.reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-            Data = Data.reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # check that EVENT_AGE is in predefined range 
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            # check that EVENT_AGE is not missing
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+            # check that CODE1 and 2 are not missing
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+            # if negative hospital days than missing value
+            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1076,19 +1070,16 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             #-------------------------------------------
             # QUALITY CONTROL:
 
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
-            Data = Data.reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()]
-            Data = Data.reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # check that EVENT_AGE is in predefined range 
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            # check that EVENT_AGE is not missing
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+            # check that CODE1 and 2 are not missing
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+            # if negative hospital days than missing value
+            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1253,7 +1244,7 @@ def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
 
     # keep only columns of interest
     Data.CATEGORY = Data.CATEGORY.astype(str)
-    Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
+    Data = Data[["HILMO_ID","CATEGORY","CODE1"]]
 
     return Data
 
@@ -1322,7 +1313,7 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 
     # keep only columns of interest
     Data = Data.reset_index(drop=True)
-    Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
+    Data = Data[["HILMO_ID","CATEGORY","CODE1"]]
 
     return Data
 
@@ -1380,8 +1371,7 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     Data.loc[Data.CODE1.notna(),"CATEGORY"] = category_prefix + Data.loc[Data.CODE1.notna(),"JARJESTYS"].astype("string")
 
     # filter data
-    Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ]
-    Data = Data.reset_index(drop=True)
+    Data = Data.loc[ Data.CODE1.notna() & Data.CATEGORY.notna() ].reset_index(drop=True)
 
     # remove ICD code dots
     Data["CODE1"] = Data["CODE1"].str.replace(".","",regex=False)
@@ -1473,14 +1463,12 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
             #-------------------------------------------
             # QUALITY CONTROL:
 
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)]
-            Data = Data.reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # check that EVENT_AGE is in predefined range 
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            # check that EVENT_AGE is not missing
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1593,14 +1581,11 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             #-------------------------------------------
             # QUALITY CONTROL:
 
+            # NOT performing special code check in this registry
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
-
-            # NOT performing code check in this registry
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1681,14 +1666,11 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # QUALITY CONTROL:
 
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True)
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1770,14 +1752,11 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
             # QUALITY CONTROL:
 
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True)
 
             # remove ICD code dots
             Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
@@ -1866,14 +1845,11 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     # QUALITY CONTROL:
 
     # check that EVENT_AGE is in predefined range 
-    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
-    Data = Data.reset_index(drop=True)
+    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
     # check that EVENT_AGE is not missing
-    Data = Data.dropna(subset=["EVENT_AGE"])
-    Data = Data.reset_index(drop=True)
+    Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
     # check that CODE1 and 2 are not missing
-    Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-    Data = Data.reset_index(drop=True)
+    Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True)
 
     # remove ICD code dots
     Data["CODE2"] = Data["CODE2"].str.replace(".", "", regex=False)
@@ -1960,14 +1936,11 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
             # QUALITY CONTROL:
 
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"])
-            Data = Data.reset_index(drop=True)
+            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True)
 
             # remove dot in VNRO code
             Data["CODE3"] = Data.CODE3.astype("string").str.split(".",expand=True)[0]
@@ -2062,14 +2035,11 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     # QUALITY CONTROL:
 
     # check that EVENT_AGE is in predefined range 
-    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ]
-    Data = Data.reset_index(drop=True)
+    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
     # check that EVENT_AGE is not missing
-    Data = Data.dropna(subset=["EVENT_AGE"])
-    Data = Data.reset_index(drop=True)
+    Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
     # check that CODE1 and 2 are not missing
-    Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()  ]
-    Data = Data.reset_index(drop=True)
+    Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna() ].reset_index(drop=True)
 
     # remove dot in VNRO code
     Data["CODE3"] = Data.CODE3.astype("string").str.split(".",expand=True)[0]
