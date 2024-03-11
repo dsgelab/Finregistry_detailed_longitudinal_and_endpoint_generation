@@ -881,7 +881,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
             # merge CODE1 and CATEGORY from extra file
             if extra_to_merge is not None:
-                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
+                if 'CODE2' in extra_to_merge.columns:
+                    Data = Data.drop(['CATEGORY','CODE1','CODE2'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
+                else:    
+                    Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
 
             #-------------------------------------------
             # SOURCE definitions
@@ -1043,7 +1046,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
 
             # merge CODE1 and CATEGORY from extra file
             if extra_to_merge is not None:
-                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
+                if 'CODE2' in extra_to_merge.columns:
+                    Data = Data.drop(['CATEGORY','CODE1','CODE2'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
+                else:    
+                    Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
 
             #-------------------------------------------
             # SOURCE definitions
@@ -1089,11 +1095,13 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             write_out(Data, output_name="Hilmo_2019_2021", test=test)
 
 
-def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
+def Hilmo_ulksyy_diagnosis_preparation(file_path:str, file_sep=";", test=False):
     """Process Hilmo diagnosis.
 
     This function reads and processes an Hilmo diagnosis codes that need to be joined to hilmo starting from 1996.
     The processed data can be read/saved in a test setting if specified.
+
+    ulksyy represents external causes on mortality and morbidity
 
     Args:
         file_path (str): The path to the Hilmo file.
@@ -1101,7 +1109,7 @@ def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
         test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
 
     Returns:
-        None
+        Ulksyy (pd.Dataframe)
 
     Raises:
         FileNotFoundError: If the specified file_path does not exist.
@@ -1119,21 +1127,83 @@ def Hilmo_diagnosis_preparation(file_path:str, file_sep=";", test=False):
     # fetch Data
     Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
 
-    # keep only the main ICD diagnosis code and 3 extra ones 
-    Data = Data.loc[ (Data.KENTTA.isin(["PDGO","SDGO"])) & (Data.N<=3)]
-    Data = Data.reset_index(drop=True)
-
-    # rename columns
+    # process ulksyy data
+    Data = Data.loc[(Data.KENTTA=='ULKSYY') & (Data.N<=3)].reset_index(drop=True).drop('KENTTA',axis=1)
     Data.rename( 
         columns = {
         "N":"CATEGORY",
         "KOODI":"CODE1",
         },
         inplace=True)
+    
+    # fix category naming
+    Data.CATEGORY = Data.CATEGORY.apply(lambda x: 'EX' + str(x))
 
-    # keep only columns of interest
+    # select desired columns
+    Data = Data[['HILMO_ID','CATEGORY','CODE1']]
+    
+    return Data
+
+
+def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";", test=False):
+    """Process Hilmo diagnosis.
+
+    This function reads and processes an Hilmo diagnosis codes that need to be joined to hilmo starting from 1996.
+    The processed data can be read/saved in a test setting if specified.
+
+    The data containes separate info:
+    main diagnosis codes (PDG0=main diagnosi, SDG0=side to the main diagnosis), those are going to represent CODE1 
+    and extra diagnosis codes (PDGE,SDGE) those are going to represent CODE2.
+    use the content of the column KENTTA to separate them in the correct CODE.  
+
+
+    Args:
+        file_path (str): The path to the Hilmo file.
+        file_sep (str, optional): The separator used in the file. Defaults to ";".
+        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
+
+    Returns:
+        Data (pd.DataFrame)
+
+    Raises:
+        FileNotFoundError: If the specified file_path does not exist.
+        ValueError: If the provided file_sep is not a valid separator.
+
+    """
+
+    dtypes = {
+    "HILMO_ID": str,
+    "KENTTA": str,
+    "N": int,
+    "KOODI": str
+    }
+
+    # fetch Data
+    Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+
+    # process extra diagnosis information
+    # keeping only 3 extra diagnosis 
+    main_diag = Data.loc[ (Data.KENTTA.isin(['PDGO','SDGO'])) & (Data.N<=3)].reset_index(drop=True).drop('KENTTA',axis=1)
+    main_diag.rename( 
+        columns = {
+        "N":"CATEGORY",
+        "KOODI":"CODE1",
+        },
+        inplace=True)   
+     
+    side_diag = Data.loc[ (Data.KENTTA.isin(['PDGE','SDGE'])) & (Data.N<=3)].reset_index(drop=True).drop('KENTTA',axis=1)
+    side_diag.rename( 
+        columns = {
+        "N":"CATEGORY",
+        "KOODI":"CODE2",
+        },
+        inplace=True)
+    
+    Data = main_diag.merge(side_diag, on=['HILMO_ID','CATEGORY'], how='inner')
+    
+    # select desired columns
     Data.CATEGORY = Data.CATEGORY.astype(str)
-    Data = Data[ ["HILMO_ID","CATEGORY","CODE1"] ]
+    Data = Data[['HILMO_ID','CATEGORY','CODE1','CODE2']]
 
     return Data
 

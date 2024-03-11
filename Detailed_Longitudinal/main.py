@@ -47,11 +47,17 @@ def preprocess_hilmo_96_18():
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
     extra_to_merge = Hilmo_operations_preparation(hilmo_oper_1996_2018)
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
-    extra_to_merge = Hilmo_diagnosis_preparation(hilmo_diag_1996_2018)
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
     END = datetime.now()
     print(f'hilmo_1996_2018 processing took {(END-START)} hour:min:sec') 
 
+def preprocess_hilmo_diagnosis_96_18():
+    START = datetime.now()
+    extra_to_merge = Hilmo_ulksyy_diagnosis_preparation(hilmo_diag_1996_2018)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
+    extra_to_merge = Hilmo_extra_diagnosis_preparation(hilmo_diag_1996_2018)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)
+    END = datetime.now()
+    print(f'hilmo_1996_2018 diagnosis processing took {(END-START)} hour:min:sec') 
 
 def preprocess_hilmo_19_21():
     START = datetime.now()
@@ -60,11 +66,17 @@ def preprocess_hilmo_19_21():
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge)   
     extra_to_merge = Hilmo_operations_preparation(hilmo_oper_2019_2021)
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
-    extra_to_merge = Hilmo_diagnosis_preparation(hilmo_diag_2019_2021)
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
     END = datetime.now()
     print(f'hilmo_2019_2021 processing took {(END-START)} hour:min:sec') 
 
+def preprocess_hilmo_diagnosis_19_21():
+    START = datetime.now()
+    extra_to_merge = Hilmo_ulksyy_diagnosis_preparation(hilmo_diag_2019_2021)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
+    extra_to_merge = Hilmo_extra_diagnosis_preparation(hilmo_diag_2019_2021)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge) 
+    END = datetime.now()
+    print(f'hilmo_2019_2021 diagnosis processing took {(END-START)} hour:min:sec') 
 
 def preprocess_avohilmo_icd10_year_11_16():
     START = datetime.now()  
@@ -232,7 +244,9 @@ if __name__ == '__main__':
         preprocess_hilmo_87_93,
         preprocess_hilmo_94_95,
         preprocess_hilmo_96_18,
+        preprocess_hilmo_diagnosis_96_18,
         preprocess_hilmo_19_21,
+        preprocess_hilmo_diagnosis_19_21,
         preprocess_avohilmo_icd10_year_11_16,
         preprocess_avohilmo_icd10_year_17_19,
         preprocess_avohilmo_icd10_year_20_21,
