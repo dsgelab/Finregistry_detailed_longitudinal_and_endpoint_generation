@@ -147,7 +147,9 @@ def write_out(Data: pd.DataFrame, output_name: str, header = False, test = False
 
     # Convert all columns to desired data types before exporting
     for i,col in enumerate(Data.columns):
+        Data.fillna('')
         Data[col] = Data[col].astype(COLUMNS_DTYPES[i])
+
     Data.to_csv(
         path_or_buf = final_path, 
         mode="a", 
