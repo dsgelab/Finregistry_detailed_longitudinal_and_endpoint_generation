@@ -1503,6 +1503,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     dtypes = {
     "TNRO": str,
+    "KVUOSI": int,
     "KPV": str,
     "VKS": str,
     "M1": str,
@@ -1520,6 +1521,9 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data = Data.merge(DOB_map, left_on = "TNRO",right_on = "FINREGISTRYID")
             # format date columns (birth date)
             Data["EVENT_DATE"]		= pd.to_datetime( Data.KPV.str.slice(stop=10), format="%d.%m.%Y" )
+            # fix event_day if missing (as done in finngen)
+            # ONLY in this registry
+            Data.loc[Data.EVENT_DATE.isna(),'EVENT_DATE'] = Data.KVUOSI.astype(str) + '-06-30' 
 
             # define columns for detailed longitudinal
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
