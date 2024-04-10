@@ -546,7 +546,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             "SDG3": "3",
             "TMP1":"MFHL1",
             "TMP2":"MFHL2",
-            "EDIA":"EX"
+            "EDIA":"EX0"
             }
 
             new_names = Data.columns
