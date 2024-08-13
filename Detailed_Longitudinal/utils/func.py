@@ -13,7 +13,7 @@ import numpy as np
 from datetime import datetime as dt
 from pathlib import Path
 
-from config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
+from utils.config import DETAILED_LONGITUDINAL_PATH, TEST_FOLDER_PATH
 
 
 ##########################################################
@@ -23,7 +23,7 @@ CHUNKSIZE = 10**6
 DAYS_TO_YEARS = 365.24
 #NB: copied from FinnGen
 
-PALA_INPAT_LIST= [1,3,4,5,6,7,8,31]
+PALA_INPAT_LIST= ['1','5','6','7','8']
 
 OUTPUT_COLUMNS = {
     "FINREGISTRYID":str,
@@ -49,32 +49,51 @@ COLUMNS_DTYPES = list(OUTPUT_COLUMNS.values())
 ##########################################################
 # UTILITY FUNCTIONS
 
-def DOB_map_preparation(filepath:str, sep=";"):
+def DOB_map_preparation(filepath:str, sep=";", test=False):
     """
     Prepare death and birth date information to be mapped into to the processed files for each patient
     """
+    
+    if test:
+        dtypes = {
+        "FINREGISTRYID":str,
+        "SYNTYMAPAIVA":str,
+        "KUOLINPVM":str
+        }
 
-    dtypes = {
-    "FINREGISTRYID":str,
-    "date_of_birth":str,
-    "death_date":str
-    }
+        birth_death_map = pd.read_csv(
+            filepath_or_buffer = filepath,
+            sep = sep, 
+            dtype = dtypes, 
+            usecols = dtypes.keys())
 
-    birth_death_map = pd.read_csv(
-        filepath_or_buffer = filepath,
-        sep = sep, 
-        encoding = "latin-1", 
-        dtype = dtypes, 
-        usecols = dtypes.keys())
+        birth_death_map.rename( columns = {"SYNTYMAPAIVA":"BIRTH_DATE","KUOLINPVM":"DEATH_DATE"}, inplace = True )
+        # format date columns (birth and death date)
+        birth_death_map["BIRTH_DATE"] = pd.to_datetime( birth_death_map.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+        birth_death_map["DEATH_DATE"] = pd.to_datetime( birth_death_map.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
+        
+    else: 
+        dtypes = {
+        "FINREGISTRYID":str,
+        "date_of_birth":str,
+        "death_date":str
+        }
 
-    birth_death_map.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
-    # format date columns (birth and death date)
-    birth_death_map["BIRTH_DATE"] = pd.to_datetime( birth_death_map.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
-    birth_death_map["DEATH_DATE"] = pd.to_datetime( birth_death_map.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
+        birth_death_map = pd.read_csv(
+            filepath_or_buffer = filepath,
+            sep = sep, 
+            encoding = "latin-1", 
+            dtype = dtypes, 
+            usecols = dtypes.keys())
+
+        birth_death_map.rename( columns = {"date_of_birth":"BIRTH_DATE","death_date":"DEATH_DATE"}, inplace = True )
+        # format date columns (birth and death date)
+        birth_death_map["BIRTH_DATE"] = pd.to_datetime( birth_death_map.BIRTH_DATE, format="%Y-%m-%d", errors="coerce" )
+        birth_death_map["DEATH_DATE"] = pd.to_datetime( birth_death_map.DEATH_DATE, format="%Y-%m-%d", errors="coerce" )
 
     return birth_death_map
 
-def read_in(file_path:str, file_sep:str, dtype:dict, test = False):
+def read_in(file_path:str, file_sep:str, dtype:dict):
     """Read into a pandas dataframe 
 
     Args:
@@ -86,16 +105,12 @@ def read_in(file_path:str, file_sep:str, dtype:dict, test = False):
     Returns:
         Fetched data  
     """
-
-    if test: 	
-        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1', dtype=dtype, usecols=dtype.keys(), nrows=5_000)		
-    else: 		
-        Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1', dtype=dtype, usecols=dtype.keys())
-
+ 
+    Data = pd.read_csv(file_path, sep=file_sep, encoding='latin-1', dtype=dtype, usecols=dtype.keys())
     return Data
 
 
-def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = CHUNKSIZE, test = False):
+def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size=CHUNKSIZE):
     """Read into a pandas dataframe in chunks (if test=True)
 
     Args:
@@ -107,15 +122,11 @@ def read_in_chunks(file_path:str, file_sep:str, dtype:dict, chunck_size = CHUNKS
     Returns:
         reader function
     """
-
-    if test: 	
-        return pd.read_csv(file_path, sep=file_sep, encoding='latin-1', chunksize=chunck_size, dtype=dtype, usecols=dtype.keys(), nrows=5_000)		
-    else: 		
-        return pd.read_csv(file_path, sep=file_sep, encoding='latin-1', chunksize=chunck_size, dtype=dtype, usecols=dtype.keys()) 
+    return pd.read_csv(file_path, sep=file_sep, encoding='latin-1', chunksize=chunck_size, dtype=dtype, usecols=dtype.keys()) 
 
 
 
-def write_out(Data: pd.DataFrame, output_name: str, header = False, test = False):
+def write_out(Data:pd.DataFrame, output_name:str, header=False, test=False):
     """Writes pandas dataframe to detailed_longitudinal or test file
 
     append if already exist and also insert date in the filename
@@ -131,8 +142,7 @@ def write_out(Data: pd.DataFrame, output_name: str, header = False, test = False
 
     if test: 
         path = TEST_FOLDER_PATH
-        today = dt.today().strftime("%Y_%m_%d")
-        filename = output_name + "_test_" + today + ".csv"
+        filename = output_name + "_test" + ".csv"
 
     else:
         path = DETAILED_LONGITUDINAL_PATH
@@ -150,16 +160,25 @@ def write_out(Data: pd.DataFrame, output_name: str, header = False, test = False
         Data = Data.fillna('')
         Data[col] = Data[col].astype(COLUMNS_DTYPES[i])
 
-    Data.to_csv(
-        path_or_buf = final_path, 
-        mode="a", 
-        sep=",", 
-        encoding="utf-8", #same for every Finregistry file
-        index=False,
-        header=header
-        )
+    if test:
+        Data.to_csv(
+            path_or_buf = final_path, 
+            mode="w", 
+            sep=",", 
+            encoding="utf-8", #same for every Finregistry files
+            index=False,
+            header=True)    
+    else:
+        Data.to_csv(
+            path_or_buf = final_path, 
+            mode="a", 
+            sep=",", 
+            encoding="utf-8", #same for every Finregistry files
+            index=False,
+            header=header)
 
-
+        
+        
 def combination_codes_split(Data):
     """
     Splits combinatino codes in the input dataframe CODE1 based on special characters.
@@ -179,24 +198,21 @@ def combination_codes_split(Data):
     """
     # Specify special characters and their respective column positions
     special_chars = {
-        "\*": ["CODE1", "CODE2"],
-        "\&": ["CODE1", "CODE2"],
         "\#": ["CODE1", "CODE3"],
-        "\+": ["CODE2", "CODE1"]
+        "\+": ["CODE2", "CODE1"],
+        "\*": ["CODE1", "CODE2"],
+        "\&": ["CODE1", "CODE2"]
     }
-
-    # Drop rows with NA as CODE1 or multiple special characters
-    Data = Data.loc[
-        (~Data["CODE1"].isna()) & 
-        (Data["CODE1"].str.count("|".join(special_chars.keys())) < 2)]
-    Data = Data.reset_index(drop=True)
 
     # Store the original CODE1 into a variable to avoid overwriting CODE1
     original_code = Data["CODE1"]
 
     # Loop through special characters and split codes into variables according to the dictionary
     for s in special_chars.keys():
-        indx = original_code.str.contains(pat=s, regex=True)
+        original_code = original_code.astype(str)
+        #NB: checking that there is only one special code, and is in our list
+        indx = original_code.apply(lambda x: len(re.findall("[#*+&]",x))==1)
+        indx = (indx) & (original_code.str.contains(pat=s, regex=True))
         if sum(indx) > 0:
             split_codes = original_code[indx].str.split(pat=s)
             Data.loc[split_codes.index, special_chars[s]] = split_codes.tolist()
@@ -251,20 +267,17 @@ def Define_INPAT(Data:pd.DataFrame):
     """
 
     # adjust possible errors
-    Data.loc[Data.PALA=="", "PALA"] = np.NaN
-    Data.loc[Data.YHTEYSTAPA=="", "YHTEYSTAPA"] = np.NaN
+    Data.PALA = Data.PALA.astype(str).str.replace('nan','',regex=True).replace('.0','',regex=True)
+    Data.YHTEYSTAPA = Data.YHTEYSTAPA.astype(str).str.replace('nan','',regex=True).replace('.0','',regex=True)
     
     # RULE 1969-1997: all is INPAT
-    Data.loc[ (Data.EVENT_DAY.dt.year<1998) ,"SOURCE"] = "INPAT"
-
-    # RULE 1998-2018: OUTPAT depends on PALA variable
-    Data.loc[ (Data.EVENT_DAY.dt.year>=1998) & (Data.EVENT_DAY.dt.year<=2018) & Data.PALA.isin(PALA_INPAT_LIST),"SOURCE"] = "INPAT"
-
+    # RULE 1998-2018: OUTPAT depends only on PALA variable
     # RULE 2019-NOW: OUTPAT depends on PALA and YHTEYSTAPA variable
+    Data.loc[ (Data.EVENT_DAY.dt.year<1998),"SOURCE"] = "INPAT"
+    Data.loc[ ((Data.EVENT_DAY.dt.year>=1998) & (Data.EVENT_DAY.dt.year<=2018)) & (Data.PALA.isin(PALA_INPAT_LIST)),"SOURCE"] = "INPAT"
     Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
     Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="R10") & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
-    Data.loc[ (Data.EVENT_DAY.dt.year>2018) & Data.YHTEYSTAPA.isna() & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
-
+    
     return Data
 
 
@@ -282,7 +295,7 @@ def Define_OPERIN(Data:pd.DataFrame):
     Raises:
     ValueError: If the provided Data is not a pandas DataFrame.
     """
-
+    Data.loc[ (Data.SOURCE=="INPAT") & (Data.CATEGORY.str.contains("MFHL")), "SOURCE"] = "OPER_IN"
     Data.loc[ (Data.SOURCE=="INPAT") & (Data.CATEGORY.str.contains("NOM")), "SOURCE"] = "OPER_IN"
     Data.loc[ (Data.SOURCE=="INPAT") & (Data.CATEGORY.str.contains("HPN")), "SOURCE"] = "OPER_IN"
     Data.loc[ (Data.SOURCE=="INPAT") & (Data.CATEGORY.str.contains("HPO")), "SOURCE"] = "OPER_IN"
@@ -305,6 +318,7 @@ def Define_OPEROUT(Data:pd.DataFrame):
     ValueError: If the provided Data is not a pandas DataFrame.
     """
 
+    Data.loc[ (Data.SOURCE=="OUTPAT") & (Data.CATEGORY.str.contains("MFHL")), "SOURCE"] = "OPER_OUT"
     Data.loc[ (Data.SOURCE=="OUTPAT") & (Data.CATEGORY.str.contains("NOM")), "SOURCE"] = "OPER_OUT"
     Data.loc[ (Data.SOURCE=="OUTPAT") & (Data.CATEGORY.str.contains("HPN")), "SOURCE"] = "OPER_OUT"
     Data.loc[ (Data.SOURCE=="OUTPAT") & (Data.CATEGORY.str.contains("HPO")), "SOURCE"] = "OPER_OUT"
@@ -351,7 +365,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
     chunk_counter=-1
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
             chunk_counter+=1 
 
@@ -415,8 +429,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
             # remove missing CODE1
-            Data = Data.dropna(subset=["CODE1"])
-            Data = Data.reset_index(drop=True)
+            Data = Data.dropna(subset=["CODE1"]).reset_index(drop=True)
 
             # SOURCE definitions
             Data["PALA"] = np.NaN
@@ -438,12 +451,12 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
-            # if negative hospital days than missing value
+            Data = Data.loc[ (Data.CODE1.notna()) | (Data.CODE2.notna())].reset_index(drop=True)
+            # if negative hospital days (or operation code) than missing value
             Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
 
             # select desired columns 
@@ -494,7 +507,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
     }
 
     chunk_counter=-1
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
             chunk_counter+=1
 
@@ -546,7 +559,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             "SDG3": "3",
             "TMP1":"MFHL1",
             "TMP2":"MFHL2",
-            "EDIA":"EX0"
+            "EDIA":"EX"
             }
 
             new_names = Data.columns
@@ -565,8 +578,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
             # remove missing CODE1
-            Data = Data.dropna(subset=["CODE1"])
-            Data = Data.reset_index(drop=True)
+            Data = Data.dropna(subset=["CODE1"]).reset_index(drop=True)
 
             # SOURCE definitions
             Data["PALA"] = np.NaN
@@ -582,7 +594,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
 
             # PALTU mapping
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
+            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
             Data["CODE7"] = Data["hospital_type"]
@@ -593,7 +605,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -645,14 +657,15 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
     "TMP1": str,
     "TMP2": str,
     "TMP3": str,
+    "ULKSYY": str,
     "PALA": str,
     "EA":   str,
     "PALTU":str
     }
 
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
-
+            
             # add date of birth/death
             Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
             # format date columns (patient in and out dates)
@@ -698,7 +711,8 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             "SDG2": "2",
             "TMP1":"MFHL1",
             "TMP2":"MFHL2",
-            "TMP3":"MFHL3"
+            "TMP3":"MFHL3",
+            "ULKSYY":"EX"
             }
 
             new_names = Data.columns
@@ -717,9 +731,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
             # remove missing CODE1
-            Data = Data.dropna(subset=["CODE1"])
-            Data = Data.reset_index(drop=True)
-
+            Data = Data.dropna(subset=["CODE1"]).reset_index(drop=True)
             # merge CODE1 and CATEGORY from extra file
             if extra_to_merge is not None:
                 Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
@@ -739,18 +751,18 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
             # PALTU mapping
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
+            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
             Data["CODE7"] = Data["hospital_type"]
 
             #-------------------------------------------
             # QUALITY CONTROL:
-
+         
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -766,7 +778,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
 
 
-def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, file_sep=";", test=False):
+def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, extra_source=None, file_sep=";", test=False):
     """Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -806,13 +818,12 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
     }
 
 
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
 
             # remove wrong codes
             wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
-            Data = Data.loc[~Data.PALA.isin(wrong_codes)]
-            Data = Data.reset_index(drop=True)
+            Data = Data.loc[~Data.PALA.isin(wrong_codes)].reset_index(drop=True)
 
             # add date of birth/death
             Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
@@ -850,41 +861,38 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             # the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
             # the CATEGORY names are going to be remapped to the desired names 
 
-            CATEGORY_DICTIONARY = {
-            "PTMPK1":"NOM1",
-            "PTMPK2":"NOM2",
-            "PTMPK3":"NOM3",
-            "MTMP1K1":"NOM4",
-            "MTMP2K1":"NOM5"
-             }
+            if extra_source in ['oper','heart']:
+                Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner").reset_index(drop=True)
+            
+            elif extra_source=='diag':
+                Data = Data.drop(columns=['CODE2'])
+                Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner").reset_index(drop=True)  
+            
+            else: #None
+                CATEGORY_DICTIONARY = {
+                "PTMPK1":"NOM1",
+                "PTMPK2":"NOM2",
+                "PTMPK3":"NOM3",
+                "MTMP1K1":"NOM4",
+                "MTMP2K1":"NOM5"
+                 }
 
-            new_names = Data.columns
-            for name in CATEGORY_DICTIONARY.keys():
-                new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
+                new_names = Data.columns
+                for name in CATEGORY_DICTIONARY.keys():
+                    new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
 
 
-            # perform the reshape
-            VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-            VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
+                # perform the reshape
+                VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
+                VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
 
-            Data = pd.melt(Data,
-                id_vars 	= VAR_NOT_FOR_RESHAPE,
-                value_vars 	= VAR_FOR_RESHAPE,
-                var_name 	= "CATEGORY",
-                value_name	= "CODE1")
-            Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-            # remove missing CODE1
-            Data = Data.dropna(subset=["CODE1"])
-            Data = Data.reset_index(drop=True)
-
-            # merge CODE1 and CATEGORY from extra file
-            if extra_to_merge is not None:
-                if 'CODE2' in extra_to_merge.columns:
-                    Data = Data.drop(['CATEGORY','CODE1','CODE2'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
-                else:    
-                    Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
-
+                Data = pd.melt(Data,
+                    id_vars 	= VAR_NOT_FOR_RESHAPE,
+                    value_vars 	= VAR_FOR_RESHAPE,
+                    var_name 	= "CATEGORY",
+                    value_name	= "CODE1")
+                Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
+                
             #-------------------------------------------
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
@@ -900,18 +908,22 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
             # PALTU mapping
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
+            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
             Data["CODE7"] = Data["hospital_type"]
 
             #-------------------------------------------
             # QUALITY CONTROL:
-
+            
+            # remove extra dots in the code columns if present
+            for col in ['CODE1','CODE2','CODE3']:
+                if sum(Data[col].notna())!=0:
+                    Data[col] = Data[col].str.replace('.','',regex=False)            
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -923,11 +935,12 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo_1996_2018", test=test)
+            output_name='Hilmo_1996_2018'+'_'+extra_source
+            write_out(Data, output_name=output_name, test=test)
 
 
 
-def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, file_sep=";", test=False):
+def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=None, extra_source=None, file_sep=";", test=False):
     """Process the Hilmo information after 1995.
 
     This function reads and processes an Hilmo file located at the specified file_path. 
@@ -969,7 +982,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
     }
 
     # fetch Data
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
 
             # remove wrong codes
@@ -978,33 +991,43 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             Data = Data.reset_index(drop=True)
 
             # add date of birth
-            Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-            # format date columns (patient in and out dates)
-            Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
+            Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format="%d.%m.%Y",errors="coerce" )
             Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
             #-------------------------------------------
             # define columns for detailed longitudinal
 
-            Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["INDEX"] 			= Data.HILMO_ID
-            Data["SOURCE"] 			= "OUTPAT"
-            Data["ICDVER"] 			= 10
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
-            Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+            if extra_source in ['oper','heart']:
+                Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner").reset_index(drop=True)
+            
+            elif extra_source=='diag':
+                Data = Data.drop(columns=['CODE2'])
+                Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner").reset_index(drop=True)  
+                    
+            else: #None
+                CATEGORY_DICTIONARY = {
+                "PTMPK1":"NOM1",
+                "PTMPK2":"NOM2",
+                "PTMPK3":"NOM3",
+                "MTMP1K1":"NOM4",
+                "MTMP2K1":"NOM5"
+                 }
 
-            #rename columns
-            Data.rename( 
-                columns = {
-                "ADMISSION_DATE":"EVENT_DAY",
-                "PALA":"CODE5",
-                "EA":"CODE6",
-                "PALTU":"CODE7",
-                "YHTEYSTAPA":"CODE8",
-                "KIIREELLISYYS":"CODE9"
-                },
-                inplace=True)
+                new_names = Data.columns
+                for name in CATEGORY_DICTIONARY.keys():
+                    new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
+
+
+                # perform the reshape
+                VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
+                VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
+
+                Data = pd.melt(Data,
+                    id_vars 	= VAR_NOT_FOR_RESHAPE,
+                    value_vars 	= VAR_FOR_RESHAPE,
+                    var_name 	= "CATEGORY",
+                    value_name	= "CODE1")
+                Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
             #-------------------------------------------
             # CATEGORY RESHAPE:
@@ -1036,16 +1059,12 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
                 value_name	= "CODE1")
             Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
-            # remove missing CODE1
-            Data = Data.dropna(subset=["CODE1"])
-            Data = Data.reset_index(drop=True)	
-
             # merge CODE1 and CATEGORY from extra file
-            if extra_to_merge is not None:
-                if 'CODE2' in extra_to_merge.columns:
-                    Data = Data.drop(['CATEGORY','CODE1','CODE2'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
-                else:    
-                    Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
+            assert extra_source!=None, "ERROR: extra_source needs to be one of following: diag, oper, heart"
+            if extra_source in ['oper','heart']:
+                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
+            else:    
+                Data = Data.drop(['CATEGORY','CODE1','CODE2'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
 
             #-------------------------------------------
             # SOURCE definitions
@@ -1062,18 +1081,22 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
 
             # PALTU mapping
             Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU")
+            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
             Data["CODE7"] = Data["hospital_type"]
 
             #-------------------------------------------
             # QUALITY CONTROL:
-
+            
+            # remove extra dots in the code columns if present
+            for col in ['CODE1','CODE2','CODE3']:
+                if sum(Data[col].notna())!=0:
+                    Data[col] = Data[col].str.replace('.','',regex=False)     
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -1085,60 +1108,11 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            write_out(Data, output_name="Hilmo_2019_2021", test=test)
+            output_name="Hilmo_2019_2021"+'_'+extra_source
+            write_out(Data, output_name=output_name, test=test)
 
 
-def Hilmo_ulksyy_diagnosis_preparation(file_path:str, file_sep=";", test=False):
-    """Process Hilmo diagnosis.
-
-    This function reads and processes an Hilmo diagnosis codes that need to be joined to hilmo starting from 1996.
-    The processed data can be read/saved in a test setting if specified.
-
-    ulksyy represents external causes on mortality and morbidity
-
-    Args:
-        file_path (str): The path to the Hilmo file.
-        file_sep (str, optional): The separator used in the file. Defaults to ";".
-        test (bool, optional): Indicates whether the function is being called for testing purposes. Defaults to False.
-
-    Returns:
-        Ulksyy (pd.Dataframe)
-
-    Raises:
-        FileNotFoundError: If the specified file_path does not exist.
-        ValueError: If the provided file_sep is not a valid separator.
-
-    """
-
-    dtypes = {
-    "HILMO_ID": str,
-    "KENTTA": str,
-    "N": int,
-    "KOODI": str
-    }
-
-    # fetch Data
-    Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
-
-    # process ulksyy data
-    Data = Data.loc[(Data.KENTTA=='ULKSYY') & (Data.N<=3)].reset_index(drop=True).drop('KENTTA',axis=1)
-    Data.rename( 
-        columns = {
-        "N":"CATEGORY",
-        "KOODI":"CODE1",
-        },
-        inplace=True)
-    
-    # fix category naming
-    Data.CATEGORY = Data.CATEGORY.apply(lambda x: 'EX' + str(x))
-
-    # select desired columns
-    Data = Data[['HILMO_ID','CATEGORY','CODE1']]
-    
-    return Data
-
-
-def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";", test=False):
+def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";"):
     """Process Hilmo diagnosis.
 
     This function reads and processes an Hilmo diagnosis codes that need to be joined to hilmo starting from 1996.
@@ -1161,7 +1135,6 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";", test=False):
     Raises:
         FileNotFoundError: If the specified file_path does not exist.
         ValueError: If the provided file_sep is not a valid separator.
-
     """
 
     dtypes = {
@@ -1172,11 +1145,25 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";", test=False):
     }
 
     # fetch Data
-    Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+    Data = read_in(file_path, file_sep, dtype=dtypes)
 
-    # process extra diagnosis information
-    # keeping only 3 extra diagnosis 
-    main_diag = Data.loc[ (Data.KENTTA.isin(['PDGO','SDGO'])) & (Data.N<=3)].reset_index(drop=True).drop('KENTTA',axis=1)
+    #-----------------------
+    # 1. process ulksyy data (death extra information)
+    ulksyy_diag = Data.loc[Data.KENTTA=='ULKSYY'].reset_index(drop=True)
+    ulksyy_diag.rename( 
+        columns = {
+        "N":"CATEGORY",
+        "KOODI":"CODE1",
+        },
+        inplace=True)   
+    
+    # fix category naming and add CODE2
+    ulksyy_diag.CATEGORY = ulksyy_diag.CATEGORY.apply(lambda x: 'EX' + str(x))
+    ulksyy_diag['CODE2']=''
+    
+    #-------------------------
+    # 2. process extra diagnosis information
+    main_diag = Data.loc[Data.KENTTA.isin(['PDGO','SDGO'])].reset_index(drop=True)
     main_diag.rename( 
         columns = {
         "N":"CATEGORY",
@@ -1184,25 +1171,27 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";", test=False):
         },
         inplace=True)   
      
-    side_diag = Data.loc[ (Data.KENTTA.isin(['PDGE','SDGE'])) & (Data.N<=3)].reset_index(drop=True).drop('KENTTA',axis=1)
+    side_diag = Data.loc[Data.KENTTA.isin(['PDGE','SDGE'])].reset_index(drop=True)
     side_diag.rename( 
         columns = {
         "N":"CATEGORY",
         "KOODI":"CODE2",
         },
-        inplace=True)
+        inplace=True)    
     
+    # -----------------------
+    # create final dataframe
     Data = main_diag.merge(side_diag, on=['HILMO_ID','CATEGORY'], how='inner')
+    Data = pd.concat([Data,ulksyy_diag])
     
     # select desired columns
-    Data.CATEGORY = Data.CATEGORY.astype(str)
     Data = Data[['HILMO_ID','CATEGORY','CODE1','CODE2']]
 
     return Data
 
 
 
-def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
+def Hilmo_operations_preparation(file_path:str, file_sep=";"):
     """Process Hilmo surgical operations.
 
     This function reads and processes an Hilmo file located at the specified file_path.  
@@ -1228,11 +1217,7 @@ def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
     }
 
     # fetch Data
-    Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
-
-    # keep only the main ICD diagnosis code and 3 extra ones 
-    Data = Data.loc[Data.N<=3]
-    Data = Data.reset_index(drop=True)
+    Data = read_in(file_path, file_sep, dtype=dtypes)
 
     # rename columns
     Data.rename( 
@@ -1241,17 +1226,19 @@ def Hilmo_operations_preparation(file_path:str, file_sep=";", test=False):
         "TOIMP":"CODE1"
         },
         inplace=True )
-
+    
+    # add prefix to category values
+    Data.CATEGORY = ['NOM'] + Data.CATEGORY.astype(str) 
+    
     # keep only columns of interest
-    Data.CATEGORY = Data.CATEGORY.astype(str)
     Data = Data[["HILMO_ID","CATEGORY","CODE1"]]
-
+    
     return Data
 
 
 
 
-def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
+def Hilmo_heart_preparation(file_path:str, file_sep=";"):
     """Process Hilmo heart surgeries.
 
     This function reads and processes an Hilmo file located at the specified file_path.  
@@ -1272,11 +1259,11 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
     """
 
     keys  = ["HILMO_ID"] + ["TMPC"+str(n) for n in range(1,12)] + ["TMPTYP"+str(n) for n in range(1,4)]
-    values = [str for n in range(1,15)]
+    values = [str for n in range(1,16)]
     dtypes = dict(zip(keys, values))
 
     # fetch Data
-    Data = read_in(file_path, file_sep, dtype=dtypes, test=test)
+    Data = read_in(file_path, file_sep, dtype=dtypes)
 
     #-------------------------------------------
     # CATEGORY RESHAPE:
@@ -1286,10 +1273,9 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
     # the CATEGORY names are going to be remapped to the desired names
 
 
-    CATEGORY_DICTIONARY = {
-    "TMPTYP":"HPO",
-    "TMPC":"HPN"
-    }
+    keys  = ["TMPC"+str(n) for n in range(1,12)] + ["TMPTYP"+str(n) for n in range(1,4)]
+    values = ["HPN"+str(n) for n in range(1,12)] + ["HPO"+str(n) for n in range(1,4)]
+    CATEGORY_DICTIONARY = dict(zip(keys, values))
 
     new_names = Data.columns
     for name in CATEGORY_DICTIONARY.keys():
@@ -1308,11 +1294,9 @@ def Hilmo_heart_preparation(file_path:str, file_sep=";", test=False):
 
     # A correction for some HPO (fully numeric codes) 
     # mixed in within NPN codes (which always start with letter A). 
-    Data["CODE1"] 		= Data.CODE1.astype(str)
-    Data["CATEGORY"]	= np.where(Data.CODE1.str.isnumeric(), Data.CATEGORY.replace("N", "O"), Data.CATEGORY)
-
+    Data["CATEGORY"]	= np.where(Data.CODE1.astype(str).str.isnumeric(), Data.CATEGORY.replace("N", "O"), Data.CATEGORY)
+    
     # keep only columns of interest
-    Data = Data.reset_index(drop=True)
     Data = Data[["HILMO_ID","CATEGORY","CODE1"]]
 
     return Data
@@ -1359,12 +1343,8 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     }
 
     # fetch Data
-    Data = read_in(file_path, file_sep, dtype=dtypes, test=test)	
+    Data = read_in(file_path, file_sep, dtype=dtypes)
     Data.rename( columns = {source_col_name:"CODE1"}, inplace=True )
-
-    # keep only the main ICD diagnosis code and 3 extra ones  
-    Data = Data.loc[ Data.JARJESTYS <= 3 ]
-    Data = Data.reset_index(drop=True)
 
     # define the category column 
     Data["CATEGORY"] = np.NaN
@@ -1413,12 +1393,12 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
     }
 
     # fetch Data
-    with read_in_chunks(file_path, file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path, file_sep, dtype=dtypes) as reader:
         for Data in reader:
 
             # add date of birth/death
             Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
-            # format date columns 
+            # format date columns
             Data["EVENT_DATE"] 		= pd.to_datetime( Data["KAYNTI_ALKOI"].str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
             # check if event is after death
@@ -1451,10 +1431,8 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
 
             # merge CODE1 and CATEGORY from extra file
             Data = Data.merge(extra_to_merge, on = "AVOHILMO_ID", how="left")
-
             # remove missing CODE1
-            Data = Data.dropna(subset=["CODE1"])
-            Data = Data.reset_index(drop=True)
+            Data = Data.dropna(subset=["CODE1"]).reset_index(drop=True)
 
             # special character split
             Data = combination_codes_split(Data)
@@ -1463,10 +1441,12 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
             #-------------------------------------------
             # QUALITY CONTROL:
 
+            # remove dot from CODE1
+            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
 
@@ -1503,8 +1483,9 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
     dtypes = {
     "TNRO": str,
-    "KVUOSI": int,
+    "KVUOSI": str,
     "KPV": str,
+    "TPKS": str,
     "VKS": str,
     "M1": str,
     "M2": str,
@@ -1513,7 +1494,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
     chunk_counter=-1
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
             chunk_counter+=1
 
@@ -1523,7 +1504,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data["EVENT_DATE"]		= pd.to_datetime( Data.KPV.str.slice(stop=10), format="%d.%m.%Y" )
             # fix event_day if missing (as done in finngen)
             # ONLY in this registry
-            Data.loc[Data.EVENT_DATE.isna(),'EVENT_DATE'] = Data.KVUOSI.astype(str) + '-06-30' 
+            Data.loc[Data.EVENT_DATE.isna(),'EVENT_DATE'] = Data.KVUOSI + '-06-30' 
 
             # define columns for detailed longitudinal
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
@@ -1584,10 +1565,10 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
             #-------------------------------------------
             # QUALITY CONTROL:
-
+            
             # NOT performing special code check in this registry
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
 
@@ -1631,7 +1612,7 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
     }
 
     chunk_counter=-1
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
             chunk_counter+=1
 
@@ -1644,8 +1625,8 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # define columns for detailed longitudinal
 
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
-            Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year	
-            Data["ICDVER"] 			= "O3"
+            Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
+            Data["ICDVER"] 			= "O3" 
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "CANC"
             Data["CATEGORY"] 		= np.NaN
@@ -1668,9 +1649,18 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
 
             #-------------------------------------------
             # QUALITY CONTROL:
+            
+            # complete CODE1  if shorter than 3 digits
+            MISSING_DIGITS = 3 - Data.CODE1.str.len()
+            ZERO = pd.Series( ["0"] * Data.shape[0] ).astype("str")
+            Data["CODE1"] =  ZERO*MISSING_DIGITS + Data.CODE1
+            
+            # CODE1 needs to starts with C
+            Data.CODE1 = Data.CODE1.astype('str')
+            Data.CODE1 = np.where(~Data.CODE1.str.startswith('C'), ['C']+Data.CODE1, Data.CODE1)
 
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -1716,7 +1706,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
     }
 
     chunk_counter=-1
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
             chunk_counter+=1
 
@@ -1756,7 +1746,7 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
             # QUALITY CONTROL:
 
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -1849,7 +1839,7 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     # QUALITY CONTROL:
 
     # check that EVENT_AGE is in predefined range 
-    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+    Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
     # check that EVENT_AGE is not missing
     Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
     # check that CODE1 and 2 are not missing
@@ -1901,7 +1891,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     }
 
     chunk_counter=-1
-    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes, test=test) as reader:
+    with read_in_chunks(file_path=file_path, file_sep=file_sep, dtype=dtypes) as reader:
         for Data in reader:
             chunk_counter+=1
 
@@ -1915,7 +1905,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
 
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
             Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
-            Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
+            Data["ICDVER"] 			= np.NaN
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "PURCH"
             Data["CATEGORY"] 		= np.NaN
@@ -1940,7 +1930,7 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
             # QUALITY CONTROL:
 
             # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
             Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
             # check that CODE1 and 2 are not missing
@@ -2014,7 +2004,7 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
 
     Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
     Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
-    Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
+    Data["ICDVER"] 			= np.NaN 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "PURCH"
     Data["CATEGORY"] 		= np.NaN
@@ -2039,7 +2029,7 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
     # QUALITY CONTROL:
 
     # check that EVENT_AGE is in predefined range 
-    Data = Data.loc[ (Data.EVENT_AGE>0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
+    Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
     # check that EVENT_AGE is not missing
     Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
     # check that CODE1 and 2 are not missing
