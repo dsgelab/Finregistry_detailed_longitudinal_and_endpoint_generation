@@ -931,7 +931,8 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            output_name='Hilmo_1996_2018'+'_'+extra_source
+            if extra_source!=None: output_name='Hilmo_1996_2018'+'_'+extra_source
+            else: output_name='Hilmo_1996_2018'
             write_out(Data, output_name=output_name, test=test)
 
 
@@ -1090,7 +1091,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             Data = Data[ COLUMNS_2_KEEP ]
 
             # WRITE TO DETAILED LONGITUDINAL
-            output_name="Hilmo_2019_2021"+'_'+extra_source
+            if extra_source!=None: output_name="Hilmo_2019_2021"+'_'+extra_source
+            else: output_name="Hilmo_2019_2021"
             write_out(Data, output_name=output_name, test=test)
 
 
