@@ -915,11 +915,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
 
             #-------------------------------------------
             # QUALITY CONTROL:
-            
-            # remove extra dots in the code columns if present
-            for col in ['CODE1','CODE2','CODE3']:
-                if sum(Data[col].notna())!=0:
-                    Data[col] = Data[col].str.replace('.','',regex=False)            
+                 
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
@@ -997,6 +993,33 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             #-------------------------------------------
             # define columns for detailed longitudinal
 
+            Data["EVENT_AGE"] 		= round( (Data.ADMISSION_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)	
+            Data["INDEX"] 			= Data.HILMO_ID
+            Data["SOURCE"] 			= "OUTPAT"
+            Data["ICDVER"] 			= 10
+            Data["CODE2"]			= np.NaN
+            Data["CODE3"]			= np.NaN
+            Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
+
+            #rename columns
+            Data.rename( 
+                columns = {
+                "ADMISSION_DATE":"EVENT_DAY",
+                "PALA":"CODE5",
+                "EA":"CODE6",
+                "PALTU":"CODE7",
+                "YHTEYSTAPA":"CODE8",
+                "KIIREELLISYYS":"CODE9"
+                },
+                inplace=True)
+
+            #-------------------------------------------
+            # CATEGORY RESHAPE:
+
+            # the following code will reshape the Dataframe from wide to long
+            # the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
+            # the CATEGORY names are going to be remapped to the desired names 
+
             if extra_source in ['oper','heart']:
                 Data = Data.merge(extra_to_merge, on = "HILMO_ID", how="inner").reset_index(drop=True)
             
@@ -1030,43 +1053,6 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
                 Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
 
             #-------------------------------------------
-            # CATEGORY RESHAPE:
-
-            # the following code will reshape the Dataframe from wide to long
-            # the selected columns will be transfered under the variable CATEGORY while their values will go under the variable CODE1
-            # the CATEGORY names are going to be remapped to the desired names 
-
-            CATEGORY_DICTIONARY = {
-            "PTMPK1":"NOM1",
-            "PTMPK2":"NOM2",
-            "PTMPK3":"NOM3",
-            "MTMP1K1":"NOM4",
-            "MTMP2K1":"NOM5"
-             }
-
-            new_names = Data.columns
-            for name in CATEGORY_DICTIONARY.keys():
-                new_names = [CATEGORY_DICTIONARY.get(name, name) if s == name else s for s in new_names]
-
-            # perform the reshape
-            VAR_FOR_RESHAPE = list( set(Data.columns)-set(new_names) )
-            VAR_NOT_FOR_RESHAPE = list( set(Data.columns)-set(VAR_FOR_RESHAPE) )
-
-            Data = pd.melt(Data,
-                id_vars 	= VAR_NOT_FOR_RESHAPE,
-                value_vars 	= VAR_FOR_RESHAPE,
-                var_name 	= "CATEGORY",
-                value_name	= "CODE1")
-            Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-            # merge CODE1 and CATEGORY from extra file
-            assert extra_source!=None, "ERROR: extra_source needs to be one of following: diag, oper, heart"
-            if extra_source in ['oper','heart']:
-                Data = Data.drop(['CATEGORY','CODE1'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
-            else:    
-                Data = Data.drop(['CATEGORY','CODE1','CODE2'],axis=1).merge(extra_to_merge, on = "HILMO_ID", how="inner")
-
-            #-------------------------------------------
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
             Data["YHTEYSTAPA"] = Data["CODE8"]
@@ -1088,11 +1074,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
 
             #-------------------------------------------
             # QUALITY CONTROL:
-            
-            # remove extra dots in the code columns if present
-            for col in ['CODE1','CODE2','CODE3']:
-                if sum(Data[col].notna())!=0:
-                    Data[col] = Data[col].str.replace('.','',regex=False)     
+             
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
