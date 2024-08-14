@@ -13,8 +13,7 @@ This repository contains the code for creating the detailed longitudinal file in
 
 ## Test Pipeline
 
-Dummy data for testing the script is available in the `test_data/` folder.
-This data was generated using the `LOIRE` package from Ida Holopainen and modified to fit our format requirements.
+Dummy data was used to tests the output quality, this data was generated using the `LOIRE` package from Ida Holopainen and modified to fit our format requirements.
 
 Default parameter have been used, but the following changes:
 n=1000, seed=1722463180, add_offset=False
