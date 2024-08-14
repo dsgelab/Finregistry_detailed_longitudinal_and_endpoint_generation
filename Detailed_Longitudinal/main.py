@@ -51,7 +51,7 @@ def preprocess_hilmo_96_18():
     
 def preprocess_hilmo_diagnosis_96_18():
     START = datetime.now()
-    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map)
+    Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=None, extra_source=None)
     extra_to_merge = Hilmo_extra_diagnosis_preparation(hilmo_diag_1996_2018)
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge, extra_source='diag')
     END = datetime.now()
@@ -69,7 +69,7 @@ def preprocess_hilmo_19_21():
 
 def preprocess_hilmo_diagnosis_19_21():
     START = datetime.now()
-    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map)
+    Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=None, extra_source=None)
     extra_to_merge = Hilmo_extra_diagnosis_preparation(hilmo_diag_2019_2021)
     Hilmo_POST18_processing(hilmo_2019_2021, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge, estra_source='diag')  
     END = datetime.now()
