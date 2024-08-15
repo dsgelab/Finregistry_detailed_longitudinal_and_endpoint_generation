@@ -986,8 +986,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             wrong_codes = ["H","M","N","Z6","ZH","ZZ"]
             Data = Data.loc[~Data.PALA.isin(wrong_codes)]
             Data = Data.reset_index(drop=True)
-
-            # add date of birth
+            
+            # add date of birth/death
+            Data = Data.merge(DOB_map,left_on = "TNRO",right_on = "FINREGISTRYID")
+            # format date columns (patient in and out dates)
             Data["ADMISSION_DATE"] 	= pd.to_datetime( Data.TUPVA.str.slice(stop=10),  format="%d.%m.%Y",errors="coerce" )
             Data["DISCHARGE_DATE"]	= pd.to_datetime( Data.LPVM.str.slice(stop=10), format="%d.%m.%Y",errors="coerce" )
 
@@ -1164,11 +1166,12 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";"):
         inplace=True)    
     
     # -----------------------
-    # create final dataframe
+    # create final dataframe 
     Data = main_diag.merge(side_diag, on=['HILMO_ID','CATEGORY'], how='inner')
     Data = pd.concat([Data,ulksyy_diag])
     
     # select desired columns
+    Data.CATEGORY = Data.CATEGORY.astype(str)
     Data = Data[['HILMO_ID','CATEGORY','CODE1','CODE2']]
 
     return Data
