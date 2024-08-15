@@ -5,8 +5,8 @@ import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from utils.func import *
-from utils.config_test import *
 
+from utils.config_test import *
 DOB_map = DOB_map_preparation(filepath=DOB_map_file, sep=",", test=True)
 paltu_map = pd.read_csv(PALTU_map_file, sep=",")  
 
@@ -183,7 +183,50 @@ class TestRegistrySpecificFunctions(unittest.TestCase):
         TRUE = prepare_output_data(TRUE)
         PRED = pd.read_csv(hilmo_heart_result)
         PRED = prepare_predicted_data(PRED)
-        my_assert_frame_equal(PRED, TRUE, name='Hilmo 1996-2018 + heart', check_dtype=False)        
+        my_assert_frame_equal(PRED, TRUE, name='Hilmo 1996-2018 + heart', check_dtype=False)          
+        
+    def test_hilmo_post18_diag(self): 
+        global DOB_map
+        global paltu_map
+        global hilmo_post18_base_input
+        global hilmo_diag_input, hilmo_post18_diag_output, hilmo_post18_diag_result
+        
+        extra = Hilmo_extra_diagnosis_preparation(file_path=hilmo_diag_input, file_sep=",")     
+        Hilmo_POST18_processing(file_path=hilmo_post18_base_input, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra, extra_source='diag', file_sep=",", test=True)   
+        TRUE = pd.read_csv(hilmo_post18_diag_output,sep=',')
+        TRUE = prepare_output_data(TRUE)
+        PRED = pd.read_csv(hilmo_post18_diag_result)
+        PRED = prepare_predicted_data(PRED)
+        PRED_NO_ULKSYY = PRED.loc[~(PRED.CATEGORY.str.contains('EX'))].reset_index(drop=True)
+        my_assert_frame_equal(PRED_NO_ULKSYY, TRUE, name='Hilmo 2019-2021 + diag', check_dtype=False)          
+        
+    def test_hilmo_post18_oper(self): 
+        global DOB_map
+        global paltu_map
+        global hilmo_post18_base_input
+        global hilmo_oper_input, hilmo_post18_oper_output, hilmo_post18_oper_result
+        
+        extra = Hilmo_operations_preparation(file_path=hilmo_oper_input, file_sep=",")     
+        Hilmo_POST18_processing(file_path=hilmo_post18_base_input, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra, extra_source='oper', file_sep=",", test=True)   
+        TRUE = pd.read_csv(hilmo_post18_oper_output,sep=',')
+        TRUE = prepare_output_data(TRUE)
+        PRED = pd.read_csv(hilmo_post18_oper_result)
+        PRED = prepare_predicted_data(PRED)
+        my_assert_frame_equal(PRED, TRUE, name='Hilmo 2019-2021 + oper', check_dtype=False)          
+        
+    def test_hilmo_post18_heart(self): 
+        global DOB_map
+        global paltu_map
+        global hilmo_post18_base_input
+        global hilmo_heart_input, hilmo_post18_heart_output, hilmo_post18_heart_result
+        
+        extra = Hilmo_heart_preparation(file_path=hilmo_heart_input, file_sep=",")     
+        Hilmo_POST18_processing(file_path=hilmo_post18_base_input, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra, extra_source='heart', file_sep=",", test=True)   
+        TRUE = pd.read_csv(hilmo_post18_heart_output,sep=',')
+        TRUE = prepare_output_data(TRUE)
+        PRED = pd.read_csv(hilmo_post18_heart_result)
+        PRED = prepare_predicted_data(PRED)
+        my_assert_frame_equal(PRED, TRUE, name='Hilmo 2019-2021 + heart', check_dtype=False)          
         
     def test_avohilmo_icd10(self):
         global DOB_map

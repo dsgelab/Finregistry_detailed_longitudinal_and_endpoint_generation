@@ -39,7 +39,7 @@ hilmo_94_95_output = OUTPUT_DATA_PATH/'hilmo_94_95_long_qc.csv'
 hilmo_94_95_result = RESULT_DATA_PATH/'Hilmo_1994_1995_test.csv'
 
 hilmo_96_18_base_input = INPUT_DATA_PATH/'hilmo_96_18_toy_data.csv'
-hilmo_post18_base_input = INPUT_DATA_PATH/'hilmo_96_18_toy_data.csv'
+hilmo_post18_base_input = INPUT_DATA_PATH/'hilmo_post18_toy_data.csv'
 
 hilmo_diag_input = INPUT_DATA_PATH/'hilmo_extra_diag_toy_data.csv'
 hilmo_oper_input = INPUT_DATA_PATH/'hilmo_oper_toy_data.csv'
@@ -52,6 +52,14 @@ hilmo_heart_output = OUTPUT_DATA_PATH/'hilmo_96_18_heart_long_qc.csv'
 hilmo_diag_result = RESULT_DATA_PATH/'Hilmo_1996_2018_diag_test.csv'
 hilmo_oper_result = RESULT_DATA_PATH/'Hilmo_1996_2018_oper_test.csv'
 hilmo_heart_result = RESULT_DATA_PATH/'Hilmo_1996_2018_heart_test.csv'
+
+hilmo_post18_diag_output = OUTPUT_DATA_PATH/'hilmo_post_18_diag_long_qc.csv'
+hilmo_post18_oper_output = OUTPUT_DATA_PATH/'hilmo_post_18_oper_long_qc.csv'
+hilmo_post18_heart_output = OUTPUT_DATA_PATH/'hilmo_post_18_heart_long_qc.csv'
+
+hilmo_post18_diag_result = RESULT_DATA_PATH/'Hilmo_2019_2021_diag_test.csv'
+hilmo_post18_oper_result = RESULT_DATA_PATH/'Hilmo_2019_2021_oper_test.csv'
+hilmo_post18_heart_result = RESULT_DATA_PATH/'Hilmo_2019_2021_heart_test.csv'
 
 avohilmo_base_input = INPUT_DATA_PATH/'prim_care_toy_data.csv'
 
