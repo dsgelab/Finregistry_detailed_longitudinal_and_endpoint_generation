@@ -13,7 +13,7 @@ This repository contains the code for creating the detailed longitudinal file in
 
 ## Test Pipeline
 
-Dummy data was used to tests the output quality, this data was generated using the `LOIRE` package from Ida Holopainen and modified to fit our format requirements.
+Dummy data was used to tests the output quality, this data was generated using the `LOIRE` package from Ida Holopainen (THL) and modified to fit our format requirements.
 
 Default parameter have been used, but the following changes:
 n=1000, seed=1722463180, add_offset=False
@@ -81,7 +81,7 @@ The following changes have been made to the FinnGen version of the detailed long
 - No separate step for computing the birth and death dates as they are already included in the FinRegistry data
 - Index now reference the exact line in the original registry file that was used for extracting the information
 - No dot is removed from CODE columns
-- No CODE4 (Duration of hospital stay) value is removed
+- No value in CODE4 (Duration of hospital stay) is removed
 
 
 Please also note that age randomization is not implemented in FinRegistry so all the dates are exact.
