@@ -49,7 +49,7 @@ def preprocess_hilmo_96_18():
     extra_to_merge = Hilmo_operations_preparation(hilmo_oper_1996_2018)
     Hilmo_96_18_processing(hilmo_1996_2018, DOB_map=DOB_map, paltu_map=paltu_map, extra_to_merge=extra_to_merge, extra_source='oper')
     END = datetime.now()
-    print(f'hilmo_1996_2018 diagnosis processing took {(END-START)} hour:min:sec') 
+    print(f'hilmo_1996_2018 processing took {(END-START)} hour:min:sec') 
     
 
 def preprocess_hilmo_19_21():
