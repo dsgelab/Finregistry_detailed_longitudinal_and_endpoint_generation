@@ -218,7 +218,7 @@ def combination_codes_split(Data):
             Data.loc[split_codes.index, special_chars[s]] = split_codes.tolist()
 
     # Replace empty strings with NA
-    Data = Data.replace(r"^\s*$", np.NaN, regex=True)
+    Data = Data.replace(r"^\s*$", np.nan, regex=True)
 
     return Data
 
@@ -226,7 +226,7 @@ def combination_codes_split(Data):
 def fix_missing_value(Data:pd.DataFrame):
     """replace -1 with missing value
 
-    checks all the columns starting with CODE and replace -1 with np.NaN
+    checks all the columns starting with CODE and replace -1 with np.nan
 
     Args:
         Data (pd.DataFrame): hilmo or avohilmo dataframe to work on.
@@ -246,7 +246,7 @@ def fix_missing_value(Data:pd.DataFrame):
 
     code_list = ["CODE"+str(n) for n in range(1,10)]
     for code in code_list:
-        Data.loc[Data[code].isin(SPECIAL_CODES), code] = np.NaN
+        Data.loc[Data[code].isin(SPECIAL_CODES), code] = np.nan
 
     return Data
 
@@ -385,14 +385,14 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 8
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-            Data["CODE5"]			= np.NaN
-            Data["CODE6"]			= np.NaN
-            Data["CODE7"]			= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CODE5"]			= np.nan
+            Data["CODE6"]			= np.nan
+            Data["CODE7"]			= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             # rename columns
             Data.rename( columns = {"ADMISSION_DATE":"EVENT_DAY"}, inplace=True)
@@ -432,14 +432,14 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data = Data.dropna(subset=["CODE1"]).reset_index(drop=True)
 
             # SOURCE definitions
-            Data["PALA"] = np.NaN
-            Data["YHTEYSTAPA"] = np.NaN
+            Data["PALA"] = np.nan
+            Data["YHTEYSTAPA"] = np.nan
             Data = Define_INPAT(Data)
             Data = Define_OPERIN(Data)
             Data = Define_OPEROUT(Data)
 
             # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
             # special character split
             Data = combination_codes_split(Data)
 
@@ -457,7 +457,7 @@ def Hilmo_69_86_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # check that CODE1 and 2 are not missing
             Data = Data.loc[ (Data.CODE1.notna()) | (Data.CODE2.notna())].reset_index(drop=True)
             # if negative hospital days (or operation code) than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -527,13 +527,13 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 9
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
             # CODE5 should be PALA but is not available
-            Data["CODE5"]			= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CODE5"]			= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             #rename columns
             Data.rename( 
@@ -581,14 +581,14 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data = Data.dropna(subset=["CODE1"]).reset_index(drop=True)
 
             # SOURCE definitions
-            Data["PALA"] = np.NaN
-            Data["YHTEYSTAPA"] = np.NaN
+            Data["PALA"] = np.nan
+            Data["YHTEYSTAPA"] = np.nan
             Data = Define_INPAT(Data)
             Data = Define_OPERIN(Data)
             Data = Define_OPEROUT(Data)
 
             # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
             # special character split
             Data = combination_codes_split(Data)
 
@@ -611,7 +611,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             # check that CODE1 and 2 are not missing
             Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
             # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -682,11 +682,11 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data["INDEX"] 			= Data.HILMO_ID
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 9
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             #rename columns
             Data.rename( 
@@ -739,13 +739,13 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             #------------------------------------------
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
-            Data["YHTEYSTAPA"] = np.NaN
+            Data["YHTEYSTAPA"] = np.nan
             Data = Define_INPAT(Data)
             Data = Define_OPERIN(Data)
             Data = Define_OPEROUT(Data)
 
             # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
             # special character split
             Data = combination_codes_split(Data)
 
@@ -768,7 +768,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             # check that CODE1 and 2 are not missing
             Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
             # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -838,11 +838,11 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data["INDEX"] 			= Data.HILMO_ID
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 10
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             #rename columns
             Data.rename( 
@@ -896,13 +896,13 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             #-------------------------------------------
             # SOURCE definitions
             Data["PALA"] = Data["CODE5"]
-            Data["YHTEYSTAPA"] = np.NaN
+            Data["YHTEYSTAPA"] = np.nan
             Data = Define_INPAT(Data)
             Data = Define_OPERIN(Data)
             Data = Define_OPEROUT(Data)
 
             # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
             # special character split
             Data = combination_codes_split(Data)
 
@@ -918,6 +918,10 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
                  
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # remove dot from CODE1, CODE2 & CODE3
+            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
+            Data.CODE2 = Data.CODE2.str.replace('.','',regex=False) 
+            Data.CODE3 = Data.CODE3.str.replace('.','',regex=False) 
             # check that EVENT_AGE is in predefined range 
             Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
@@ -925,7 +929,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             # check that CODE1 and 2 are not missing
             Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
             # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1000,8 +1004,8 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             Data["INDEX"] 			= Data.HILMO_ID
             Data["SOURCE"] 			= "OUTPAT"
             Data["ICDVER"] 			= 10
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
             Data["CODE4"]			= (Data.DISCHARGE_DATE - Data.ADMISSION_DATE).dt.days
 
             #rename columns
@@ -1064,7 +1068,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             Data = Define_OPEROUT(Data)
 
             # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.NaN
+            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
             # special character split
             Data = combination_codes_split(Data)
 
@@ -1080,6 +1084,10 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
              
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
+            # remove dot from CODE1, CODE2 & CODE3
+            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
+            Data.CODE2 = Data.CODE2.str.replace('.','',regex=False) 
+            Data.CODE3 = Data.CODE3.str.replace('.','',regex=False) 
             # check that EVENT_AGE is in predefined range 
             Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
@@ -1087,7 +1095,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             # check that CODE1 and 2 are not missing
             Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
             # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.NaN
+            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
 
             # select desired columns 
             Data = Data[ COLUMNS_2_KEEP ]
@@ -1145,7 +1153,7 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";"):
     
     # fix category naming and add CODE2
     ulksyy_diag.CATEGORY = ulksyy_diag.CATEGORY.apply(lambda x: 'EX' + str(x))
-    ulksyy_diag['CODE2']=np.NaN
+    ulksyy_diag['CODE2']=np.nan
     
     #-------------------------
     # 2. process extra diagnosis information
@@ -1334,7 +1342,7 @@ def AvoHilmo_codes_preparation(file_path:str, source:str, file_sep=";", test=Fal
     Data.rename( columns = {source_col_name:"CODE1"}, inplace=True )
 
     # define the category column 
-    Data["CATEGORY"] = np.NaN
+    Data["CATEGORY"] = np.nan
     Data.loc[Data.CODE1.notna(),"CATEGORY"] = category_prefix + Data.loc[Data.CODE1.notna(),"JARJESTYS"].astype("string")
 
     # filter data
@@ -1398,11 +1406,11 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
             Data["ICDVER"]			= 10
             Data["SOURCE"]			= "PRIM_OUT"
             Data["INDEX"]			= Data.AVOHILMO_ID
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
-            Data["CODE4"]			= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
+            Data["CODE4"]			= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             # rename columns
             Data.rename( 
@@ -1499,14 +1507,14 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
             Data["SOURCE"] 			= "DEATH"
-            Data["CODE2"]			= np.NaN
-            Data["CODE3"]			= np.NaN
-            Data["CODE4"]			= np.NaN
-            Data["CODE5"]			= np.NaN
-            Data["CODE6"]			= np.NaN
-            Data["CODE7"]			= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CODE2"]			= np.nan
+            Data["CODE3"]			= np.nan
+            Data["CODE4"]			= np.nan
+            Data["CODE5"]			= np.nan
+            Data["CODE6"]			= np.nan
+            Data["CODE7"]			= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             # rename columns
             Data.rename( 
@@ -1554,6 +1562,9 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # QUALITY CONTROL:
             
             # NOT performing special code check in this registry
+            
+            # remove dot from CODE1
+            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
             # check that EVENT_AGE is in predefined range 
             Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
@@ -1616,13 +1627,13 @@ def CancerRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             Data["ICDVER"] 			= "O3" 
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "CANC"
-            Data["CATEGORY"] 		= np.NaN
-            Data["CODE4"]			= np.NaN
-            Data["CODE5"]			= np.NaN
-            Data["CODE6"]			= np.NaN
-            Data["CODE7"]			= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CATEGORY"] 		= np.nan
+            Data["CODE4"]			= np.nan
+            Data["CODE5"]			= np.nan
+            Data["CODE6"]			= np.nan
+            Data["CODE7"]			= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             # rename columns
             Data.rename( 
@@ -1711,14 +1722,14 @@ def KelaReimbursement_PRE20_processing(file_path:str, DOB_map, file_sep=";", tes
             Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "REIMB"
-            Data["CATEGORY"] 		= np.NaN
-            Data["CODE3"]			= np.NaN
-            Data["CODE4"]			= np.NaN
-            Data["CODE5"]			= np.NaN
-            Data["CODE6"]			= np.NaN
-            Data["CODE7"]			= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN    
+            Data["CATEGORY"] 		= np.nan
+            Data["CODE3"]			= np.nan
+            Data["CODE4"]			= np.nan
+            Data["CODE5"]			= np.nan
+            Data["CODE6"]			= np.nan
+            Data["CODE7"]			= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan    
 
             #rename columns
             Data.rename(
@@ -1804,14 +1815,14 @@ def KelaReimbursement_20_21_processing(file_path:str, DOB_map, file_sep=";", tes
     Data["ICDVER"] 			= 8 + (Data.EVENT_YEAR>1986).astype(int) + (Data.EVENT_YEAR>1995).astype(int) 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "REIMB"
-    Data["CATEGORY"] 		= np.NaN
-    Data["CODE3"]			= np.NaN
-    Data["CODE4"]			= np.NaN
-    Data["CODE5"]			= np.NaN
-    Data["CODE6"]			= np.NaN
-    Data["CODE7"]			= np.NaN
-    Data["CODE8"]			= np.NaN
-    Data["CODE9"]			= np.NaN
+    Data["CATEGORY"] 		= np.nan
+    Data["CODE3"]			= np.nan
+    Data["CODE4"]			= np.nan
+    Data["CODE5"]			= np.nan
+    Data["CODE6"]			= np.nan
+    Data["CODE7"]			= np.nan
+    Data["CODE8"]			= np.nan
+    Data["CODE9"]			= np.nan
 
     #rename columns
     Data.rename(
@@ -1892,12 +1903,12 @@ def KelaPurchase_PRE20_processing(file_path:str, DOB_map, file_sep=";", test=Fal
 
             Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
             Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
-            Data["ICDVER"] 			= np.NaN
+            Data["ICDVER"] 			= np.nan
             Data["INDEX"] 			= (chunk_counter*CHUNKSIZE) + np.arange(Data.shape[0]) + 1
             Data["SOURCE"] 			= "PURCH"
-            Data["CATEGORY"] 		= np.NaN
-            Data["CODE8"]			= np.NaN
-            Data["CODE9"]			= np.NaN
+            Data["CATEGORY"] 		= np.nan
+            Data["CODE8"]			= np.nan
+            Data["CODE9"]			= np.nan
 
             #rename columns
             Data.rename(
@@ -1991,12 +2002,12 @@ def KelaPurchase_20_21_processing(file_path:str, DOB_map, file_sep=";", test=Fal
 
     Data["EVENT_AGE"] 		= round( (Data.EVENT_DATE - Data.BIRTH_DATE).dt.days/DAYS_TO_YEARS, 2)
     Data["EVENT_YEAR"] 		= Data.EVENT_DATE.dt.year
-    Data["ICDVER"] 			= np.NaN 
+    Data["ICDVER"] 			= np.nan 
     Data["INDEX"] 			= np.arange(Data.shape[0]) + 1
     Data["SOURCE"] 			= "PURCH"
-    Data["CATEGORY"] 		= np.NaN
-    Data["CODE8"]			= np.NaN
-    Data["CODE9"]			= np.NaN
+    Data["CATEGORY"] 		= np.nan
+    Data["CODE8"]			= np.nan
+    Data["CODE9"]			= np.nan
 
     #rename columns
     Data.rename(
