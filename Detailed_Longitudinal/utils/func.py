@@ -250,6 +250,15 @@ def fix_missing_value(Data:pd.DataFrame):
 
     return Data
 
+def remove_dot_from_columns(Data, col_list):
+    if not isinstance(col_list, list):
+        print('error, col_list needs to be a list')
+    
+    for col in col_list:           
+        if not Data[col].isna().all():
+            Data[col] = Data[col].str.replace('.','',regex=False)
+
+    return Data
 
 def Define_INPAT(Data:pd.DataFrame):
     """Define SOURCE outpat for hilmo dataframes
@@ -919,9 +928,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # remove dot from CODE1, CODE2 & CODE3
-            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
-            Data.CODE2 = Data.CODE2.str.replace('.','',regex=False) 
-            Data.CODE3 = Data.CODE3.str.replace('.','',regex=False) 
+            Data = remove_dot_from_columns(Data, col_list=['CODE1','CODE2','CODE3'])
             # check that EVENT_AGE is in predefined range 
             Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
@@ -1085,9 +1092,7 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # remove dot from CODE1, CODE2 & CODE3
-            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
-            Data.CODE2 = Data.CODE2.str.replace('.','',regex=False) 
-            Data.CODE3 = Data.CODE3.str.replace('.','',regex=False) 
+            Data = remove_dot_from_columns(Data, col_list=['CODE1','CODE2','CODE3'])
             # check that EVENT_AGE is in predefined range 
             Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
             # check that EVENT_AGE is not missing
@@ -1437,7 +1442,7 @@ def AvoHilmo_processing(file_path:str, DOB_map, extra_to_merge, source, year, fi
             # QUALITY CONTROL:
 
             # remove dot from CODE1
-            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
+            Data = remove_dot_from_columns(Data, col_list=['CODE1'])
             # replace special codes to missing in CODE columns
             Data = fix_missing_value(Data)
             # check that EVENT_AGE is in predefined range 
@@ -1564,7 +1569,7 @@ def DeathRegistry_processing(file_path:str, DOB_map, file_sep=";", test=False):
             # NOT performing special code check in this registry
             
             # remove dot from CODE1
-            Data.CODE1 = Data.CODE1.str.replace('.','',regex=False) 
+            Data = remove_dot_from_columns(Data, col_list=['CODE1'])
             # check that EVENT_AGE is in predefined range 
             Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110) ].reset_index(drop=True)
             # check that EVENT_AGE is not missing
