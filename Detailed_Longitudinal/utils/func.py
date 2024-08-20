@@ -1145,7 +1145,7 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";"):
     
     # fix category naming and add CODE2
     ulksyy_diag.CATEGORY = ulksyy_diag.CATEGORY.apply(lambda x: 'EX' + str(x))
-    ulksyy_diag['CODE2']=''
+    ulksyy_diag['CODE2']=np.NaN
     
     #-------------------------
     # 2. process extra diagnosis information
@@ -1167,7 +1167,7 @@ def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";"):
     
     # -----------------------
     # create final dataframe 
-    Data = main_diag.merge(side_diag, on=['HILMO_ID','CATEGORY'], how='inner')
+    Data = main_diag.merge(side_diag, on=['HILMO_ID','CATEGORY'], how='outer')
     Data = pd.concat([Data,ulksyy_diag])
     
     # select desired columns
