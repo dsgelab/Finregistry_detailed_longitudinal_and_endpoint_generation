@@ -23,10 +23,8 @@ def prepare_output_data(Data):
     return Data
 
 def my_assert_frame_equal(PRED, TRUE, name='test', check_dtype=False):    
-    try: assert_frame_equal(PRED, TRUE, check_dtype=check_dtype)         
-    except AssertionError as e:
-        for col in TRUE.columns:
-            assert_series_equal(PRED[col], TRUE[col], check_dtype=check_dtype)
+    assert_frame_equal(PRED, TRUE, check_dtype=check_dtype)         
+
 
 
 # ------------------
