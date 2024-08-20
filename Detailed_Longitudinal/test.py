@@ -15,16 +15,16 @@ import unittest
 # -------------------
 # Utility functions
 def prepare_predicted_data(Data):
-    Data = Data.drop(columns=['CODE5','CODE6','CODE7','CODE8','CODE9','INDEX']).sort_values(by=['FINREGISTRYID','EVENT_AGE','CATEGORY']).reset_index(drop=True)      
+    Data = Data.drop(columns=['CODE4','CODE5','CODE6','CODE7','CODE8','CODE9','INDEX']).sort_values(by=['FINREGISTRYID','EVENT_AGE','CATEGORY']).reset_index(drop=True)      
     return Data
 
 def prepare_output_data(Data):
-    Data = Data.drop(columns=['INDEX']).sort_values(by=['FINREGISTRYID','EVENT_AGE','CATEGORY']).reset_index(drop=True)
+    Data = Data.drop(columns=['CODE4','INDEX']).sort_values(by=['FINREGISTRYID','EVENT_AGE','CATEGORY']).reset_index(drop=True)
     return Data
 
 def my_assert_frame_equal(PRED, TRUE, name='test', check_dtype=False):    
     assert_frame_equal(PRED, TRUE, check_dtype=check_dtype)         
-
+        
 
 
 # ------------------
@@ -195,7 +195,7 @@ class TestRegistrySpecificFunctions(unittest.TestCase):
         TRUE = prepare_output_data(TRUE)
         PRED = pd.read_csv(hilmo_post18_diag_result)
         PRED = prepare_predicted_data(PRED)
-        PRED_NO_ULKSYY = PRED.loc[~(PRED.CATEGORY.str.contains('EX'))].reset_index(drop=True)
+        PRED_NO_ULKSYY = PRED.loc[~(PRED.CATEGORY.astype(str).str.contains('EX'))].reset_index(drop=True)
         my_assert_frame_equal(PRED_NO_ULKSYY, TRUE, name='Hilmo 2019-2021 + diag', check_dtype=False)          
         
     def test_hilmo_post18_oper(self): 
