@@ -286,6 +286,7 @@ def Define_INPAT(Data:pd.DataFrame):
     Data.loc[ ((Data.EVENT_DAY.dt.year>=1998) & (Data.EVENT_DAY.dt.year<=2018)) & (Data.PALA.isin(PALA_INPAT_LIST)),"SOURCE"] = "INPAT"
     Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="R80"), "SOURCE"] = "INPAT"
     Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="R10") & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
+    Data.loc[ (Data.EVENT_DAY.dt.year>2018) & (Data.YHTEYSTAPA=="") & Data.PALA.isin(PALA_INPAT_LIST), "SOURCE"] = "INPAT"
     
     return Data
 
