@@ -153,6 +153,7 @@ class TestRegistrySpecificFunctions(unittest.TestCase):
         PRED = pd.read_csv(hilmo_diag_result)
         PRED = prepare_predicted_data(PRED)
         PRED_NO_ULKSYY = PRED.loc[~(PRED.CATEGORY.str.contains('EX'))].reset_index(drop=True)
+        PRED_NO_ULKSYY.CATEGORY = PRED_NO_ULKSYY.CATEGORY.astype(int)
         my_assert_frame_equal(PRED_NO_ULKSYY, TRUE, name='Hilmo 1996-2018 + diag', check_dtype=False)          
         
     def test_hilmo_96_18_oper(self): 
