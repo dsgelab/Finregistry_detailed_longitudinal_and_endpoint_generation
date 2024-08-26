@@ -603,7 +603,7 @@ def Hilmo_87_93_processing(file_path:str, DOB_map, paltu_map, file_sep=";", test
             Data = combination_codes_split(Data)
 
             # PALTU mapping
-            Data["CODE7"] = pd.to_numeric(Data.CODE7)
+            Data["CODE7"] = pd.to_numeric(Data.CODE7, errors='coerce')
             Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
@@ -760,7 +760,7 @@ def Hilmo_94_95_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
             Data = combination_codes_split(Data)
 
             # PALTU mapping
-            Data["CODE7"] = pd.to_numeric(Data.CODE7)
+            Data["CODE7"] = pd.to_numeric(Data.CODE7, errors='coerce')
             Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
             # correct missing PALTU
             Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
@@ -903,49 +903,50 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
                     value_name	= "CODE1")
                 Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
                 
-            #-------------------------------------------
-            # SOURCE definitions
-            Data["PALA"] = Data["CODE5"]
-            Data["YHTEYSTAPA"] = np.nan
-            Data = Define_INPAT(Data)
-            Data = Define_OPERIN(Data)
-            Data = Define_OPEROUT(Data)
-
-            # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
-            # special character split
-            Data = combination_codes_split(Data)
-
-            # PALTU mapping
-            Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
-            # correct missing PALTU
-            Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
-            Data["CODE7"] = Data["hospital_type"]
-
-            #-------------------------------------------
-            # QUALITY CONTROL:
-                 
-            # replace special codes to missing in CODE columns
-            Data = fix_missing_value(Data)
-            # remove dot from CODE1, CODE2 & CODE3
-            Data = remove_dot_from_columns(Data, col_list=['CODE1','CODE2','CODE3'])
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
-
-            # select desired columns 
-            Data = Data[ COLUMNS_2_KEEP ]
-
-            # WRITE TO DETAILED LONGITUDINAL
-            if extra_source!=None: output_name='Hilmo_1996_2018'+'_'+extra_source
-            else: output_name='Hilmo_1996_2018'
-            write_out(Data, output_name=output_name, test=test)
+            if not Data.empty:
+                #-------------------------------------------
+                # SOURCE definitions
+                Data["PALA"] = Data["CODE5"]
+                Data["YHTEYSTAPA"] = np.nan
+                Data = Define_INPAT(Data)
+                Data = Define_OPERIN(Data)
+                Data = Define_OPEROUT(Data)
+    
+                # check special characters
+                Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
+                # special character split
+                Data = combination_codes_split(Data)
+    
+                # PALTU mapping
+                Data["CODE7"] = pd.to_numeric(Data.CODE7,  errors='coerce')
+                Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
+                # correct missing PALTU
+                Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
+                Data["CODE7"] = Data["hospital_type"]
+    
+                #-------------------------------------------
+                # QUALITY CONTROL:
+                     
+                # replace special codes to missing in CODE columns
+                Data = fix_missing_value(Data)
+                # remove dot from CODE1, CODE2 & CODE3
+                Data = remove_dot_from_columns(Data, col_list=['CODE1','CODE2','CODE3'])
+                # check that EVENT_AGE is in predefined range 
+                Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+                # check that EVENT_AGE is not missing
+                Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+                # check that CODE1 and 2 are not missing
+                Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+                # if negative hospital days than missing value
+                Data.loc[Data.CODE4<0,"CODE4"] = np.nan
+    
+                # select desired columns 
+                Data = Data[ COLUMNS_2_KEEP ]
+    
+                # WRITE TO DETAILED LONGITUDINAL
+                if extra_source!=None: output_name='Hilmo_1996_2018'+'_'+extra_source
+                else: output_name='Hilmo_1996_2018'
+                write_out(Data, output_name=output_name, test=test)
 
 
 
@@ -1066,50 +1067,51 @@ def Hilmo_POST18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=No
                     var_name 	= "CATEGORY",
                     value_name	= "CODE1")
                 Data["CATEGORY"].replace(CATEGORY_DICTIONARY, regex=True, inplace=True)
-
-            #-------------------------------------------
-            # SOURCE definitions
-            Data["PALA"] = Data["CODE5"]
-            Data["YHTEYSTAPA"] = Data["CODE8"]
-            Data = Define_INPAT(Data)
-            Data = Define_OPERIN(Data)
-            Data = Define_OPEROUT(Data)
-
-            # check special characters
-            Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
-            # special character split
-            Data = combination_codes_split(Data)
-
-            # PALTU mapping
-            Data["CODE7"] = pd.to_numeric(Data.CODE7)
-            Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
-            # correct missing PALTU
-            Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
-            Data["CODE7"] = Data["hospital_type"]
-
-            #-------------------------------------------
-            # QUALITY CONTROL:
-             
-            # replace special codes to missing in CODE columns
-            Data = fix_missing_value(Data)
-            # remove dot from CODE1, CODE2 & CODE3
-            Data = remove_dot_from_columns(Data, col_list=['CODE1','CODE2','CODE3'])
-            # check that EVENT_AGE is in predefined range 
-            Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
-            # check that EVENT_AGE is not missing
-            Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
-            # check that CODE1 and 2 are not missing
-            Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
-            # if negative hospital days than missing value
-            Data.loc[Data.CODE4<0,"CODE4"] = np.nan
-
-            # select desired columns 
-            Data = Data[ COLUMNS_2_KEEP ]
-
-            # WRITE TO DETAILED LONGITUDINAL
-            if extra_source!=None: output_name="Hilmo_2019_2021"+'_'+extra_source
-            else: output_name="Hilmo_2019_2021"
-            write_out(Data, output_name=output_name, test=test)
+                
+            if not Data.empty:
+                #-------------------------------------------
+                # SOURCE definitions
+                Data["PALA"] = Data["CODE5"]
+                Data["YHTEYSTAPA"] = Data["CODE8"]
+                Data = Define_INPAT(Data)
+                Data = Define_OPERIN(Data)
+                Data = Define_OPEROUT(Data)
+    
+                # check special characters
+                Data.loc[Data.CODE1.isin(["TÃ\xe2\x82", "JÃ\xe2\x82","LÃ\xe2\x82"]),"CODE1"] = np.nan
+                # special character split
+                Data = combination_codes_split(Data)
+    
+                # PALTU mapping
+                Data["CODE7"] = pd.to_numeric(Data.CODE7, errors='coerce')
+                Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
+                # correct missing PALTU
+                Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
+                Data["CODE7"] = Data["hospital_type"]
+    
+                #-------------------------------------------
+                # QUALITY CONTROL:
+                 
+                # replace special codes to missing in CODE columns
+                Data = fix_missing_value(Data)
+                # remove dot from CODE1, CODE2 & CODE3
+                Data = remove_dot_from_columns(Data, col_list=['CODE1','CODE2','CODE3'])
+                # check that EVENT_AGE is in predefined range 
+                Data = Data.loc[ (Data.EVENT_AGE>=0) & (Data.EVENT_AGE<=110)].reset_index(drop=True)
+                # check that EVENT_AGE is not missing
+                Data = Data.dropna(subset=["EVENT_AGE"]).reset_index(drop=True)
+                # check that CODE1 and 2 are not missing
+                Data = Data.loc[ Data.CODE1.notna() | Data.CODE2.notna()].reset_index(drop=True)
+                # if negative hospital days than missing value
+                Data.loc[Data.CODE4<0,"CODE4"] = np.nan
+    
+                # select desired columns 
+                Data = Data[ COLUMNS_2_KEEP ]
+    
+                # WRITE TO DETAILED LONGITUDINAL
+                if extra_source!=None: output_name="Hilmo_2019_2021"+'_'+extra_source
+                else: output_name="Hilmo_2019_2021"
+                write_out(Data, output_name=output_name, test=test)
 
 
 def Hilmo_extra_diagnosis_preparation(file_path:str, file_sep=";"):
