@@ -918,7 +918,7 @@ def Hilmo_96_18_processing(file_path:str, DOB_map, paltu_map, extra_to_merge=Non
                 Data = combination_codes_split(Data)
     
                 # PALTU mapping
-                Data["CODE7"] = pd.to_numeric(Data.CODE7,  errors='coerce')
+                Data["CODE7"] = pd.to_numeric(Data.CODE7, errors='coerce')
                 Data = Data.merge(paltu_map, left_on="CODE7", right_on="PALTU", how="left")
                 # correct missing PALTU
                 Data.loc[ Data.CODE7.isna(),"hospital_type"] = "Other Hospital" 
