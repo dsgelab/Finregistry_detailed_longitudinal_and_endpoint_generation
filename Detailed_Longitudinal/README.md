@@ -80,9 +80,7 @@ The following changes have been made to the FinnGen version of the detailed long
 - No individuals are removed from the dataset (FinnGen removes individuals in the ID denials list)
 - No separate step for computing the birth and death dates as they are already included in the FinRegistry data
 - Index now reference the exact line in the original registry file that was used for extracting the information
-- No dot is removed from CODE columns
 - No value in CODE4 (Duration of hospital stay) is removed
-
 
 Please also note that age randomization is not implemented in FinRegistry so all the dates are exact.
 
