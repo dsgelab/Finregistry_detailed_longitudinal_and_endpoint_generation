@@ -5,11 +5,19 @@ This repository contains the code for creating the detailed longitudinal file in
 
 ## Repository structure
 
-- `config.py` contains all data file paths to be used in the creation of the detailed longitudinal file
-- `func.py` contains all the function used to process the dataset in `main.py`
+
 - `main.py` performs all the processing required in order to create the detailed longitudial splits
+- `test.py` performs all the test required to check that all the function used in the `main.py` file are working properly
 - `join_splits.sh` is the bash script responsible for merging together all the splits and create the official version of detailed longitudinal file
-- `test` directory contains quality control for both the functions (prior) and the output file (post)
+- the `utils/` folder contains all extra scripts necessary, includes: `config.py` and `config_test.py` containing all data file paths to be used, as well as `func.py` where all the functions to be used are defined
+
+## Test Pipeline
+
+Dummy data was used to tests the output quality, this data was generated using the `LOIRE` package from Ida Holopainen (THL) and modified to fit our format requirements.
+
+Default parameter have been used, but the following changes:
+n=1000, seed=1722463180, add_offset=False
+
 
 ## Output format
 
@@ -68,10 +76,11 @@ Please also note that the `EVENT_AGE` is round up to two decimal points.
 The following changes have been made to the FinnGen version of the detailed longitudinal preprocessing pipeline to enable running it in FinRegistry. Otherwise the processing pipeline should be identical to the one in FinnGen. Please refer to the service sector data processing [GitHub repo](https://github.com/FINNGEN/service-sector-data-processing/tree/master) for more information. 
 
 - The code is restructured to enable multiprocessing
-- At most three extra diagnosis codes are included whereas in FinnGen includes all side diagnoses
 - No separate steps for adding FinRegistry ID as they are already available in the FinRegistry data
 - No individuals are removed from the dataset (FinnGen removes individuals in the ID denials list)
 - No separate step for computing the birth and death dates as they are already included in the FinRegistry data
+- Index now reference the exact line in the original registry file that was used for extracting the information
+- No value in CODE4 (Duration of hospital stay) is removed
 
 Please also note that age randomization is not implemented in FinRegistry so all the dates are exact.
 
